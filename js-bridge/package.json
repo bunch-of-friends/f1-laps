@@ -1,0 +1,20 @@
+{
+  "name": "f1-laps-js-bridge",
+  "version": "0.1.0",
+  "main": "index.js",
+  "scripts": {
+    "install": "neon build"
+  },
+  "maitainers": [
+    {
+      "name": "David Bohunek",
+      "email": "bohunek@gmail.com"
+    }
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@bunch-of-friends/observable": "^1.3.0",
+    "stay-awake": "0.0.3",
+    "neon-cli": "^0.1.22"
+  }
+}

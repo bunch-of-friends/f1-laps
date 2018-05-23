@@ -1,0 +1,19 @@
+{
+    "name": "f1-laps-node-test",
+    "version": "0.1.0",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js",
+        "build": "cd ../js-bridge && npm i"
+    },
+    "maitainers": [
+        {
+            "name": "David Bohunek",
+            "email": "bohunek@gmail.com"
+        }
+    ],
+    "license": "MIT",
+    "dependencies": {
+        "f1-laps-js-bridge": "file:../js-bridge"
+    }
+}

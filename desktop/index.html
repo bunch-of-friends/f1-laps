@@ -1,0 +1,34 @@
+<html>
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.1/moment.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.js"></script>
+    </head>
+    <body>
+        <div class="log">
+            <h3 class="lap-counter">Lap:</h3>
+            <h3 class="time">Time:</h3>
+            <div>
+                <h3>Stats</h3>
+                <ul class="stats">
+                    <li class="fps"></li>
+                    <li class="total-points"></li>
+                    <li class="displayed-points"></li>
+                    <li class="speed-points"></li>
+                    <li class="throttle-points"></li>
+                    <li class="brake-points"></li>
+                    <li class="gear-points"></li>
+                    <li class="steering-points"></li>
+                    <li class="compressed-points"></li>
+                </ul>
+            </div>
+        </div>
+        <canvas width="1200" height="200" id="speed-plot"></canvas>
+        <canvas width="1200" height="200" id="throttle-plot"></canvas>
+        <canvas width="1200" height="200" id="brake-plot"></canvas>
+        <canvas width="1200" height="200" id="gear-plot"></canvas>
+        <canvas width="1200" height="200" id="compressed-plot"></canvas>
+        <canvas width="1200" height="200" id="steering-plot"></canvas>
+        <script src="webapp.js"></script>
+    </body>
+</html>

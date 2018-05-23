@@ -1,0 +1,13 @@
+[package]
+name = "f1-laps-core"
+version = "0.1.0"
+authors = ["David Bohunek <bohunek@gmail.com>"]
+
+[dependencies]
+serde = "1.0.37"
+serde_derive = "1.0.37"
+bincode = "1.0.0"
+chrono = "0.4.2"
+
+[lib]
+name = "f1_laps_core"

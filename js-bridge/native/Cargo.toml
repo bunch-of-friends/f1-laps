@@ -1,0 +1,16 @@
+[package]
+name = "f1-laps-core-js-neon"
+version = "0.1.0"
+authors = ["David Bohunek <david.bohunek@sky.uk>"]
+build = "build.rs"
+
+[dependencies]
+f1-laps-core = { path = "../../core" }
+neon = "0.1.22"
+
+[build-dependencies]
+neon-build = "0.1.22"
+
+[lib]
+name = "f1_laps_core"
+crate-type = ["dylib"]
