@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "core"
+		},
+		{
+			"path": "js-bridge"
+		},
+		{
+			"path": "desktop"
+		},
+		{
+			"path": "node-demo"
+		},
+		{
+			"path": "hue"
+		}
+	],
+	"settings": {}
+}
