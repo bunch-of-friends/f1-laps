@@ -1,3 +1,5 @@
+pub mod packet;
+
 use std::net::UdpSocket;
 use std::string::String;
 use std::thread;
@@ -5,8 +7,8 @@ use bincode;
 use std::sync::{Arc, Mutex};
 use std::sync::mpsc;
 
-use models::api::Tick;
-use models::packet::Packet;
+use self::packet::Packet;
+use aggregation::tick::Tick;
 use aggregation::process_packet;
 use storage::replay::store_replay_data;
 

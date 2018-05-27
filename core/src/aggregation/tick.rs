@@ -1,4 +1,4 @@
-use models::packet::Car;
+use udp::packet::Car;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Tick {

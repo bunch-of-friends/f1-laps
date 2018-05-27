@@ -2,7 +2,7 @@ use bincode;
 use std::collections::HashMap;
 use std::fs::File;
 
-use models::records::{LapRecord, Record, RecordSet};
+use storage::record_set::RecordSet;
 
 pub fn persist_record_store(record_store: RecordStore) {
     let file = File::create("storage/records.bin").expect("failed to create records file");

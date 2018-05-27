@@ -1,8 +1,10 @@
 pub mod session_tracker;
+pub mod tick;
 
 use self::session_tracker::SessionTracker;
-use models::packet::Packet;
-use models::api::{BestLap, BestSector, LiveData, Session, Tick};
+use self::tick::{BestLap, BestSector, LiveData, Session, Tick};
+
+use udp::packet::Packet;
 use storage;
 
 static mut SESSION_TRACKER: SessionTracker = SessionTracker {
@@ -14,6 +16,10 @@ static mut SESSION_TRACKER: SessionTracker = SessionTracker {
 static mut RECORDS_STORE: Option<storage::records::RecordStore> = None;
 
 pub fn process_packet(packet: Packet) -> Option<Tick> {
+    if packet.is_spectating == 1 {
+        return None;
+    }
+
     let session: Option<Session> = unsafe { SESSION_TRACKER.track(packet) };
 
     let live_data = LiveData {
@@ -142,9 +148,7 @@ pub fn process_packet(packet: Packet) -> Option<Tick> {
 }
 
 pub fn preload_records() {
-    let has_records_store = unsafe {
-        RECORDS_STORE.is_some()
-    };
+    let has_records_store = unsafe { RECORDS_STORE.is_some() };
 
     if has_records_store {
         return;

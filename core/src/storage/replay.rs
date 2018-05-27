@@ -1,12 +1,14 @@
 use std::fs::{read_dir, File};
 
 use std::sync::mpsc;
+use std::time::{Duration, Instant};
+use thread;
 
 use bincode;
 use chrono::Local;
 
-use models::api::Tick;
-use models::packet::Packet;
+use aggregation::tick::Tick;
+use udp::packet::Packet;
 use aggregation::process_packet;
 
 //TODO: sort out repeated string constants here and across the storage mod files
@@ -38,23 +40,66 @@ pub fn get_replay_data(tx: mpsc::Sender<Tick>) {
 
     file_paths.sort();
 
+    let mut packets = Vec::<Packet>::new();
     for path in file_paths {
         let full_path = format!("storage/{}", path);
+        println!("loading file >> {}", full_path);
 
         let file = File::open(full_path).expect("failed to open file");
         let data = bincode::deserialize_from::<File, Vec<Packet>>(file).ok();
 
-        if data.is_none() {
-            continue;
+        if data.is_some() {
+            packets.extend(data.unwrap());
         }
+    }
 
-        for packet in data.unwrap() {
-            let tick = process_packet(packet);
+    println!("streaming stored packets");
 
-            if tick.is_some() {
-                tx.send(tick.unwrap())
-                    .expect("failed to update the main thread")
+    let mut last_packet: Option<(Packet, Instant)> = None;
+    for packet in packets {
+        let tick = process_packet(packet);
+
+        if tick.is_some() {
+            // this whole block is here temporarily for some tests, then it will either go or get some love
+            if last_packet.is_some() {
+                let lp = last_packet.unwrap();
+
+                let packet_diff = packet.time - lp.0.time;
+
+                let mut packet_diff_ns = 0;
+                if packet_diff > 0 as f32 {
+                    packet_diff_ns = (packet_diff * 1000000000 as f32) as u32
+                } else {
+                    println!("packet_diff zero {}", packet_diff);
+                }
+
+                let packet_diff_duration = Duration::new(0, packet_diff_ns);
+
+                let since_last_send_duration = lp.1.elapsed();
+
+                let mut sleep_needed = packet_diff_duration;
+                if packet_diff_duration > since_last_send_duration {
+                    sleep_needed = packet_diff_duration - since_last_send_duration;
+                }
+
+                if sleep_needed.as_secs() > 0 {
+                    println!("sleeping LONG > {:?}", sleep_needed);
+                    thread::sleep(Duration::from_secs(10));
+                } else {
+                    let min_sleep = Duration::from_millis(20);
+                    if sleep_needed > min_sleep {
+                        let applied = sleep_needed - Duration::new(0, 2000000); // totally based on observation only, no science here
+                        thread::sleep(applied);
+                        println!("sleep applied {:?}", applied);
+                    } else {
+                        println!("sleep not needed {:?}", sleep_needed);
+                    }
+                }
             }
+
+            last_packet = Some((packet, Instant::now()));
+            tx.send(tick.unwrap())
+                .expect("failed to update the main thread")
         }
     }
 }

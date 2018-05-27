@@ -1,5 +1,6 @@
 pub mod replay;
 pub mod records;
+pub mod record_set;
 
 use std::path::Path;
 use std::fs::{create_dir, File};

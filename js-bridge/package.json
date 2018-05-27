@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "main": "index.js",
   "scripts": {
-    "install": "neon build"
+    "build": "neon build",
+    "install": "npm run build"
   },
   "maitainers": [
     {

@@ -2,8 +2,8 @@
 extern crate neon;
 extern crate f1_laps_core;
 
-use f1_laps_core::models::api::{BestLap, BestSector, LiveData, Session};
-use f1_laps_core::models::packet::Car;
+use f1_laps_core::aggregation::tick::{BestLap, BestSector, LiveData, Session};
+use f1_laps_core::udp::packet::Car;
 use neon::vm::{Call, JsResult};
 use neon::mem::Handle;
 use neon::scope;
@@ -29,22 +29,22 @@ fn start_listening(call: Call) -> JsResult<JsUndefined> {
 }
 
 fn replay_data(call: Call) -> JsResult<JsUndefined> {
-    let frequency_handle = call.arguments.get(call.scope, 0).unwrap();
-    let frequency = frequency_handle
-        .downcast::<JsNumber>()
-        .expect("failed to downcast frequency argument")
-        .value() as u64;
-
-    f1_laps_core::replay_data(frequency);
+    f1_laps_core::replay_data();
 
     Ok(JsUndefined::new())
 }
 
 fn get_next_tick(call: Call) -> JsResult<JsObject> {
-    let tick = f1_laps_core::get_next_tick();
+    let tick_option = f1_laps_core::get_next_tick();
 
     let scope = call.scope;
     let object = JsObject::new(scope);
+
+    if tick_option.is_none() {
+        return Ok(object);
+    }
+
+    let tick = tick_option.unwrap();
 
     if let Some(session) = tick.session {
         object.set("session", build_session_js_object(scope, session));
@@ -240,10 +240,7 @@ fn build_live_data_js_object<'a>(
     );
     object.set("maxRpm", JsNumber::new(scope, live_data.max_rpm as f64));
     object.set("idleRpm", JsNumber::new(scope, live_data.idle_rpm as f64));
-    object.set(
-        "maxGears",
-        JsNumber::new(scope, live_data.max_gears as f64),
-    );
+    object.set("maxGears", JsNumber::new(scope, live_data.max_gears as f64));
     object.set(
         "tractionControl",
         JsNumber::new(scope, live_data.traction_control as f64),
@@ -414,24 +411,12 @@ fn build_car_js_object<'a>(scope: &mut scope::RootScope<'a>, car: Car) -> Handle
         "bestLapTime",
         JsNumber::new(scope, car.best_lap_time as f64),
     );
-    object.set(
-        "sector1Time",
-        JsNumber::new(scope, car.sector1_time as f64),
-    );
-    object.set(
-        "sector2Time",
-        JsNumber::new(scope, car.sector2_time as f64),
-    );
-    object.set(
-        "lapDistance",
-        JsNumber::new(scope, car.lap_distance as f64),
-    );
+    object.set("sector1Time", JsNumber::new(scope, car.sector1_time as f64));
+    object.set("sector2Time", JsNumber::new(scope, car.sector2_time as f64));
+    object.set("lapDistance", JsNumber::new(scope, car.lap_distance as f64));
     object.set("driverId", JsNumber::new(scope, car.driver_id as f64));
     object.set("teamId", JsNumber::new(scope, car.team_id as f64));
-    object.set(
-        "carPosition",
-        JsNumber::new(scope, car.car_position as f64),
-    );
+    object.set("carPosition", JsNumber::new(scope, car.car_position as f64));
 
     object.set(
         "currentLapNum",

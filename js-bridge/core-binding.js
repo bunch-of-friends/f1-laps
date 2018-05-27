@@ -66,12 +66,12 @@ function startListening(port = 20777, shouldStoreReplay = false) {
     core.startListening(port, shouldStoreReplay);
 }
 
-function replayStoredData(frequencyHz) {
+function replayStoredData() {
     if (!core) {
         throw new Error('not initialised');
     }
 
-    core.replayData(frequencyHz);
+    core.replayData();
 }
 
 module.exports = {

@@ -3,13 +3,14 @@ extern crate serde_derive;
 extern crate bincode;
 extern crate chrono;
 
-pub mod models;
-mod storage;
-mod aggregation;
-mod udp;
+pub mod aggregation;
+pub mod storage;
+pub mod udp;
 
-use models::api::{BestLap, BestSector, LiveData, Session, Tick};
-use std::{thread, time};
+use aggregation::tick::{BestLap, BestSector, LiveData, Session, Tick};
+
+use std::thread;
+
 use std::sync::mpsc;
 
 static mut SESSION: Option<Session> = None;
@@ -34,7 +35,7 @@ pub fn start_listening(port: i32, should_store_replay: bool) {
     });
 }
 
-pub fn get_next_tick() -> Tick {
+pub fn get_next_tick() -> Option<Tick> {
     let tick = unsafe {
         Tick {
             session: SESSION,
@@ -55,10 +56,10 @@ pub fn get_next_tick() -> Tick {
         BEST_EVER_SECTOR = None
     }
 
-    tick
+    Some(tick)
 }
 
-pub fn replay_data(frequency_hz: u64) {
+pub fn replay_data() {
     storage::ensure_storage_files_created();
     aggregation::preload_records();
 
@@ -68,10 +69,8 @@ pub fn replay_data(frequency_hz: u64) {
         storage::replay::get_replay_data(tx);
     });
 
-    let tick_delay = time::Duration::from_millis(1000 / frequency_hz);
     thread::spawn(move || loop {
         receive_tick(&rx);
-        thread::sleep(tick_delay);
     });
 }
 

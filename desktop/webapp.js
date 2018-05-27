@@ -313,4 +313,4 @@ steeringPlot = createPlot('steering-plot', 'Steering', [-1, 1]);
 
 f1.liveData.register(onLiveDataReceived);
 requestAnimationFrame(updatePlots);
-f1.replayStoredData(30);
+f1.replayStoredData();
