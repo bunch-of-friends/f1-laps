@@ -38,7 +38,7 @@ function getNextTick() {
     }
 
     if (tick.lapFinished) {
-        bestSessionSectorLap.notifyObservers(tick.lapFinished);
+        lapFinishedSubject.notifyObservers(tick.lapFinished);
     }
 
     if (tick.sectorFinished) {
