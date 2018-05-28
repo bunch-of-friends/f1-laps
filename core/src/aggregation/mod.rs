@@ -2,25 +2,26 @@ pub mod session_tracker;
 pub mod tick;
 
 use self::session_tracker::SessionTracker;
-use self::tick::{BestLap, BestSector, LiveData, Session, Tick};
+use self::tick::{LiveData, Session, Tick};
 
-use udp::packet::Packet;
 use storage;
+use udp::packet::Packet;
 
 static mut SESSION_TRACKER: SessionTracker = SessionTracker {
     current_session: None,
-    session_record: None,
-    track_record: None,
+    current_lap_number: -1 as f32,
+    current_session_time: -1 as f32,
 };
 
 static mut RECORDS_STORE: Option<storage::records::RecordStore> = None;
 
 pub fn process_packet(packet: Packet) -> Option<Tick> {
     if packet.is_spectating == 1 {
+        println!("spectating");
         return None;
     }
 
-    let session: Option<Session> = unsafe { SESSION_TRACKER.track(packet) };
+    let new_session: Option<Session> = unsafe { SESSION_TRACKER.track(packet) };
 
     let live_data = LiveData {
         current_lap: packet.lap as i32,
@@ -31,14 +32,10 @@ pub fn process_packet(packet: Packet) -> Option<Tick> {
         current_tyre_compound: packet.tyre_compound as u8,
         is_lap_valid: packet.current_lap_invalid == 0,
         last_lap_time: packet.last_lap_time,
-        last_lap_sector1_time: 0.0, //TODO
-        last_lap_sector2_time: 0.0, //TODO
-        last_lap_sector3_time: 0.0, //TODO
         current_lap_sector1_time: packet.sector1_time,
         current_lap_sector2_time: packet.sector2_time,
         total_session_time: packet.time,
         total_session_distance: packet.total_distance,
-        total_session_laps: 0, //TODO
         x: packet.x,
         y: packet.y,
         z: packet.z,
@@ -89,59 +86,11 @@ pub fn process_packet(packet: Packet) -> Option<Tick> {
         car_data: packet.car_data,
     };
 
-    // for testing only -------- vv
-
-    // let best_session_lap = BestLap {
-    //     lap_time: 60.00,
-    //     lap_time_previous: 62.222,
-    //     sector1: 10.0,
-    //     sector2: 20.0,
-    //     sector3: 30.0,
-    //     sector1_previous: 12.222,
-    //     sector2_previous: 20.0,
-    //     sector3_previous: 30.0,
-    //     tyre_compound: 2,
-    //     is_best_all_compounds: false,
-    // };
-
-    // let best_session_sector = BestSector {
-    //     sector: 1,
-    //     time: 12.12,
-    //     time_previous: 24.24,
-    //     tyre_compound: 0,
-    //     is_best_all_compounds: true,
-    // };
-
-    // let best_ever_lap = BestLap {
-    //     lap_time: 60.00,
-    //     lap_time_previous: 62.222,
-    //     sector1: 10.0,
-    //     sector2: 20.0,
-    //     sector3: 30.0,
-    //     sector1_previous: 12.222,
-    //     sector2_previous: 20.0,
-    //     sector3_previous: 30.0,
-    //     tyre_compound: 2,
-    //     is_best_all_compounds: false,
-    // };
-
-    // let best_ever_sector = BestSector {
-    //     sector: 2,
-    //     time: 123.123,
-    //     time_previous: 124.124,
-    //     tyre_compound: 1,
-    //     is_best_all_compounds: false,
-    // };
-
-    // for testing only -------- ^^
-
     let tick = Tick {
-        live_data: Some(live_data),
-        session: session,
-        best_session_lap: None,    // Some(best_session_lap),
-        best_session_sector: None, //Some(best_session_sector),
-        best_ever_lap: None,       // Some(best_ever_lap),
-        best_ever_sector: None,    // Some(best_ever_sector),
+        live_data: live_data,
+        session_started: new_session,
+        lap_finished: None,
+        sector_finished: None,
     };
 
     return Some(tick);

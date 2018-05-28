@@ -6,9 +6,6 @@ module.exports = {
     replayStoredData: coreBinding.replayStoredData,
     newSession: coreBinding.newSession,
     liveData: coreBinding.liveData,
-    bestSessionLap: coreBinding.bestSessionLap,
-    bestSessionSector: coreBinding.bestSessionSector,
-    bestEverLap: coreBinding.bestEverLap,
-    bestEverSector: coreBinding.bestEverSector,
-    rawData: coreBinding.rawData
+    lapFinished: coreBinding.lapFinished,
+    sectorFinished: coreBinding.sectorFinished
 }

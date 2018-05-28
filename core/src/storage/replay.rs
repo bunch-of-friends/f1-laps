@@ -11,8 +11,6 @@ use aggregation::tick::Tick;
 use udp::packet::Packet;
 use aggregation::process_packet;
 
-//TODO: sort out repeated string constants here and across the storage mod files
-
 pub fn store_replay_data(packets: Vec<Packet>) {
     let date = Local::now();
     let path = format!(
@@ -69,8 +67,6 @@ pub fn get_replay_data(tx: mpsc::Sender<Tick>) {
                 let mut packet_diff_ns = 0;
                 if packet_diff > 0 as f32 {
                     packet_diff_ns = (packet_diff * 1000000000 as f32) as u32
-                } else {
-                    println!("packet_diff zero {}", packet_diff);
                 }
 
                 let packet_diff_duration = Duration::new(0, packet_diff_ns);
@@ -83,16 +79,12 @@ pub fn get_replay_data(tx: mpsc::Sender<Tick>) {
                 }
 
                 if sleep_needed.as_secs() > 0 {
-                    println!("sleeping LONG > {:?}", sleep_needed);
                     thread::sleep(Duration::from_secs(10));
                 } else {
                     let min_sleep = Duration::from_millis(20);
                     if sleep_needed > min_sleep {
-                        let applied = sleep_needed - Duration::new(0, 2000000); // totally based on observation only, no science here
+                        let applied = sleep_needed - Duration::new(0, 2160000); // totally based on observation only, no science here
                         thread::sleep(applied);
-                        println!("sleep applied {:?}", applied);
-                    } else {
-                        println!("sleep not needed {:?}", sleep_needed);
                     }
                 }
             }

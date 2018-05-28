@@ -7,18 +7,17 @@ pub mod aggregation;
 pub mod storage;
 pub mod udp;
 
-use aggregation::tick::{BestLap, BestSector, LiveData, Session, Tick};
-
-use std::thread;
+use aggregation::tick::{Lap, LiveData, Sector, Session, Tick};
 
 use std::sync::mpsc;
+use std::thread;
 
-static mut SESSION: Option<Session> = None;
-static mut LIVE_DATA: Option<LiveData> = None;
-static mut BEST_SESSION_LAP: Option<BestLap> = None;
-static mut BEST_SESSION_SECTOR: Option<BestSector> = None;
-static mut BEST_EVER_LAP: Option<BestLap> = None;
-static mut BEST_EVER_SECTOR: Option<BestSector> = None;
+static mut DATA_HOLDER: DataHolder = DataHolder {
+    session: None,
+    live_data: None,
+    lap: None,
+    sector: None,
+};
 
 pub fn start_listening(port: i32, should_store_replay: bool) {
     storage::ensure_storage_files_created();
@@ -36,27 +35,19 @@ pub fn start_listening(port: i32, should_store_replay: bool) {
 }
 
 pub fn get_next_tick() -> Option<Tick> {
-    let tick = unsafe {
-        Tick {
-            session: SESSION,
-            live_data: LIVE_DATA,
-            best_ever_lap: BEST_SESSION_LAP,
-            best_ever_sector: BEST_SESSION_SECTOR,
-            best_session_lap: BEST_EVER_LAP,
-            best_session_sector: BEST_EVER_SECTOR,
-        }
-    };
-
-    unsafe {
-        SESSION = None;
-        LIVE_DATA = None;
-        BEST_SESSION_LAP = None;
-        BEST_SESSION_SECTOR = None;
-        BEST_EVER_LAP = None;
-        BEST_EVER_SECTOR = None
+    if unsafe { !DATA_HOLDER.has_data() } {
+        return None;
     }
 
-    Some(tick)
+    let data = unsafe { DATA_HOLDER.get_data() };
+
+    let tick = Tick {
+        live_data: data.0,
+        session_started: data.1,
+        lap_finished: data.2,
+        sector_finished: data.3,
+    };
+    return Some(tick);
 }
 
 pub fn replay_data() {
@@ -76,33 +67,55 @@ pub fn replay_data() {
 
 fn receive_tick(rx: &mpsc::Receiver<Tick>) {
     let tick_result = rx.recv().ok();
-    if tick_result.is_none() {
-        return;
+
+    if let Some(tick) = tick_result {
+        unsafe {
+            DATA_HOLDER.set_data(tick);
+        }
+    }
+}
+
+struct DataHolder {
+    session: Option<Session>,
+    live_data: Option<LiveData>,
+    lap: Option<Lap>,
+    sector: Option<Sector>,
+}
+
+impl DataHolder {
+    pub fn has_data(&self) -> bool {
+        return self.live_data.is_some();
     }
 
-    let tick = tick_result.unwrap();
+    pub fn set_data(&mut self, tick: Tick) {
+        self.live_data = Some(tick.live_data);
 
-    if tick.live_data.is_some() {
-        unsafe { LIVE_DATA = tick.live_data }
+        if let Some(session) = tick.session_started {
+            self.session = Some(session);
+        }
+
+        if let Some(lap) = tick.lap_finished {
+            self.lap = Some(lap);
+        }
+
+        if let Some(sector) = tick.sector_finished {
+            self.sector = Some(sector);
+        }
     }
 
-    if tick.session.is_some() {
-        unsafe { SESSION = tick.session }
-    }
+    pub fn get_data(&mut self) -> (LiveData, Option<Session>, Option<Lap>, Option<Sector>) {
+        let res = (
+            self.live_data.expect("live data not set"),
+            self.session,
+            self.lap,
+            self.sector,
+        );
 
-    if tick.best_session_lap.is_some() {
-        unsafe { BEST_SESSION_LAP = tick.best_session_lap }
-    }
+        self.live_data = None;
+        self.session = None;
+        self.lap = None;
+        self.sector = None;
 
-    if tick.best_session_sector.is_some() {
-        unsafe { BEST_SESSION_SECTOR = tick.best_session_sector }
-    }
-
-    if tick.best_ever_lap.is_some() {
-        unsafe { BEST_EVER_LAP = tick.best_ever_lap }
-    }
-
-    if tick.best_ever_sector.is_some() {
-        unsafe { BEST_EVER_SECTOR = tick.best_ever_sector }
+        return res;
     }
 }

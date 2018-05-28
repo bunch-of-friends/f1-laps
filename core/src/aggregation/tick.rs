@@ -2,12 +2,10 @@ use udp::packet::Car;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Tick {
-    pub session: Option<Session>,                // new session started
-    pub live_data: Option<LiveData>,             // live data update
-    pub best_ever_lap: Option<BestLap>,          // best ever lap time achieved
-    pub best_ever_sector: Option<BestSector>,    // best ever sector time achieved
-    pub best_session_lap: Option<BestLap>,       // best session lap achieved
-    pub best_session_sector: Option<BestSector>, // best session sector time achieved
+    pub session_started: Option<Session>,
+    pub lap_finished: Option<Lap>,
+    pub sector_finished: Option<Sector>,
+    pub live_data: LiveData,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -16,33 +14,28 @@ pub struct Session {
     pub session_type: f32,
     pub team_id: f32,
     pub era: f32,
+    pub session_time_stamp: f32,
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct BestLap {
+pub struct Lap {
+    pub session_time_stamp: f32,
     pub lap_time: f32,
-    pub lap_time_previous: f32,
 
-    pub sector1: f32,
-    pub sector2: f32,
-    pub sector3: f32,
-
-    pub sector1_previous: f32,
-    pub sector2_previous: f32,
-    pub sector3_previous: f32,
+    pub sector1_time: f32,
+    pub sector2_time: f32,
+    pub sector3_time: f32,
 
     pub tyre_compound: u8,
-    pub is_best_all_compounds: bool, // if false, means it is best for the current compound only
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct BestSector {
+pub struct Sector {
+    pub session_time_stamp: f32,
     pub sector: u8,
-    pub time: f32,
-    pub time_previous: f32,
+    pub sector_time: f32,
 
     pub tyre_compound: u8,
-    pub is_best_all_compounds: bool, // if false, means it is best for the current compound only
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -59,16 +52,11 @@ pub struct LiveData {
 
     pub last_lap_time: f32,
 
-    pub last_lap_sector1_time: f32,
-    pub last_lap_sector2_time: f32,
-    pub last_lap_sector3_time: f32,
-
     pub current_lap_sector1_time: f32,
     pub current_lap_sector2_time: f32,
 
     pub total_session_time: f32,
     pub total_session_distance: f32,
-    pub total_session_laps: i32,
 
     pub x: f32,
     pub y: f32,

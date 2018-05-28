@@ -2,12 +2,12 @@
 extern crate neon;
 extern crate f1_laps_core;
 
-use f1_laps_core::aggregation::tick::{BestLap, BestSector, LiveData, Session};
+use f1_laps_core::aggregation::tick::{Lap, LiveData, Sector, Session};
 use f1_laps_core::udp::packet::Car;
-use neon::vm::{Call, JsResult};
+use neon::js::{JsArray, JsBoolean, JsNumber, JsObject, JsUndefined, Object};
 use neon::mem::Handle;
 use neon::scope;
-use neon::js::{JsArray, JsBoolean, JsNumber, JsObject, JsUndefined, Object};
+use neon::vm::{Call, JsResult};
 
 fn start_listening(call: Call) -> JsResult<JsUndefined> {
     let port_handle = call.arguments.get(call.scope, 0).unwrap();
@@ -46,40 +46,18 @@ fn get_next_tick(call: Call) -> JsResult<JsObject> {
 
     let tick = tick_option.unwrap();
 
-    if let Some(session) = tick.session {
-        object.set("session", build_session_js_object(scope, session));
+    object.set("liveData", build_live_data_js_object(scope, tick.live_data));
+
+    if let Some(session) = tick.session_started {
+        object.set("sessionStarted", build_session_js_object(scope, session));
     }
 
-    if let Some(live_data) = tick.live_data {
-        object.set("liveData", build_live_data_js_object(scope, live_data));
+    if let Some(lap) = tick.lap_finished {
+        object.set("lapFinished", build_lap_js_object(scope, lap));
     }
 
-    if let Some(best_ever_lap) = tick.best_ever_lap {
-        object.set(
-            "bestEverLap",
-            build_best_lap_js_object(scope, best_ever_lap),
-        );
-    }
-
-    if let Some(best_ever_sector) = tick.best_ever_sector {
-        object.set(
-            "bestEverSector",
-            build_best_sector_js_object(scope, best_ever_sector),
-        );
-    }
-
-    if let Some(best_session_lap) = tick.best_session_lap {
-        object.set(
-            "bestSessionLap",
-            build_best_lap_js_object(scope, best_session_lap),
-        );
-    }
-
-    if let Some(best_session_sector) = tick.best_session_sector {
-        object.set(
-            "bestSessionSector",
-            build_best_sector_js_object(scope, best_session_sector),
-        );
+    if let Some(sector) = tick.sector_finished {
+        object.set("sectorFinished", build_sector_js_object(scope, sector));
     }
 
     Ok(object)
@@ -91,6 +69,10 @@ fn build_session_js_object<'a>(
 ) -> Handle<'a, JsObject> {
     let object = JsObject::new(scope);
 
+    object.set(
+        "sessionTimeStamp",
+        JsNumber::new(scope, session.session_time_stamp as f64),
+    );
     object.set("era", JsNumber::new(scope, session.era as f64));
     object.set("trackId", JsNumber::new(scope, session.track_id as f64));
     object.set("teamId", JsNumber::new(scope, session.team_id as f64));
@@ -138,18 +120,6 @@ fn build_live_data_js_object<'a>(
         JsNumber::new(scope, live_data.last_lap_time as f64),
     );
     object.set(
-        "lastLapSector1Time",
-        JsNumber::new(scope, live_data.last_lap_sector1_time as f64),
-    );
-    object.set(
-        "lastLapSector2Time",
-        JsNumber::new(scope, live_data.last_lap_sector2_time as f64),
-    );
-    object.set(
-        "lastLapSector3Time",
-        JsNumber::new(scope, live_data.last_lap_sector3_time as f64),
-    );
-    object.set(
         "currentLap_sector1Time",
         JsNumber::new(scope, live_data.current_lap_sector1_time as f64),
     );
@@ -164,10 +134,6 @@ fn build_live_data_js_object<'a>(
     object.set(
         "totalSessionDistance",
         JsNumber::new(scope, live_data.total_session_distance as f64),
-    );
-    object.set(
-        "totalSessionLaps",
-        JsNumber::new(scope, live_data.total_session_laps as f64),
     );
 
     object.set("x", JsNumber::new(scope, live_data.x as f64));
@@ -407,10 +373,7 @@ fn build_car_js_object<'a>(scope: &mut scope::RootScope<'a>, car: Car) -> Handle
         "currentLapTime",
         JsNumber::new(scope, car.current_lap_time as f64),
     );
-    object.set(
-        "bestLapTime",
-        JsNumber::new(scope, car.best_lap_time as f64),
-    );
+    object.set("bestLapTime", JsNumber::new(scope, car.best_lap_time as f64));
     object.set("sector1Time", JsNumber::new(scope, car.sector1_time as f64));
     object.set("sector2Time", JsNumber::new(scope, car.sector2_time as f64));
     object.set("lapDistance", JsNumber::new(scope, car.lap_distance as f64));
@@ -433,63 +396,45 @@ fn build_car_js_object<'a>(scope: &mut scope::RootScope<'a>, car: Car) -> Handle
     object
 }
 
-fn build_best_lap_js_object<'a>(
-    scope: &mut scope::RootScope<'a>,
-    best_lap: BestLap,
-) -> Handle<'a, JsObject> {
+fn build_lap_js_object<'a>(scope: &mut scope::RootScope<'a>, lap: Lap) -> Handle<'a, JsObject> {
     let object = JsObject::new(scope);
 
-    object.set("lapTime", JsNumber::new(scope, best_lap.lap_time as f64));
     object.set(
-        "lapTimePrevious",
-        JsNumber::new(scope, best_lap.lap_time_previous as f64),
+        "sessionTimeStamp",
+        JsNumber::new(scope, lap.session_time_stamp as f64),
     );
-    object.set("sector1", JsNumber::new(scope, best_lap.sector1 as f64));
-    object.set("sector2", JsNumber::new(scope, best_lap.sector2 as f64));
-    object.set("sector3", JsNumber::new(scope, best_lap.sector3 as f64));
-    object.set(
-        "sector1Previous",
-        JsNumber::new(scope, best_lap.sector1_previous as f64),
-    );
-    object.set(
-        "sector2Previous",
-        JsNumber::new(scope, best_lap.sector2_previous as f64),
-    );
-    object.set(
-        "sector3Previous",
-        JsNumber::new(scope, best_lap.sector3_previous as f64),
-    );
+
+    object.set("lapTime", JsNumber::new(scope, lap.lap_time as f64));
+    object.set("sector1Time", JsNumber::new(scope, lap.sector1_time as f64));
+    object.set("sector2Time", JsNumber::new(scope, lap.sector2_time as f64));
+    object.set("sector3Time", JsNumber::new(scope, lap.sector3_time as f64));
+
     object.set(
         "tyreCompound",
-        JsNumber::new(scope, best_lap.tyre_compound as f64),
-    );
-    object.set(
-        "isBestAllCompounds",
-        JsBoolean::new(scope, best_lap.is_best_all_compounds),
+        JsNumber::new(scope, lap.tyre_compound as f64),
     );
 
     object
 }
 
-fn build_best_sector_js_object<'a>(
+fn build_sector_js_object<'a>(
     scope: &mut scope::RootScope<'a>,
-    best_sector: BestSector,
+    sector: Sector,
 ) -> Handle<'a, JsObject> {
     let object = JsObject::new(scope);
 
-    object.set("sector", JsNumber::new(scope, best_sector.sector as f64));
-    object.set("time", JsNumber::new(scope, best_sector.time as f64));
     object.set(
-        "timePrevious",
-        JsNumber::new(scope, best_sector.time_previous as f64),
+        "sessionTimeStamp",
+        JsNumber::new(scope, sector.session_time_stamp as f64),
+    );
+    object.set("sector", JsNumber::new(scope, sector.sector as f64));
+    object.set(
+        "sectorTime",
+        JsNumber::new(scope, sector.sector_time as f64),
     );
     object.set(
         "tyreCompound",
-        JsNumber::new(scope, best_sector.tyre_compound as f64),
-    );
-    object.set(
-        "isBestAllCompounds",
-        JsBoolean::new(scope, best_sector.is_best_all_compounds),
+        JsNumber::new(scope, sector.tyre_compound as f64),
     );
 
     object

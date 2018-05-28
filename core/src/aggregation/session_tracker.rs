@@ -1,11 +1,10 @@
-use udp::packet::Packet;
-use storage::record_set::Record;
 use aggregation::tick::Session;
+use udp::packet::Packet;
 
 pub struct SessionTracker {
     pub current_session: Option<Session>,
-    pub session_record: Option<Record>,
-    pub track_record: Option<Record>,
+    pub current_lap_number: f32,
+    pub current_session_time: f32,
 }
 
 impl SessionTracker {
@@ -19,6 +18,7 @@ impl SessionTracker {
             track_id: packet.track_id,
             team_id: packet.team_id,
             session_type: packet.session_type,
+            session_time_stamp: packet.time,
         };
 
         self.current_session = Some(session);

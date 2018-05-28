@@ -9,14 +9,10 @@ let newSessionSubject = createSubject();
 let newSessionObservable = createObservable(newSessionSubject);
 let liveDataSubject = createSubject();
 let liveDataObservable = createObservable(liveDataSubject);
-let bestSessionLapSubject = createSubject();
-let bestSessionLapObservable = createObservable(bestSessionLapSubject);
-let bestSessionSectorSubject = createSubject();
-let bestSessionSectorObservable = createObservable(bestSessionSectorSubject);
-let bestEverLapSubject = createSubject();
-let bestEverLapObservable = createObservable(bestEverLapSubject);
-let bestEverSectorSubject = createSubject();
-let bestEverSectorObservable = createObservable(bestEverSectorSubject);
+let lapFinishedSubject = createSubject();
+let lapFinishedObservable = createObservable(lapFinishedSubject);
+let sectorFinishedSubject = createSubject();
+let sectorFinishedObservable = createObservable(sectorFinishedSubject);
 
 function initialise(config = { updateInterval: 50 }) {
     stayAwake.prevent(function () {
@@ -33,28 +29,20 @@ function initialise(config = { updateInterval: 50 }) {
 function getNextTick() {
     const tick = core.getNextTick();
 
-    if (tick.session) {
-        newSessionSubject.notifyObservers(tick.session);
+    if (tick.sessionStarted) {
+        newSessionSubject.notifyObservers(tick.sessionStarted);
     }
 
     if (tick.liveData) {
         liveDataSubject.notifyObservers(tick.liveData);
     }
 
-    if (tick.bestSessionLap) {
-        bestSessionSectorLap.notifyObservers(tick.bestSessionLap);
+    if (tick.lapFinished) {
+        bestSessionSectorLap.notifyObservers(tick.lapFinished);
     }
 
-    if (tick.bestSessionSector) {
-        bestSessionSectorSubject.notifyObservers(tick.bestSessionSector);
-    }
-
-    if (tick.bestEverLap) {
-        bestEverLapSubject.notifyObservers(tick.bestEverLap);
-    }
-
-    if (tick.bestEverSector) {
-        bestEverSectorSubject.notifyObservers(tick.bestEverSector);
+    if (tick.sectorFinished) {
+        sectorFinishedSubject.notifyObservers(tick.sectorFinished);
     }
 }
 
@@ -80,8 +68,6 @@ module.exports = {
     replayStoredData,
     newSession: newSessionObservable,
     liveData: liveDataObservable,
-    bestSessionLap: bestSessionLapObservable,
-    bestSessionSector: bestSessionSectorObservable,
-    bestEverLap: bestEverLapObservable,
-    bestEverSector: bestEverSectorObservable,
+    lapFinished: lapFinishedObservable,
+    sectorFinished: sectorFinishedObservable,
 }
