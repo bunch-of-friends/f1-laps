@@ -4,25 +4,21 @@ use udp::packet::Packet;
 pub struct Tracker {
     pub current_session: Option<Session>,
     pub current_lap_number: f32,
+    pub sector_times: [f32; 3],
     pub current_sector: f32,
     pub current_session_time: f32,
 }
 
 impl Tracker {
-    pub fn track(&mut self, packet: &Packet) -> (Option<Session>, Option<Lap>, Option<Sector>) {
+    pub fn track(&mut self, packet: &Packet) -> (Option<Session>, Option<Sector>, Option<Lap>) {
         let is_current_session = self.is_packet_from_current_session(&packet);
         let is_current_lap = self.is_packet_from_current_lap(&packet, is_current_session);
         let is_current_sector = self.is_packet_from_current_sector(&packet, is_current_lap);
 
-        // println!(
-        //     "is_current_session: {}, is_current_lap: {}, is_current_sector: {}",
-        //     is_current_session, is_current_lap, is_current_sector
-        // );
-
         return (
             self.track_session(&packet, is_current_session),
-            self.track_lap(&packet, is_current_lap),
             self.track_sector(&packet, is_current_sector),
+            self.track_lap(&packet, is_current_lap),
         );
     }
 
@@ -79,29 +75,47 @@ impl Tracker {
         if is_current_sector {
             return None;
         } else {
+            let finished_sector = self.update_sector_times(&packet);
             self.current_sector = packet.sector;
-            return Some(self.build_sector_object(&packet));
+            return Some(self.build_sector_object(&packet, finished_sector));
         }
     }
 
     fn build_lap_object(&self, packet: &Packet) -> Lap {
         Lap {
             session_time_stamp: packet.time,
-            lap_number: packet.lap - 1 as f32,  //TODO:
+            lap_number: packet.lap, // previous lap would be -1, but laps start from 0, so +1 - therefore no adjustment
             lap_time: packet.last_lap_time,
-            sector1_time: 0 as f32, //TODO:
-            sector2_time: 0 as f32, //TODO:
-            sector3_time: 0 as f32, //TODO:
+            sector1_time: self.sector_times[0],
+            sector2_time: self.sector_times[1],
+            sector3_time: self.sector_times[2],
             tyre_compound: packet.tyre_compound,
         }
     }
 
-    fn build_sector_object(&self, packet: &Packet) -> Sector {
+    fn build_sector_object(&self, packet: &Packet, current_sector: (f32, f32)) -> Sector {
         Sector {
             session_time_stamp: packet.time,
-            sector: packet.sector - 1 as f32, //TODO:
-            sector_time: 0 as f32,     //TODO:
+            sector: current_sector.0,
+            sector_time: current_sector.1,
             tyre_compound: packet.tyre_compound,
+        }
+    }
+
+    // also returns just finished sector number and time - to avoid checking the same stuff twice
+    fn update_sector_times(&mut self, packet: &Packet) -> (f32, f32) {
+        if packet.sector == 0 as f32 {
+            let time = packet.last_lap_time - (self.sector_times[0] + self.sector_times[1]);
+            self.sector_times[2] = time;
+            return (2 as f32, time);
+        } else if packet.sector == 1 as f32 {
+            self.sector_times[0] = packet.sector1_time;
+            return (0 as f32, packet.sector1_time);
+        } else if packet.sector == 2 as f32 {
+            self.sector_times[1] = packet.sector2_time;
+            return (1 as f32, packet.sector2_time);
+        } else {
+            panic!("unexpected sector number: , {}", packet.sector)
         }
     }
 }

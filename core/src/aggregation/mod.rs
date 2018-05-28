@@ -1,8 +1,8 @@
-pub mod tracker;
 pub mod tick;
+pub mod tracker;
 
-use self::tracker::Tracker;
 use self::tick::{LiveData, Tick};
+use self::tracker::Tracker;
 
 use storage;
 use udp::packet::Packet;
@@ -10,6 +10,7 @@ use udp::packet::Packet;
 static mut TRACKER: Tracker = Tracker {
     current_session: None,
     current_lap_number: -1 as f32,
+    sector_times: [-1 as f32, -1 as f32, -1 as f32],
     current_sector: -1 as f32,
     current_session_time: -1 as f32,
 };
@@ -28,8 +29,8 @@ pub fn process_packet(packet: Packet) -> Option<Tick> {
     let tick = Tick {
         live_data: live_data,
         session_started: tracking_data.0,
-        lap_finished: tracking_data.1,
-        sector_finished: tracking_data.2,
+        sector_finished: tracking_data.1,
+        lap_finished: tracking_data.2,
     };
 
     return Some(tick);
