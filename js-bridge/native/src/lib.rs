@@ -412,6 +412,7 @@ fn build_lap_js_object<'a>(scope: &mut scope::RootScope<'a>, lap: Lap) -> Handle
         JsNumber::new(scope, lap.session_time_stamp as f64),
     );
 
+    object.set("lapNumber", JsNumber::new(scope, lap.lap_number as f64));
     object.set("lapTime", JsNumber::new(scope, lap.lap_time as f64));
     object.set("sector1Time", JsNumber::new(scope, lap.sector1_time as f64));
     object.set("sector2Time", JsNumber::new(scope, lap.sector2_time as f64));

@@ -7,9 +7,9 @@ use thread;
 use bincode;
 use chrono::Local;
 
+use aggregation::process_packet;
 use aggregation::tick::Tick;
 use udp::packet::Packet;
-use aggregation::process_packet;
 
 pub fn store_replay_data(packets: Vec<Packet>) {
     let date = Local::now();
@@ -52,6 +52,7 @@ pub fn get_replay_data(tx: mpsc::Sender<Tick>) {
     }
 
     println!("streaming stored packets");
+    let packets_len = packets.len();
 
     let mut last_packet: Option<(Packet, Instant)> = None;
     for packet in packets {
@@ -94,4 +95,9 @@ pub fn get_replay_data(tx: mpsc::Sender<Tick>) {
                 .expect("failed to update the main thread")
         }
     }
+
+    println!(
+        "streaming stored data finished, packets replayed: {}",
+        packets_len
+    );
 }

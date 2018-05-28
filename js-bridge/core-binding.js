@@ -29,20 +29,20 @@ function initialise(config = { updateInterval: 50 }) {
 function getNextTick() {
     const tick = core.getNextTick();
 
-    if (tick.sessionStarted) {
-        newSessionSubject.notifyObservers(tick.sessionStarted);
-    }
-
     if (tick.liveData) {
         liveDataSubject.notifyObservers(tick.liveData);
     }
 
-    if (tick.lapFinished) {
-        lapFinishedSubject.notifyObservers(tick.lapFinished);
+    if (tick.sessionStarted) {
+        newSessionSubject.notifyObservers(tick.sessionStarted);
     }
 
     if (tick.sectorFinished) {
         sectorFinishedSubject.notifyObservers(tick.sectorFinished);
+    }
+
+    if (tick.lapFinished) {
+        lapFinishedSubject.notifyObservers(tick.lapFinished);
     }
 }
 

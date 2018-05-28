@@ -1,15 +1,16 @@
-pub mod session_tracker;
+pub mod tracker;
 pub mod tick;
 
-use self::session_tracker::SessionTracker;
-use self::tick::{LiveData, Session, Tick};
+use self::tracker::Tracker;
+use self::tick::{LiveData, Tick};
 
 use storage;
 use udp::packet::Packet;
 
-static mut SESSION_TRACKER: SessionTracker = SessionTracker {
+static mut TRACKER: Tracker = Tracker {
     current_session: None,
     current_lap_number: -1 as f32,
+    current_sector: -1 as f32,
     current_session_time: -1 as f32,
 };
 
@@ -21,9 +22,34 @@ pub fn process_packet(packet: Packet) -> Option<Tick> {
         return None;
     }
 
-    let new_session: Option<Session> = unsafe { SESSION_TRACKER.track(packet) };
+    let tracking_data = unsafe { TRACKER.track(&packet) };
+    let live_data = build_live_data(&packet);
 
-    let live_data = LiveData {
+    let tick = Tick {
+        live_data: live_data,
+        session_started: tracking_data.0,
+        lap_finished: tracking_data.1,
+        sector_finished: tracking_data.2,
+    };
+
+    return Some(tick);
+}
+
+pub fn preload_records() {
+    let has_records_store = unsafe { RECORDS_STORE.is_some() };
+
+    if has_records_store {
+        return;
+    }
+
+    let records_store = storage::records::get_records_store();
+    unsafe {
+        RECORDS_STORE = Some(records_store);
+    }
+}
+
+fn build_live_data(packet: &Packet) -> LiveData {
+    LiveData {
         current_lap: packet.lap as i32,
         current_lap_time: packet.lap_time,
         current_sector: packet.sector as u8,
@@ -84,27 +110,5 @@ pub fn process_packet(packet: Packet) -> Option<Tick> {
         cars_total: packet.cars_total,
         player_car_index: packet.player_car_index,
         car_data: packet.car_data,
-    };
-
-    let tick = Tick {
-        live_data: live_data,
-        session_started: new_session,
-        lap_finished: None,
-        sector_finished: None,
-    };
-
-    return Some(tick);
-}
-
-pub fn preload_records() {
-    let has_records_store = unsafe { RECORDS_STORE.is_some() };
-
-    if has_records_store {
-        return;
-    }
-
-    let records_store = storage::records::get_records_store();
-    unsafe {
-        RECORDS_STORE = Some(records_store);
     }
 }

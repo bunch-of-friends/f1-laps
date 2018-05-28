@@ -20,6 +20,7 @@ pub struct Session {
 #[derive(Debug, Copy, Clone)]
 pub struct Lap {
     pub session_time_stamp: f32,
+    pub lap_number: f32,
     pub lap_time: f32,
 
     pub sector1_time: f32,
@@ -32,7 +33,7 @@ pub struct Lap {
 #[derive(Debug, Copy, Clone)]
 pub struct Sector {
     pub session_time_stamp: f32,
-    pub sector: u8,
+    pub sector: f32,
     pub sector_time: f32,
 
     pub tyre_compound: u8,
