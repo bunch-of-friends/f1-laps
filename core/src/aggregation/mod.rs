@@ -10,6 +10,7 @@ use udp::packet::Packet;
 static mut TRACKER: Tracker = Tracker {
     current_session: None,
     current_lap_number: -1 as f32,
+    lap_packets: None,
     sector_times: [-1 as f32, -1 as f32, -1 as f32],
     current_sector: -1 as f32,
     current_session_time: -1 as f32,
@@ -17,13 +18,13 @@ static mut TRACKER: Tracker = Tracker {
 
 static mut RECORDS_STORE: Option<storage::records::RecordStore> = None;
 
-pub fn process_packet(packet: Packet) -> Option<Tick> {
+pub fn process_packet(packet: Packet, should_store_packets: bool) -> Option<Tick> {
     if packet.is_spectating == 1 {
         println!("spectating");
         return None;
     }
 
-    let tracking_data = unsafe { TRACKER.track(&packet) };
+    let tracking_data = unsafe { TRACKER.track(&packet, should_store_packets) };
     let live_data = build_live_data(&packet);
 
     let tick = Tick {
