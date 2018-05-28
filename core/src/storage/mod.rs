@@ -6,7 +6,7 @@ use std::path::Path;
 use std::fs::{create_dir, File};
 
 pub fn ensure_storage_files_created() {
-    let folder_path = "storage";
+    let folder_path = "storage/laps";
     if !Path::new(folder_path).exists() {
         match create_dir(folder_path) {
             Ok(_) => (),

@@ -1,25 +1,40 @@
 use aggregation::tick::{Lap, Sector, Session};
+use std::thread;
+use storage::replay;
 use udp::packet::Packet;
 
 pub struct Tracker {
     pub current_session: Option<Session>,
     pub current_lap_number: f32,
     pub sector_times: [f32; 3],
+    pub lap_packets: Option<Vec<Packet>>,
     pub current_sector: f32,
     pub current_session_time: f32,
 }
 
 impl Tracker {
-    pub fn track(&mut self, packet: &Packet) -> (Option<Session>, Option<Sector>, Option<Lap>) {
+    pub fn track(
+        &mut self,
+        packet: &Packet,
+        should_store_packets: bool,
+    ) -> (Option<Session>, Option<Sector>, Option<Lap>) {
+        let is_first_packet = self.current_session.is_none();
+
         let is_current_session = self.is_packet_from_current_session(&packet);
         let is_current_lap = self.is_packet_from_current_lap(&packet, is_current_session);
         let is_current_sector = self.is_packet_from_current_sector(&packet, is_current_lap);
 
-        return (
-            self.track_session(&packet, is_current_session),
-            self.track_sector(&packet, is_current_sector),
-            self.track_lap(&packet, is_current_lap),
-        );
+        let session = self.track_session(&packet, is_current_session);
+        let sector = self.track_sector(&packet, is_current_sector);
+        let lap = self.track_lap(&packet, is_current_lap, should_store_packets);
+
+        self.process_packet(packet, should_store_packets, is_current_lap);
+
+        if is_first_packet {
+            return (session, None, None);
+        } else {
+            return (session, sector, lap);
+        }
     }
 
     fn is_packet_from_current_session(&self, packet: &Packet) -> bool {
@@ -62,13 +77,55 @@ impl Tracker {
         return Some(session);
     }
 
-    fn track_lap(&mut self, packet: &Packet, is_current_lap: bool) -> Option<Lap> {
+    fn track_lap(
+        &mut self,
+        packet: &Packet,
+        is_current_lap: bool,
+        should_store_packets: bool,
+    ) -> Option<Lap> {
         if is_current_lap {
             return None;
         } else {
             self.current_lap_number = packet.lap;
+            self.process_packet(&packet, should_store_packets, true);
             return Some(self.build_lap_object(&packet));
         }
+    }
+
+    fn process_packet(
+        &mut self,
+        packet: &Packet,
+        should_store_packets: bool,
+        is_current_lap: bool,
+    ) {
+        let mut lap_packets = self.lap_packets.clone();
+        let is_empty = lap_packets.is_none();
+        if is_empty {
+            lap_packets = Some(vec![]);
+        }
+
+        let mut unwrapped = lap_packets.unwrap();
+
+        if !is_empty && !is_current_lap {
+            if should_store_packets && self.has_all_sector_times() {
+                let packets_to_store = unwrapped.clone();
+                let session = self.current_session.unwrap();
+                let track_id = session.track_id;
+                let lap_number = self.current_lap_number - 1 as f32; //storing previous lap, but this prop has already been updated to current
+                thread::spawn(move || {
+                    replay::store_lap_data(packets_to_store, track_id, lap_number);
+                });
+            }
+            unwrapped = vec![];
+        }
+
+        unwrapped.push(packet.clone());
+        self.lap_packets = Some(unwrapped);
+    }
+
+    fn has_all_sector_times(&self) -> bool {
+        return (self.sector_times[0] > 0 as f32) && (self.sector_times[1] > 0 as f32)
+            && (self.sector_times[2] > 0 as f32);
     }
 
     fn track_sector(&mut self, packet: &Packet, is_current_sector: bool) -> Option<Sector> {

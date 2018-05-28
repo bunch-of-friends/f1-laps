@@ -11,19 +11,21 @@ use aggregation::process_packet;
 use aggregation::tick::Tick;
 use udp::packet::Packet;
 
-pub fn store_replay_data(packets: Vec<Packet>) {
+pub fn store_lap_data(packets: Vec<Packet>, track_id: f32, lap_number: f32) {
     let date = Local::now();
     let path = format!(
-        "storage/test_storage_{}.bin",
-        date.format("%Y-%m-%d-%H-%M-%S-%f")
+        "storage/laps/lap_{}_track-{:02}_L{:03}.bin",
+        date.format("%Y-%m-%d-%H-%M-%S-%f"),
+        track_id,
+        lap_number
     );
     println!("path {}", path);
     let file = File::create(path).unwrap();
     bincode::serialize_into(file, &packets).unwrap();
 }
 
-pub fn get_replay_data(tx: mpsc::Sender<Tick>) {
-    let paths = read_dir("storage/").unwrap();
+pub fn replay_laps(tx: mpsc::Sender<Tick>) {
+    let paths = read_dir("storage/laps").unwrap();
 
     let mut file_paths: Vec<String> = Vec::new();
 
@@ -40,7 +42,7 @@ pub fn get_replay_data(tx: mpsc::Sender<Tick>) {
 
     let mut packets = Vec::<Packet>::new();
     for path in file_paths {
-        let full_path = format!("storage/{}", path);
+        let full_path = format!("storage/laps/{}", path);
         println!("loading file >> {}", full_path);
 
         let file = File::open(full_path).expect("failed to open file");
@@ -56,7 +58,7 @@ pub fn get_replay_data(tx: mpsc::Sender<Tick>) {
 
     let mut last_packet: Option<(Packet, Instant)> = None;
     for packet in packets {
-        let tick = process_packet(packet);
+        let tick = process_packet(packet, false);
 
         if tick.is_some() {
             // this whole block is here temporarily for some tests, then it will either go or get some love

@@ -57,7 +57,7 @@ pub fn replay_data() {
     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
     thread::spawn(move || {
-        storage::replay::get_replay_data(tx);
+        storage::replay::replay_laps(tx);
     });
 
     thread::spawn(move || loop {
