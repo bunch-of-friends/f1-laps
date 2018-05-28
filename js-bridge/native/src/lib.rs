@@ -28,12 +28,13 @@ fn start_listening(call: Call) -> JsResult<JsUndefined> {
     Ok(JsUndefined::new())
 }
 
-fn replay_data(call: Call) -> JsResult<JsUndefined> {
+fn replay_data(_call: Call) -> JsResult<JsUndefined> {
     f1_laps_core::replay_data();
 
     Ok(JsUndefined::new())
 }
 
+#[allow(unused_must_use)]
 fn get_next_tick(call: Call) -> JsResult<JsObject> {
     let tick_option = f1_laps_core::get_next_tick();
 
@@ -63,6 +64,7 @@ fn get_next_tick(call: Call) -> JsResult<JsObject> {
     Ok(object)
 }
 
+#[allow(unused_must_use)]
 fn build_session_js_object<'a>(
     scope: &mut scope::RootScope<'a>,
     session: Session,
@@ -84,6 +86,7 @@ fn build_session_js_object<'a>(
     object
 }
 
+#[allow(unused_must_use)]
 fn build_live_data_js_object<'a>(
     scope: &mut scope::RootScope<'a>,
     live_data: LiveData,
@@ -356,6 +359,7 @@ fn build_live_data_js_object<'a>(
     object
 }
 
+#[allow(unused_must_use)]
 fn build_car_js_object<'a>(scope: &mut scope::RootScope<'a>, car: Car) -> Handle<'a, JsObject> {
     let object = JsObject::new(scope);
 
@@ -373,7 +377,10 @@ fn build_car_js_object<'a>(scope: &mut scope::RootScope<'a>, car: Car) -> Handle
         "currentLapTime",
         JsNumber::new(scope, car.current_lap_time as f64),
     );
-    object.set("bestLapTime", JsNumber::new(scope, car.best_lap_time as f64));
+    object.set(
+        "bestLapTime",
+        JsNumber::new(scope, car.best_lap_time as f64),
+    );
     object.set("sector1Time", JsNumber::new(scope, car.sector1_time as f64));
     object.set("sector2Time", JsNumber::new(scope, car.sector2_time as f64));
     object.set("lapDistance", JsNumber::new(scope, car.lap_distance as f64));
@@ -396,6 +403,7 @@ fn build_car_js_object<'a>(scope: &mut scope::RootScope<'a>, car: Car) -> Handle
     object
 }
 
+#[allow(unused_must_use)]
 fn build_lap_js_object<'a>(scope: &mut scope::RootScope<'a>, lap: Lap) -> Handle<'a, JsObject> {
     let object = JsObject::new(scope);
 
@@ -417,6 +425,7 @@ fn build_lap_js_object<'a>(scope: &mut scope::RootScope<'a>, lap: Lap) -> Handle
     object
 }
 
+#[allow(unused_must_use)]
 fn build_sector_js_object<'a>(
     scope: &mut scope::RootScope<'a>,
     sector: Sector,
@@ -441,8 +450,11 @@ fn build_sector_js_object<'a>(
 }
 
 register_module!(m, {
-    m.export("getNextTick", get_next_tick);
-    m.export("startListening", start_listening);
-    m.export("replayData", replay_data);
+    m.export("getNextTick", get_next_tick)
+        .expect("failed to export getNextTick");
+    m.export("startListening", start_listening)
+        .expect("failed to export startListening");
+    m.export("replayData", replay_data)
+        .expect("failed to export replayData");
     Ok(())
 });
