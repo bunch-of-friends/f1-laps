@@ -1,6 +1,6 @@
 use aggregation::tick::{Lap, Sector, Session};
 use std::thread;
-use storage::replay;
+use storage::lap_store;
 use udp::packet::Packet;
 
 pub struct Tracker {
@@ -113,7 +113,7 @@ impl Tracker {
                 let track_id = session.track_id;
                 let lap_number = self.current_lap_number - 1 as f32; //storing previous lap, but this prop has already been updated to current
                 thread::spawn(move || {
-                    replay::store_lap_data(packets_to_store, track_id, lap_number);
+                    lap_store::store_lap_data(packets_to_store, track_id, lap_number);
                 });
             }
             unwrapped = vec![];
@@ -141,7 +141,7 @@ impl Tracker {
     fn build_lap_object(&self, packet: &Packet) -> Lap {
         Lap {
             session_time_stamp: packet.time,
-            lap_number: packet.lap, // previous lap would be -1, but laps start from 0, so +1 - therefore no adjustment
+            lap_number: packet.lap - 1 as f32, // this is actually about the just finished (previous lap)
             lap_time: packet.last_lap_time,
             sector1_time: self.sector_times[0],
             sector2_time: self.sector_times[1],

@@ -10,4 +10,4 @@ core.lapFinished.register(data => console.log('lapFinished >> ', data));
 core.sectorFinished.register(data => console.log('sectorFinished >> ', data));
 
 // core.startListening(20777, true);
-core.replayStoredData();
+core.replayAllLaps();

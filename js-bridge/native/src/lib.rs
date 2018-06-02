@@ -9,6 +9,12 @@ use neon::mem::Handle;
 use neon::scope;
 use neon::vm::{Call, JsResult};
 
+fn initialise(_call: Call) -> JsResult<JsUndefined> {
+    f1_laps_core::initialise();
+
+    Ok(JsUndefined::new())
+}
+
 fn start_listening(call: Call) -> JsResult<JsUndefined> {
     let port_handle = call.arguments.get(call.scope, 0).unwrap();
     let should_store_replay_handle = call.arguments.get(call.scope, 1).unwrap();
@@ -28,8 +34,8 @@ fn start_listening(call: Call) -> JsResult<JsUndefined> {
     Ok(JsUndefined::new())
 }
 
-fn replay_data(_call: Call) -> JsResult<JsUndefined> {
-    f1_laps_core::replay_data();
+fn replay_all_laps(_call: Call) -> JsResult<JsUndefined> {
+    f1_laps_core::replay_all_laps();
 
     Ok(JsUndefined::new())
 }
@@ -451,11 +457,13 @@ fn build_sector_js_object<'a>(
 }
 
 register_module!(m, {
+    m.export("initialise", initialise)
+        .expect("failed to export initialise");
     m.export("getNextTick", get_next_tick)
         .expect("failed to export getNextTick");
     m.export("startListening", start_listening)
         .expect("failed to export startListening");
-    m.export("replayData", replay_data)
-        .expect("failed to export replayData");
+    m.export("replayAllLaps", replay_all_laps)
+        .expect("failed to export replayAllLaps");
     Ok(())
 });

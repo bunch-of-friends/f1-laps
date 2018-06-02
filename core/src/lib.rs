@@ -4,6 +4,7 @@ extern crate bincode;
 extern crate chrono;
 
 pub mod aggregation;
+pub mod replay;
 pub mod storage;
 pub mod udp;
 
@@ -19,10 +20,11 @@ static mut DATA_HOLDER: DataHolder = DataHolder {
     sector: None,
 };
 
-pub fn start_listening(port: i32, should_store_replay: bool) {
-    storage::ensure_storage_files_created();
-    aggregation::preload_records();
+pub fn initialise() {
+    storage::initialise();
+}
 
+pub fn start_listening(port: i32, should_store_replay: bool) {
     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
     thread::spawn(move || {
@@ -50,14 +52,12 @@ pub fn get_next_tick() -> Option<Tick> {
     return Some(tick);
 }
 
-pub fn replay_data() {
-    storage::ensure_storage_files_created();
-    aggregation::preload_records();
-
+pub fn replay_all_laps() {
     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
     thread::spawn(move || {
-        storage::replay::replay_laps(tx);
+        let packets = storage::lap_store::get_all_laps_data();
+        replay::stream_packets(tx, packets);
     });
 
     thread::spawn(move || loop {

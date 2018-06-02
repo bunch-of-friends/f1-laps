@@ -1,58 +1,12 @@
-use std::fs::{read_dir, File};
-
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
 use thread;
-
-use bincode;
-use chrono::Local;
 
 use aggregation::process_packet;
 use aggregation::tick::Tick;
 use udp::packet::Packet;
 
-pub fn store_lap_data(packets: Vec<Packet>, track_id: f32, lap_number: f32) {
-    let date = Local::now();
-    let path = format!(
-        "storage/laps/lap_{}_track-{:02}_L{:03}.bin",
-        date.format("%Y-%m-%d-%H-%M-%S-%f"),
-        track_id,
-        lap_number
-    );
-    println!("path {}", path);
-    let file = File::create(path).unwrap();
-    bincode::serialize_into(file, &packets).unwrap();
-}
-
-pub fn replay_laps(tx: mpsc::Sender<Tick>) {
-    let paths = read_dir("storage/laps").unwrap();
-
-    let mut file_paths: Vec<String> = Vec::new();
-
-    for path in paths {
-        let path = path.unwrap().path();
-        let file_name = path.file_name().unwrap().to_str().unwrap();
-
-        if file_name.ends_with(".bin") && !file_name.ends_with("records.bin") {
-            file_paths.push(file_name.to_owned());
-        }
-    }
-
-    file_paths.sort();
-
-    let mut packets = Vec::<Packet>::new();
-    for path in file_paths {
-        let full_path = format!("storage/laps/{}", path);
-        println!("loading file >> {}", full_path);
-
-        let file = File::open(full_path).expect("failed to open file");
-        let data = bincode::deserialize_from::<File, Vec<Packet>>(file).ok();
-
-        if data.is_some() {
-            packets.extend(data.unwrap());
-        }
-    }
-
+pub fn stream_packets(tx: mpsc::Sender<Tick>, packets: Vec<Packet>) {
     println!("streaming stored packets");
     let packets_len = packets.len();
 
@@ -92,14 +46,14 @@ pub fn replay_laps(tx: mpsc::Sender<Tick>) {
                 }
             }
 
-            last_packet = Some((packet, Instant::now()));
             tx.send(tick.unwrap())
-                .expect("failed to update the main thread")
+                .expect("failed to update the main thread");
+            last_packet = Some((packet, Instant::now()));
         }
     }
 
     println!(
-        "streaming stored data finished, packets replayed: {}",
+        "streaming stored packets finished, number of packets: {}",
         packets_len
     );
 }

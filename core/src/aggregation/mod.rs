@@ -4,7 +4,6 @@ pub mod tracker;
 use self::tick::{LiveData, Tick};
 use self::tracker::Tracker;
 
-use storage;
 use udp::packet::Packet;
 
 static mut TRACKER: Tracker = Tracker {
@@ -15,8 +14,6 @@ static mut TRACKER: Tracker = Tracker {
     current_sector: -1 as f32,
     current_session_time: -1 as f32,
 };
-
-static mut RECORDS_STORE: Option<storage::records::RecordStore> = None;
 
 pub fn process_packet(packet: Packet, should_store_packets: bool) -> Option<Tick> {
     if packet.is_spectating == 1 {
@@ -35,19 +32,6 @@ pub fn process_packet(packet: Packet, should_store_packets: bool) -> Option<Tick
     };
 
     return Some(tick);
-}
-
-pub fn preload_records() {
-    let has_records_store = unsafe { RECORDS_STORE.is_some() };
-
-    if has_records_store {
-        return;
-    }
-
-    let records_store = storage::records::get_records_store();
-    unsafe {
-        RECORDS_STORE = Some(records_store);
-    }
 }
 
 fn build_live_data(packet: &Packet) -> LiveData {

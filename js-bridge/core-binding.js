@@ -15,6 +15,8 @@ let sectorFinishedSubject = createSubject();
 let sectorFinishedObservable = createObservable(sectorFinishedSubject);
 
 function initialise(config = { updateInterval: 50 }) {
+    core.initialise();
+
     stayAwake.prevent(function () {
         getNextTick();
     });
@@ -54,18 +56,18 @@ function startListening(port = 20777, shouldStoreReplay = false) {
     core.startListening(port, shouldStoreReplay);
 }
 
-function replayStoredData() {
+function replayAllLaps() {
     if (!core) {
         throw new Error('not initialised');
     }
 
-    core.replayData();
+    core.replayAllLaps();
 }
 
 module.exports = {
     initialise,
     startListening,
-    replayStoredData,
+    replayAllLaps,
     newSession: newSessionObservable,
     liveData: liveDataObservable,
     lapFinished: lapFinishedObservable,

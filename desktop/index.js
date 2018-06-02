@@ -5,7 +5,7 @@ const f1 = require('f1-laps-js-bridge');
 
 console.log('node test is running');
 
-// f1.replayStoredData();
+// f1.replayAllLaps();
 
 function startApp() {
     const window = new BrowserWindow({
