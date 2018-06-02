@@ -56,7 +56,7 @@ pub fn replay_all_laps() {
     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
     thread::spawn(move || {
-        let packets = storage::lap_store::get_all_laps_data();
+        let packets = storage::get_all_laps_data();
         replay::stream_packets(tx, packets);
     });
 

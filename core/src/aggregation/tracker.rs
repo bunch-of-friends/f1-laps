@@ -1,15 +1,20 @@
 use aggregation::tick::{Lap, Sector, Session};
 use std::thread;
-use storage::lap_store;
+
+use storage;
+use storage::lap::LapMetadata;
 use udp::packet::Packet;
 
 pub struct Tracker {
     pub current_session: Option<Session>,
+    pub last_lap: Option<Lap>,
+
     pub current_lap_number: f32,
-    pub sector_times: [f32; 3],
-    pub lap_packets: Option<Vec<Packet>>,
+    pub current_sector_times: [f32; 3],
     pub current_sector: f32,
     pub current_session_time: f32,
+
+    pub lap_packets: Option<Vec<Packet>>,
 }
 
 impl Tracker {
@@ -87,7 +92,6 @@ impl Tracker {
             return None;
         } else {
             self.current_lap_number = packet.lap;
-            self.process_packet(&packet, should_store_packets, true);
             return Some(self.build_lap_object(&packet));
         }
     }
@@ -108,12 +112,12 @@ impl Tracker {
 
         if !is_empty && !is_current_lap {
             if should_store_packets && self.has_all_sector_times() {
-                let packets_to_store = unwrapped.clone();
                 let session = self.current_session.unwrap();
-                let track_id = session.track_id;
-                let lap_number = self.current_lap_number - 1 as f32; //storing previous lap, but this prop has already been updated to current
+                let lap = self.last_lap.unwrap();
+                let packets_to_store = unwrapped.clone();
                 thread::spawn(move || {
-                    lap_store::store_lap_data(packets_to_store, track_id, lap_number);
+                    let metadata = LapMetadata::new(&lap, &session);
+                    storage::store_lap(packets_to_store, metadata);
                 });
             }
             unwrapped = vec![];
@@ -124,8 +128,9 @@ impl Tracker {
     }
 
     fn has_all_sector_times(&self) -> bool {
-        return (self.sector_times[0] > 0 as f32) && (self.sector_times[1] > 0 as f32)
-            && (self.sector_times[2] > 0 as f32);
+        return (self.current_sector_times[0] > 0 as f32)
+            && (self.current_sector_times[1] > 0 as f32)
+            && (self.current_sector_times[2] > 0 as f32);
     }
 
     fn track_sector(&mut self, packet: &Packet, is_current_sector: bool) -> Option<Sector> {
@@ -143,9 +148,9 @@ impl Tracker {
             session_time_stamp: packet.time,
             lap_number: packet.lap - 1 as f32, // this is actually about the just finished (previous lap)
             lap_time: packet.last_lap_time,
-            sector1_time: self.sector_times[0],
-            sector2_time: self.sector_times[1],
-            sector3_time: self.sector_times[2],
+            sector1_time: self.current_sector_times[0],
+            sector2_time: self.current_sector_times[1],
+            sector3_time: self.current_sector_times[2],
             tyre_compound: packet.tyre_compound,
         }
     }
@@ -162,14 +167,15 @@ impl Tracker {
     // also returns just finished sector number and time - to avoid checking the same stuff twice
     fn update_sector_times(&mut self, packet: &Packet) -> (f32, f32) {
         if packet.sector == 0 as f32 {
-            let time = packet.last_lap_time - (self.sector_times[0] + self.sector_times[1]);
-            self.sector_times[2] = time;
+            let time = packet.last_lap_time
+                - (self.current_sector_times[0] + self.current_sector_times[1]);
+            self.current_sector_times[2] = time;
             return (2 as f32, time);
         } else if packet.sector == 1 as f32 {
-            self.sector_times[0] = packet.sector1_time;
+            self.current_sector_times[0] = packet.sector1_time;
             return (0 as f32, packet.sector1_time);
         } else if packet.sector == 2 as f32 {
-            self.sector_times[1] = packet.sector2_time;
+            self.current_sector_times[1] = packet.sector2_time;
             return (1 as f32, packet.sector2_time);
         } else {
             panic!("unexpected sector number: , {}", packet.sector)

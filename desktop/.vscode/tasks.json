@@ -6,11 +6,7 @@
         {
             "type": "npm",
             "script": "rebuild-core-start",
-            "problemMatcher": [],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
+            "problemMatcher": []
         }
     ]
 }

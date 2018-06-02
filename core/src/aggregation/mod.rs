@@ -8,9 +8,10 @@ use udp::packet::Packet;
 
 static mut TRACKER: Tracker = Tracker {
     current_session: None,
+    last_lap: None,
     current_lap_number: -1 as f32,
     lap_packets: None,
-    sector_times: [-1 as f32, -1 as f32, -1 as f32],
+    current_sector_times: [-1 as f32, -1 as f32, -1 as f32],
     current_sector: -1 as f32,
     current_session_time: -1 as f32,
 };

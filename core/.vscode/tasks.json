@@ -9,14 +9,7 @@
             "command": "cargo",
             "args": [
                 "build"
-            ],
-            "problemMatcher": [
-                "$rustc"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
+            ]
         }
     ]
 }
