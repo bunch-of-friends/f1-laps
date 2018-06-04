@@ -1,5 +1,4 @@
 use bincode;
-use chrono::Local;
 use std::fs::{read_dir, File};
 
 use storage::lap::LapMetadata;
@@ -14,6 +13,10 @@ impl LapStore {
         LapStore {
             laps_metadata: Some(laps_metadata),
         }
+    }
+
+    pub fn get_all_laps_metadata(&self) -> Vec<LapMetadata> {
+        return self.laps_metadata.clone().unwrap();
     }
 
     pub fn get_all_laps_data(&self) -> Vec<Packet> {
@@ -48,7 +51,16 @@ impl LapStore {
         return packets;
     }
 
+    pub fn get_lap_data(&self, identifier: &str) -> Option<Vec<Packet>> {
+        let full_path = format!("storage/laps/{}", &identifier);
+        println!("loading file >> {}", full_path);
+
+        let file = File::open(full_path).expect("failed to open file");
+        return bincode::deserialize_from::<File, Vec<Packet>>(file).ok();
+    }
+
     pub fn store_lap(&mut self, packets: Vec<Packet>, metadata: LapMetadata) {
+        println!("storing lap...");
         self.store_lap_metadata(&metadata);
         self.store_lap_packets(&packets, &metadata);
     }

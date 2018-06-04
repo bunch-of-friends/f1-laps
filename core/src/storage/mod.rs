@@ -24,9 +24,21 @@ pub fn initialise() {
     load_stores();
 }
 
+pub fn get_all_laps_metadata() -> Vec<LapMetadata> {
+    unsafe {
+        return LAP_STORE.get_all_laps_metadata();
+    }
+}
+
 pub fn get_all_laps_data() -> Vec<Packet> {
     unsafe {
         return LAP_STORE.get_all_laps_data();
+    }
+}
+
+pub fn get_lap_data(identifier: &str) -> Option<Vec<Packet>> {
+    unsafe {
+        return LAP_STORE.get_lap_data(&identifier);
     }
 }
 

@@ -16,7 +16,7 @@ static mut TRACKER: Tracker = Tracker {
     current_session_time: -1 as f32,
 };
 
-pub fn process_packet(packet: Packet, should_store_packets: bool) -> Option<Tick> {
+pub fn process_packet(packet: &Packet, should_store_packets: bool) -> Option<Tick> {
     if packet.is_spectating == 1 {
         println!("spectating");
         return None;
@@ -33,6 +33,10 @@ pub fn process_packet(packet: Packet, should_store_packets: bool) -> Option<Tick
     };
 
     return Some(tick);
+}
+
+pub fn convert_packets(packets: &Vec<Packet>) -> Vec<LiveData> {
+    return packets.into_iter().map(|x| build_live_data(x)).collect();
 }
 
 fn build_live_data(packet: &Packet) -> LiveData {

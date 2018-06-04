@@ -31,9 +31,9 @@ impl Tracker {
 
         let session = self.track_session(&packet, is_current_session);
         let sector = self.track_sector(&packet, is_current_sector);
-        let lap = self.track_lap(&packet, is_current_lap, should_store_packets);
+        let lap = self.track_lap(&packet, is_current_lap);
 
-        self.process_packet(packet, should_store_packets, is_current_lap);
+        // self.store_packet(packet, should_store_packets, is_current_lap);
 
         if is_first_packet {
             return (session, None, None);
@@ -86,7 +86,6 @@ impl Tracker {
         &mut self,
         packet: &Packet,
         is_current_lap: bool,
-        should_store_packets: bool,
     ) -> Option<Lap> {
         if is_current_lap {
             return None;
@@ -96,7 +95,7 @@ impl Tracker {
         }
     }
 
-    fn process_packet(
+    fn store_packet(
         &mut self,
         packet: &Packet,
         should_store_packets: bool,
