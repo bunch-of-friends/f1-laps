@@ -3,8 +3,9 @@ extern crate neon;
 extern crate f1_laps_core;
 
 use f1_laps_core::aggregation::tick::{Lap, LiveData, Sector, Session};
+use f1_laps_core::storage::lap::LapMetadata;
 use f1_laps_core::udp::packet::Car;
-use neon::js::{JsArray, JsBoolean, JsNumber, JsObject, JsUndefined, Object};
+use neon::js::{JsArray, JsBoolean, JsNumber, JsObject, JsString, JsUndefined, Object};
 use neon::mem::Handle;
 use neon::scope;
 use neon::vm::{Call, JsResult};
@@ -53,7 +54,10 @@ fn get_next_tick(call: Call) -> JsResult<JsObject> {
 
     let tick = tick_option.unwrap();
 
-    object.set("liveData", build_live_data_js_object(scope, tick.live_data));
+    object.set(
+        "liveData",
+        build_live_data_js_object(scope, &tick.live_data),
+    );
 
     if let Some(session) = tick.session_started {
         object.set("sessionStarted", build_session_js_object(scope, session));
@@ -68,6 +72,99 @@ fn get_next_tick(call: Call) -> JsResult<JsObject> {
     }
 
     Ok(object)
+}
+
+#[allow(unused_must_use)]
+fn get_lap_data(call: Call) -> JsResult<JsArray> {
+    let identifier_handle = call.arguments.get(call.scope, 0).unwrap();
+
+    let identifier = identifier_handle
+        .downcast::<JsString>()
+        .expect("failed to downcast identifier argument")
+        .value();
+
+    let data = f1_laps_core::get_lap_data(identifier);
+    let array = JsArray::new(call.scope, data.len() as u32);
+    let mut index = 0;
+    for item in data.iter() {
+        let js_object = build_live_data_js_object(call.scope, item);
+        array.set(index, js_object);
+        index += 1;
+    }
+
+    Ok(array)
+}
+
+#[allow(unused_must_use)]
+fn get_all_laps_metadata(call: Call) -> JsResult<JsArray> {
+    let metadata = f1_laps_core::get_all_laps_metadata();
+    let array = JsArray::new(call.scope, metadata.len() as u32);
+    let mut index = 0;
+    for item in metadata.iter() {
+        let js_object = build_lap_metadata_js_object(call.scope, item);
+        array.set(index, js_object);
+        index += 1;
+    }
+
+    Ok(array)
+}
+
+#[allow(unused_must_use)]
+fn replay_lap(call: Call) -> JsResult<JsUndefined> {
+    let identifier_handle = call.arguments.get(call.scope, 0).unwrap();
+
+    let identifier = identifier_handle
+        .downcast::<JsString>()
+        .expect("failed to downcast identifier argument")
+        .value();
+
+    f1_laps_core::replay_lap(identifier);
+
+    Ok(JsUndefined::new())
+}
+
+#[allow(unused_must_use)]
+fn build_lap_metadata_js_object<'a>(
+    scope: &mut scope::RootScope<'a>,
+    metadata: &LapMetadata,
+) -> Handle<'a, JsObject> {
+    let object = JsObject::new(scope);
+
+    object.set(
+        "identifier",
+        JsString::new(scope, metadata.identifier.as_str()).unwrap(),
+    );
+    object.set(
+        "recorded_date",
+        JsString::new(scope, metadata.recorded_date.as_str()).unwrap(),
+    );
+    object.set("track_id", JsNumber::new(scope, metadata.track_id as f64));
+    object.set("team_id", JsNumber::new(scope, metadata.team_id as f64));
+    object.set("era", JsNumber::new(scope, metadata.era as f64));
+    object.set(
+        "tyre_compount",
+        JsNumber::new(scope, metadata.tyre_compount as f64),
+    );
+    object.set(
+        "session_type",
+        JsNumber::new(scope, metadata.session_type as f64),
+    );
+    object.set(
+        "lap_number",
+        JsNumber::new(scope, metadata.lap_number as f64),
+    );
+    object.set("lap_time", JsNumber::new(scope, metadata.lap_time as f64));
+    object.set(
+        "note",
+        JsString::new(scope, metadata.note.as_str()).unwrap(),
+    );
+
+    let sector_times = JsArray::new(scope, 3);
+    sector_times.set(0, JsNumber::new(scope, metadata.sector_times[0] as f64));
+    sector_times.set(1, JsNumber::new(scope, metadata.sector_times[1] as f64));
+    sector_times.set(2, JsNumber::new(scope, metadata.sector_times[2] as f64));
+
+    object
 }
 
 #[allow(unused_must_use)]
@@ -95,7 +192,7 @@ fn build_session_js_object<'a>(
 #[allow(unused_must_use)]
 fn build_live_data_js_object<'a>(
     scope: &mut scope::RootScope<'a>,
-    live_data: LiveData,
+    live_data: &LiveData,
 ) -> Handle<'a, JsObject> {
     let object = JsObject::new(scope);
 
@@ -465,5 +562,11 @@ register_module!(m, {
         .expect("failed to export startListening");
     m.export("replayAllLaps", replay_all_laps)
         .expect("failed to export replayAllLaps");
+    m.export("getLapData", get_lap_data)
+        .expect("failed to export getLapData");
+    m.export("getAllLapsMetadata", get_all_laps_metadata)
+        .expect("failed to export getAllLapsMetadata");
+    m.export("replayLap", replay_lap)
+        .expect("failed to export replayLap");
     Ok(())
 });

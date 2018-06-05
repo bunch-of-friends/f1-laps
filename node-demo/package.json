@@ -3,8 +3,8 @@
     "version": "0.1.0",
     "main": "index.js",
     "scripts": {
-        "start": "npm run build && node index.js",
-        "build": "cd ../js-bridge && npm i"
+        "build": "npm run bridge && node index.js",
+        "bridge": "cd ../js-bridge && npm i"
     },
     "maitainers": [
         {

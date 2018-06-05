@@ -9,6 +9,7 @@ pub mod storage;
 pub mod udp;
 
 use aggregation::tick::{Lap, LiveData, Sector, Session, Tick};
+use storage::lap::LapMetadata;
 
 use std::sync::mpsc;
 use std::thread;
@@ -52,12 +53,45 @@ pub fn get_next_tick() -> Option<Tick> {
     return Some(tick);
 }
 
+pub fn get_all_laps_metadata() -> Vec<LapMetadata> {
+    return storage::get_all_laps_metadata();
+}
+
+pub fn get_lap_data(identifier: String) -> Vec<LiveData> {
+    let packets = match storage::get_lap_data(&identifier) {
+        Some(x) => x,
+        None => panic!("no lap data found for identifier: {}", identifier), // TODO: add some sort of messaging/feedback mechanism
+    };
+
+    return aggregation::convert_packets(&packets);
+}
+
+pub fn replay_lap(identifier: String) {
+    let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
+
+    thread::spawn(move || match storage::get_lap_data(&identifier) {
+        Some(packets) => replay::stream_packets(tx, &packets, false, false),
+        None => println!("no lap data found for identifier: {}", identifier), // TODO: add some sort of messaging/feedback mechanism
+    });
+
+    thread::spawn(move || loop {
+        receive_tick(&rx);
+    });
+}
+
 pub fn replay_all_laps() {
     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
+    // always false for replayed data, but can be set to true for debugging/testing purposes
+    // will will store all the packets (duplicating them) like if they were received via udp
+    let should_store_packets = false;
+
+    // only set to true for debugging, all packets will be streamed at once
+    let disable_sleep = false;
+
     thread::spawn(move || {
-        let packets = storage::lap_store::get_all_laps_data();
-        replay::stream_packets(tx, packets);
+        let packets = storage::get_all_laps_data();
+        replay::stream_packets(tx, &packets, should_store_packets, disable_sleep);
     });
 
     thread::spawn(move || loop {

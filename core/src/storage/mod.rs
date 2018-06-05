@@ -12,6 +12,7 @@ use self::lap::LapMetadata;
 use self::lap_store::LapStore;
 use self::record::RecordSet;
 use self::record_store::RecordStore;
+use udp::packet::Packet;
 
 static mut RECORD_STORE: RecordStore = RecordStore { record_sets: None };
 static mut LAP_STORE: LapStore = LapStore {
@@ -23,15 +24,33 @@ pub fn initialise() {
     load_stores();
 }
 
+pub fn get_all_laps_metadata() -> Vec<LapMetadata> {
+    unsafe {
+        return LAP_STORE.get_all_laps_metadata();
+    }
+}
+
+pub fn get_all_laps_data() -> Vec<Packet> {
+    unsafe {
+        return LAP_STORE.get_all_laps_data();
+    }
+}
+
+pub fn get_lap_data(identifier: &str) -> Option<Vec<Packet>> {
+    unsafe {
+        return LAP_STORE.get_lap_data(&identifier);
+    }
+}
+
+pub fn store_lap(packets: Vec<Packet>, metadata: LapMetadata) {
+    unsafe {
+        LAP_STORE.store_lap(packets, metadata);
+    }
+}
+
 fn persist_record_store(record_store: &RecordStore) {
     let file = File::create("storage/records.bin").expect("failed to create records file");
     bincode::serialize_into(file, &record_store.record_sets)
-        .expect("failed to serialise records file");
-}
-
-fn persist_lap_store(lap_store: &LapStore) {
-    let file = File::create("storage/laps.bin").expect("failed to create records file");
-    bincode::serialize_into(file, &lap_store.laps_metadata)
         .expect("failed to serialise records file");
 }
 
@@ -85,6 +104,9 @@ fn load_lap_store() -> LapStore {
     let file = File::open("storage/laps.bin").expect("failed to open records file");
     match bincode::deserialize_from::<File, Vec<LapMetadata>>(file) {
         Ok(x) => LapStore::new(x),
-        Err(_) => LapStore::new(Vec::new()),
+        Err(e) => {
+            println!("error opening laps file: {}", e);
+            LapStore::new(Vec::new())
+        }
     }
 }

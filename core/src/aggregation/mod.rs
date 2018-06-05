@@ -8,14 +8,15 @@ use udp::packet::Packet;
 
 static mut TRACKER: Tracker = Tracker {
     current_session: None,
+    last_lap: None,
     current_lap_number: -1 as f32,
     lap_packets: None,
-    sector_times: [-1 as f32, -1 as f32, -1 as f32],
+    current_sector_times: [-1 as f32, -1 as f32, -1 as f32],
     current_sector: -1 as f32,
     current_session_time: -1 as f32,
 };
 
-pub fn process_packet(packet: Packet, should_store_packets: bool) -> Option<Tick> {
+pub fn process_packet(packet: &Packet, should_store_packets: bool) -> Option<Tick> {
     if packet.is_spectating == 1 {
         println!("spectating");
         return None;
@@ -32,6 +33,10 @@ pub fn process_packet(packet: Packet, should_store_packets: bool) -> Option<Tick
     };
 
     return Some(tick);
+}
+
+pub fn convert_packets(packets: &Vec<Packet>) -> Vec<LiveData> {
+    return packets.into_iter().map(|x| build_live_data(x)).collect();
 }
 
 fn build_live_data(packet: &Packet) -> LiveData {

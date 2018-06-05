@@ -6,13 +6,18 @@ use aggregation::process_packet;
 use aggregation::tick::Tick;
 use udp::packet::Packet;
 
-pub fn stream_packets(tx: mpsc::Sender<Tick>, packets: Vec<Packet>) {
+pub fn stream_packets(
+    tx: mpsc::Sender<Tick>,
+    packets: &Vec<Packet>,
+    should_store_packets: bool,
+    disable_sleep: bool,
+) {
     println!("streaming stored packets");
     let packets_len = packets.len();
 
-    let mut last_packet: Option<(Packet, Instant)> = None;
+    let mut last_packet: Option<(&Packet, Instant)> = None;
     for packet in packets {
-        let tick = process_packet(packet, false);
+        let tick = process_packet(&packet, should_store_packets);
 
         if tick.is_some() {
             // this whole block is here temporarily for some tests, then it will either go or get some love
@@ -35,13 +40,15 @@ pub fn stream_packets(tx: mpsc::Sender<Tick>, packets: Vec<Packet>) {
                     sleep_needed = packet_diff_duration - since_last_send_duration;
                 }
 
-                if sleep_needed.as_secs() > 0 {
-                    thread::sleep(Duration::from_secs(10));
-                } else {
-                    let min_sleep = Duration::from_millis(20);
-                    if sleep_needed > min_sleep {
-                        let applied = sleep_needed - Duration::new(0, 2160000); // totally based on observation only, no science here
-                        thread::sleep(applied);
+                if !disable_sleep {
+                    if sleep_needed.as_secs() > 0 {
+                        thread::sleep(Duration::from_secs(10));
+                    } else {
+                        let min_sleep = Duration::from_millis(20);
+                        if sleep_needed > min_sleep {
+                            let applied = sleep_needed - Duration::new(0, 2160000); // totally based on observation only, no science here
+                            thread::sleep(applied);
+                        }
                     }
                 }
             }
