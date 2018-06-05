@@ -84,7 +84,7 @@ pub fn replay_all_laps() {
 
     // always false for replayed data, but can be set to true for debugging/testing purposes
     // will will store all the packets (duplicating them) like if they were received via udp
-    let should_store_packets = true;
+    let should_store_packets = false;
 
     // only set to true for debugging, all packets will be streamed at once
     let disable_sleep = true;

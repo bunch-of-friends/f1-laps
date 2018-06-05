@@ -33,7 +33,11 @@ impl Tracker {
         let sector = self.track_sector(&packet, is_current_sector);
         let lap = self.track_lap(&packet, is_current_lap);
 
-        // self.store_packet(packet, should_store_packets, is_current_lap);
+        if lap.is_some() {
+            self.last_lap = lap;
+        }
+
+        self.store_packet(packet, should_store_packets, is_current_lap);
 
         if is_first_packet {
             return (session, None, None);
@@ -82,11 +86,7 @@ impl Tracker {
         return Some(session);
     }
 
-    fn track_lap(
-        &mut self,
-        packet: &Packet,
-        is_current_lap: bool,
-    ) -> Option<Lap> {
+    fn track_lap(&mut self, packet: &Packet, is_current_lap: bool) -> Option<Lap> {
         if is_current_lap {
             return None;
         } else {
@@ -95,12 +95,7 @@ impl Tracker {
         }
     }
 
-    fn store_packet(
-        &mut self,
-        packet: &Packet,
-        should_store_packets: bool,
-        is_current_lap: bool,
-    ) {
+    fn store_packet(&mut self, packet: &Packet, should_store_packets: bool, is_current_lap: bool) {
         let mut lap_packets = self.lap_packets.clone();
         let is_empty = lap_packets.is_none();
         if is_empty {
@@ -108,6 +103,7 @@ impl Tracker {
         }
 
         let mut unwrapped = lap_packets.unwrap();
+        unwrapped.push(packet.clone());
 
         if !is_empty && !is_current_lap {
             if should_store_packets && self.has_all_sector_times() {
@@ -122,7 +118,6 @@ impl Tracker {
             unwrapped = vec![];
         }
 
-        unwrapped.push(packet.clone());
         self.lap_packets = Some(unwrapped);
     }
 

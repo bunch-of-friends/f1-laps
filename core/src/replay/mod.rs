@@ -16,13 +16,8 @@ pub fn stream_packets(
     let packets_len = packets.len();
 
     let mut last_packet: Option<(&Packet, Instant)> = None;
-    let mut x = 0;
-    let max = packets.len();
     for packet in packets {
-        x += 1;
-        println!("procesing {}/{}", x, max);
         let tick = process_packet(&packet, should_store_packets);
-        println!("processed {}/{}", x, max);
 
         if tick.is_some() {
             // this whole block is here temporarily for some tests, then it will either go or get some love

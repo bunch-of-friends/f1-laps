@@ -10,7 +10,10 @@ core.lapFinished.register(data => console.log('lapFinished >> ', data));
 core.sectorFinished.register(data => console.log('sectorFinished >> ', data));
 
 // core.startListening(20777, true);
-core.replayAllLaps();
-// core.getLapData("");
-// core.getAllLapsMetadata();
-// core.getLapData("");
+// core.replayAllLaps();
+
+let metadata = core.getAllLapsMetadata();
+console.log("metadata >>", metadata);
+let lapData = core.getLapData(metadata[0].identifier);
+console.log("lap data length >>", lapData.length);
+core.replayLap(metadata[0].identifier);

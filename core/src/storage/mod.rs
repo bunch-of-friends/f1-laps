@@ -104,6 +104,9 @@ fn load_lap_store() -> LapStore {
     let file = File::open("storage/laps.bin").expect("failed to open records file");
     match bincode::deserialize_from::<File, Vec<LapMetadata>>(file) {
         Ok(x) => LapStore::new(x),
-        Err(_) => LapStore::new(Vec::new()),
+        Err(e) => {
+            println!("error opening laps file: {}", e);
+            LapStore::new(Vec::new())
+        }
     }
 }

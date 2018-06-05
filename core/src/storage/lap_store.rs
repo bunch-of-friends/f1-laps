@@ -81,12 +81,12 @@ impl LapStore {
     fn store_lap_packets(&self, packets: &Vec<Packet>, metadata: &LapMetadata) {
         let path = format!("storage/laps/{}", &metadata.identifier);
         let file = File::create(path).unwrap();
-        bincode::serialize_into(file, &packets).unwrap();
+        bincode::serialize_into(file, packets).unwrap();
     }
 
     fn persist_metadata(&self) {
         let file = File::create("storage/laps.bin").expect("failed to create records file");
-        bincode::serialize_into(file, &self.laps_metadata)
-            .expect("failed to serialise records file");
+        let metadata = self.laps_metadata.clone().unwrap();
+        bincode::serialize_into(file, &metadata).expect("failed to serialise records file");
     }
 }

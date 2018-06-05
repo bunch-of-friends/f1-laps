@@ -106,7 +106,7 @@ fn get_all_laps_metadata(call: Call) -> JsResult<JsArray> {
         index += 1;
     }
 
-    Ok(JsArray::new(call.scope, 4))
+    Ok(array)
 }
 
 #[allow(unused_must_use)]
