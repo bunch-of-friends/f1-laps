@@ -87,7 +87,7 @@ pub fn replay_all_laps() {
     let should_store_packets = false;
 
     // only set to true for debugging, all packets will be streamed at once
-    let disable_sleep = true;
+    let disable_sleep = false;
 
     thread::spawn(move || {
         let packets = storage::get_all_laps_data();
