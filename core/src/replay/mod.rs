@@ -1,9 +1,8 @@
+use aggregation::process_packet;
+use aggregation::tick::Tick;
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
 use thread;
-
-use aggregation::process_packet;
-use aggregation::tick::Tick;
 use udp::packet::Packet;
 
 pub fn stream_packets(

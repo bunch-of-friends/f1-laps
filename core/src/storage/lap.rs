@@ -1,6 +1,5 @@
-use chrono::Utc;
-
 use aggregation::tick::{Lap, Session};
+use chrono::Utc;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct LapMetadata {

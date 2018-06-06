@@ -39,7 +39,7 @@ pub fn convert_packets(packets: &Vec<Packet>) -> Vec<LiveData> {
     return packets.into_iter().map(|x| build_live_data(x)).collect();
 }
 
-fn build_live_data(packet: &Packet) -> LiveData {
+fn build_live_data(&packet: &Packet) -> LiveData {
     LiveData {
         current_lap: packet.lap as i32,
         current_lap_time: packet.lap_time,
