@@ -1,22 +1,23 @@
 mod file_system;
 pub mod lap;
 mod lap_store;
+pub mod path_helper;
 pub mod record;
-mod record_store;
 
 use self::lap::LapMetadata;
 use self::lap_store::LapStore;
-use self::record_store::RecordStore;
 use udp::packet::Packet;
 
-static mut RECORD_STORE: RecordStore = RecordStore { record_sets: None };
 static mut LAP_STORE: LapStore = LapStore {
     laps_metadata: None,
+    path_helper: None,
 };
 
-pub fn initialise() {
-    file_system::ensure_storage_files_created();
-    load_stores();
+pub fn initialise(storage_folder_path: &str) {
+    let store = file_system::initialise(storage_folder_path);
+    unsafe {
+        LAP_STORE = store;
+    }
 }
 
 pub fn get_all_laps_metadata() -> Vec<LapMetadata> {
@@ -40,17 +41,5 @@ pub fn get_lap_data(identifier: &str) -> Option<Vec<Packet>> {
 pub fn store_lap(packets: Vec<Packet>, metadata: LapMetadata) {
     unsafe {
         LAP_STORE.store_lap(packets, metadata);
-    }
-}
-
-fn load_stores() {
-    let records_store = file_system::load_record_store();
-    unsafe {
-        RECORD_STORE = records_store;
-    }
-
-    let lap_store = file_system::load_lap_store();
-    unsafe {
-        LAP_STORE = lap_store;
     }
 }

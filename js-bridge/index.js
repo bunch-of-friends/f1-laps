@@ -16,8 +16,8 @@ let sectorFinishedObservable = createObservable(sectorFinishedSubject);
 
 let initialised = false;
 
-function initialise(config = { updateInterval: 50 }) {
-    core.initialise();
+function initialise(config = { updateInterval: 50, storagePath: './storage' }) {
+    core.initialise(config.storagePath);
 
     stayAwake.prevent(function () {
         getNextTick();

@@ -10,8 +10,14 @@ use neon::mem::Handle;
 use neon::scope;
 use neon::vm::{Call, JsResult};
 
-fn initialise(_call: Call) -> JsResult<JsUndefined> {
-    f1_laps_core::initialise();
+fn initialise(call: Call) -> JsResult<JsUndefined> {
+    let storage_folder_path_handle = call.arguments.get(call.scope, 0).unwrap();
+    let storage_folder_path = storage_folder_path_handle
+        .downcast::<JsString>()
+        .expect("failed to downcast storageFolderPath argument")
+        .value();
+
+    f1_laps_core::initialise(storage_folder_path);
 
     Ok(JsUndefined::new())
 }

@@ -1,15 +1,18 @@
 use storage::file_system;
 use storage::lap::LapMetadata;
+use storage::path_helper::PathHelper;
 use udp::packet::Packet;
 
 pub struct LapStore {
     pub laps_metadata: Option<Vec<LapMetadata>>,
+    pub path_helper: Option<PathHelper>,
 }
 
 impl LapStore {
-    pub fn new(laps_metadata: Vec<LapMetadata>) -> LapStore {
+    pub fn new(laps_metadata: Vec<LapMetadata>, path_helper: PathHelper) -> LapStore {
         LapStore {
             laps_metadata: Some(laps_metadata),
+            path_helper: Some(path_helper),
         }
     }
 
@@ -18,17 +21,16 @@ impl LapStore {
     }
 
     pub fn get_lap_data(&self, identifier: &str) -> Option<Vec<Packet>> {
-        return file_system::get_lap_data(identifier);
+        return file_system::get_lap_data(identifier, &self.path_helper.as_ref().unwrap());
     }
 
     pub fn get_all_laps_data(&self) -> Vec<Packet> {
-        return file_system::get_all_laps_data();
+        return file_system::get_all_laps_data(&self.path_helper.as_ref().unwrap());
     }
 
     pub fn store_lap(&mut self, packets: Vec<Packet>, metadata: LapMetadata) {
-        println!("storing lap...");
         self.store_lap_metadata(&metadata);
-        file_system::store_lap_packets(&packets, &metadata);
+        file_system::store_lap_packets(&packets, &metadata, &self.path_helper.as_ref().unwrap());
     }
 
     fn store_lap_metadata(&mut self, metadata: &LapMetadata) {
@@ -40,9 +42,9 @@ impl LapStore {
         let mut unwrapped = laps_metadata.unwrap();
         unwrapped.push(metadata.clone());
         let to_be_stored = unwrapped.clone();
-        
+
         self.laps_metadata = Some(unwrapped);
 
-        file_system::store_metadata(&to_be_stored);
+        file_system::store_metadata(&to_be_stored, &self.path_helper.as_ref().unwrap());
     }
 }

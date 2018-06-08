@@ -1,0 +1,7 @@
+[package]
+name = "rust-demo"
+version = "0.1.0"
+authors = ["David Bohunek <bohunek@gmail.com>"]
+
+[dependencies]
+f1-laps-core = { path = "../core" }

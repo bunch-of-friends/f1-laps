@@ -21,8 +21,8 @@ static mut DATA_HOLDER: DataHolder = DataHolder {
     sector: None,
 };
 
-pub fn initialise() {
-    storage::initialise();
+pub fn initialise(storage_folder_path: String) {
+    storage::initialise(&storage_folder_path);
 }
 
 pub fn start_listening(port: i32, should_store_replay: bool) {
