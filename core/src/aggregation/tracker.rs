@@ -1,6 +1,5 @@
 use aggregation::tick::{Lap, Sector, Session};
 use std::thread;
-
 use storage;
 use storage::lap::LapMetadata;
 use udp::packet::Packet;

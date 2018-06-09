@@ -14,6 +14,12 @@
 		},
 		{
 			"path": "hue"
+		},
+		{
+			"path": "rust-demo"
+		},
+		{
+			"path": "_data-storage"
 		}
 	],
 	"settings": {}
