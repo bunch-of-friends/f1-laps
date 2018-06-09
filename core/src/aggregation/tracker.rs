@@ -40,20 +40,12 @@ impl Tracker {
         let finished_sector = self.track_sector(&packet, is_current_sector);
         let finished_lap = self.track_lap(&packet, is_current_lap);
 
-        // if finished_sector.is_some() {
-        //     self.record_tracker
-        //         .as_ref()
-        //         .unwrap()
-        //         .track_sector_finished(finished_sector.as_ref().unwrap());
-        // }
-
         if finished_lap.is_some() {
             self.last_lap = finished_lap;
+        }
 
-            // self.record_tracker
-            //     .as_ref()
-            //     .unwrap()
-            //     .track_lap_finished(finished_lap.as_ref().unwrap());
+        if self.should_store_records(&finished_sector, &finished_lap) {
+            self.store_records();
         }
 
         self.store_packet(packet, should_store_packets, is_current_lap);
@@ -141,6 +133,22 @@ impl Tracker {
         self.lap_packets = Some(unwrapped);
     }
 
+    fn should_store_records(&self, sector: &Option<Sector>, lap: &Option<Lap>) -> bool {
+        if sector.is_some() && sector.unwrap().record_marker.has_any_best_ever_records() {
+            return true;
+        }
+
+        if lap.is_some() && lap.unwrap().record_marker.has_any_best_ever_records() {
+            return true;
+        }
+
+        return false;
+    }
+
+    fn store_records(&self) {
+        storage::store_records(self.record_tracker.as_ref().unwrap());
+    }
+
     fn has_all_sector_times(&self) -> bool {
         return (self.current_sector_times[0] > 0 as f32)
             && (self.current_sector_times[1] > 0 as f32)
@@ -157,7 +165,7 @@ impl Tracker {
         }
     }
 
-    fn build_lap_object(&self, packet: &Packet) -> Lap {
+    fn build_lap_object(&mut self, packet: &Packet) -> Lap {
         let lap_number = self.get_previous_lap_number(packet.lap as u8); // as current packet is already from the newly started lap
         let lap_time = packet.last_lap_time;
         let sector1_time = self.current_sector_times[0];
@@ -165,9 +173,8 @@ impl Tracker {
         let sector3_time = self.current_sector_times[2];
         let tyre_compound = packet.tyre_compound;
 
-        let record_marker = self.record_tracker.as_ref().unwrap().track_lap_finished(
-            lap_time,
-            [sector1_time, sector2_time, sector3_time],
+        let record_marker = self.record_tracker.as_mut().unwrap().track_lap_finished(
+            [lap_time, sector1_time, sector2_time, sector3_time],
             tyre_compound,
         );
 
@@ -191,8 +198,8 @@ impl Tracker {
         }
     }
 
-    fn build_sector_object(&self, packet: &Packet, current_sector: (u8, f32)) -> Sector {
-        let record_marker = self.record_tracker.as_ref().unwrap().track_sector_finished(
+    fn build_sector_object(&mut self, packet: &Packet, current_sector: (u8, f32)) -> Sector {
+        let record_marker = self.record_tracker.as_mut().unwrap().track_sector_finished(
             current_sector.1,
             current_sector.0,
             packet.tyre_compound,

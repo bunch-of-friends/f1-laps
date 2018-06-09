@@ -42,22 +42,28 @@ impl DataStore {
     }
 
     pub fn get_record_tracker(&self, track_id: u8, era: u16) -> RecordTracker {
-        let records = self.record_set.as_ref().unwrap().get_track_records(track_id, era);
-        return RecordTracker::new(records);
+        let records = self.record_set
+            .as_ref()
+            .unwrap()
+            .get_track_records(track_id, era);
+        return RecordTracker::new(track_id, era, records);
+    }
+
+    pub fn store_records(&mut self, record_tracker: &RecordTracker) {
+        let unwrapped = self.record_set.as_mut().unwrap();
+        unwrapped.update_track_records(
+            record_tracker.track_id,
+            record_tracker.era,
+            record_tracker.get_records(),
+        );
+
+        file_system::store_records(&unwrapped, &self.path_helper.as_ref().unwrap());
     }
 
     fn store_lap_metadata(&mut self, metadata: &LapMetadata) {
-        let mut laps_metadata = self.laps_metadata.clone();
-        let is_empty = laps_metadata.is_none();
-        if is_empty {
-            laps_metadata = Some(vec![]);
-        }
-        let mut unwrapped = laps_metadata.unwrap();
+        let unwrapped = self.laps_metadata.as_mut().unwrap();
         unwrapped.push(metadata.clone());
-        let to_be_stored = unwrapped.clone();
 
-        self.laps_metadata = Some(unwrapped);
-
-        file_system::store_metadata(&to_be_stored, &self.path_helper.as_ref().unwrap());
+        file_system::store_laps_metadata(&unwrapped, &self.path_helper.as_ref().unwrap());
     }
 }

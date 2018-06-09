@@ -4,8 +4,8 @@ mod path_helper;
 
 use self::data_store::DataStore;
 use lap_metadata::LapMetadata;
-use udp::packet::Packet;
 use record_tracking::record_tracker::RecordTracker;
+use udp::packet::Packet;
 
 static mut DATA_STORE: DataStore = DataStore {
     laps_metadata: None,
@@ -44,8 +44,14 @@ pub fn store_lap(packets: Vec<Packet>, metadata: LapMetadata) {
     }
 }
 
-    pub fn get_record_tracker(track_id: u8, era: u16) -> RecordTracker {
-        unsafe {
-            return DATA_STORE.get_record_tracker(track_id, era);
-        }
+pub fn get_record_tracker(track_id: u8, era: u16) -> RecordTracker {
+    unsafe {
+        return DATA_STORE.get_record_tracker(track_id, era);
     }
+}
+
+pub fn store_records(record_tracker: &RecordTracker) {
+    unsafe {
+        return DATA_STORE.store_records(record_tracker);
+    }
+}
