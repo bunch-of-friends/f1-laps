@@ -1,7 +1,7 @@
 [package]
 name = "f1-laps-core"
 version = "0.1.0"
-authors = ["David Bohunek <bohunek@gmail.com>"]
+authors = ["David Bohunek <bohunek@gmail.com>", "Tom He"]
 
 [dependencies]
 serde = "1.0.62"

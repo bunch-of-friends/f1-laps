@@ -6,12 +6,6 @@
         "build": "npm run bridge && node index.js",
         "bridge": "cd ../js-bridge && npm i"
     },
-    "maitainers": [
-        {
-            "name": "David Bohunek",
-            "email": "bohunek@gmail.com"
-        }
-    ],
     "license": "MIT",
     "dependencies": {
         "f1-laps-js-bridge": "file:../js-bridge"
