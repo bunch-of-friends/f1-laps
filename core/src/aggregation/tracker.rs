@@ -22,7 +22,7 @@ impl Tracker {
     pub fn track(
         &mut self,
         packet: &Packet,
-        should_store_packets: bool,
+        should_store: bool,
     ) -> (Option<Session>, Option<Sector>, Option<Lap>) {
         let is_first_packet = self.current_session.is_none();
 
@@ -44,11 +44,11 @@ impl Tracker {
             self.last_lap = finished_lap;
         }
 
-        if self.should_store_records(&finished_sector, &finished_lap) {
+        if should_store && self.should_store_records(&finished_sector, &finished_lap) {
             self.store_records();
         }
 
-        self.store_packet(packet, should_store_packets, is_current_lap);
+        self.track_lap_packets(packet, should_store, is_current_lap);
 
         if is_first_packet {
             return (started_session, None, None);
@@ -107,7 +107,7 @@ impl Tracker {
         }
     }
 
-    fn store_packet(&mut self, packet: &Packet, should_store_packets: bool, is_current_lap: bool) {
+    fn track_lap_packets(&mut self, packet: &Packet, should_store_packets: bool, is_current_lap: bool) {
         let mut lap_packets = self.lap_packets.clone();
         let is_empty = lap_packets.is_none();
         if is_empty {
