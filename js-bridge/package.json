@@ -1,10 +1,13 @@
 {
   "name": "f1-laps-js-bridge",
   "version": "0.1.0",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
-    "build": "neon build",
-    "install": "npm run build"
+    "build": "npm run build:neon && npm run build:typescript",
+    "build:neon": "neon build",
+    "build:typescript": "tsc",
+    "postinstall": "npm run build"
   },
   "maitainers": [
     {
@@ -17,5 +20,9 @@
     "@bunch-of-friends/observable": "^1.3.0",
     "stay-awake": "0.0.3",
     "neon-cli": "^0.1.22"
+  },
+  "devDependencies": {
+    "@types/node": "^10.3.2",
+    "typescript": "^2.9.1"
   }
 }
