@@ -71,7 +71,7 @@ export enum ClassicTeam {
     McLaren1991
 }
 
-type Team = ClassicTeam | ModernTeam;
+export type Team = ClassicTeam | ModernTeam;
 
 export enum SessionType {
     Unknown = 0,
