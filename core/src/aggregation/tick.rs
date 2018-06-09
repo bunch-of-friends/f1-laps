@@ -1,3 +1,4 @@
+use record_tracking::record_tracker::RecordMarker;
 use udp::packet::Car;
 
 #[derive(Debug, Copy, Clone)]
@@ -10,17 +11,17 @@ pub struct Tick {
 
 #[derive(Debug, Copy, Clone)]
 pub struct Session {
-    pub track_id: f32,
-    pub session_type: f32,
-    pub team_id: f32,
-    pub era: f32,
+    pub track_id: u8,
+    pub session_type: u8,
+    pub team_id: u16,
+    pub era: u16,
     pub session_time_stamp: f32,
 }
 
 #[derive(Debug, Copy, Clone)]
 pub struct Lap {
     pub session_time_stamp: f32,
-    pub lap_number: f32,
+    pub lap_number: u8,
     pub lap_time: f32,
 
     pub sector1_time: f32,
@@ -28,20 +29,24 @@ pub struct Lap {
     pub sector3_time: f32,
 
     pub tyre_compound: u8,
+
+    pub record_marker: RecordMarker,
 }
 
 #[derive(Debug, Copy, Clone)]
 pub struct Sector {
     pub session_time_stamp: f32,
-    pub sector: f32,
+    pub sector: u8,
     pub sector_time: f32,
 
     pub tyre_compound: u8,
+
+    pub record_marker: RecordMarker,
 }
 
 #[derive(Debug, Copy, Clone)]
 pub struct LiveData {
-    pub current_lap: i32,
+    pub current_lap: u8,
     pub current_lap_time: f32,
 
     pub current_sector: u8,
@@ -67,17 +72,17 @@ pub struct LiveData {
     pub session_time_left: f32,
     pub lap_distance: f32,
     pub total_distance: f32,
-    pub total_laps: f32,
+    pub total_laps: u8,
 
     pub car_position: f32,
 
-    pub in_pits: f32,
-    pub pit_limiter_status: u8,
+    pub in_pits: u8,
+    pub pit_limiter_status: bool,
     pub pit_speed_limit: u8,
 
-    pub drs: f32,
-    pub drs_allowed: f32,
-    pub vehicle_fia_flags: f32,
+    pub drs: bool,
+    pub drs_allowed: i8,
+    pub vehicle_fia_flags: i8,
 
     pub throttle: f32,
     pub steer: f32,
@@ -91,7 +96,7 @@ pub struct LiveData {
     pub rev_lights_percent: u8,
     pub max_rpm: f32,
     pub idle_rpm: f32,
-    pub max_gears: f32,
+    pub max_gears: u8,
     pub traction_control: f32,
     pub anti_lock_brakes: f32,
     pub front_brake_bias: u8,

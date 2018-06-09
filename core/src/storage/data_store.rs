@@ -1,17 +1,25 @@
+use lap_metadata::LapMetadata;
+use record_tracking::record_tracker::RecordTracker;
+use record_tracking::RecordSet;
 use storage::file_system;
-use storage::lap::LapMetadata;
 use storage::path_helper::PathHelper;
 use udp::packet::Packet;
 
 pub struct DataStore {
     pub laps_metadata: Option<Vec<LapMetadata>>,
+    pub record_set: Option<RecordSet>,
     pub path_helper: Option<PathHelper>,
 }
 
 impl DataStore {
-    pub fn new(laps_metadata: Vec<LapMetadata>, path_helper: PathHelper) -> DataStore {
+    pub fn new(
+        laps_metadata: Vec<LapMetadata>,
+        record_set: RecordSet,
+        path_helper: PathHelper,
+    ) -> DataStore {
         DataStore {
             laps_metadata: Some(laps_metadata),
+            record_set: Some(record_set),
             path_helper: Some(path_helper),
         }
     }
@@ -31,6 +39,11 @@ impl DataStore {
     pub fn store_lap(&mut self, packets: Vec<Packet>, metadata: LapMetadata) {
         self.store_lap_metadata(&metadata);
         file_system::store_lap_packets(&packets, &metadata, &self.path_helper.as_ref().unwrap());
+    }
+
+    pub fn get_record_tracker(&self, track_id: u8, era: u16) -> RecordTracker {
+        let records = self.record_set.as_ref().unwrap().get_track_records(track_id, era);
+        return RecordTracker::new(records);
     }
 
     fn store_lap_metadata(&mut self, metadata: &LapMetadata) {

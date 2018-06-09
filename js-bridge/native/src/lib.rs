@@ -3,7 +3,8 @@ extern crate neon;
 extern crate f1_laps_core;
 
 use f1_laps_core::aggregation::tick::{Lap, LiveData, Sector, Session};
-use f1_laps_core::storage::lap::LapMetadata;
+use f1_laps_core::record_tracking::record_tracker::RecordMarker;
+use f1_laps_core::lap_metadata::LapMetadata;
 use f1_laps_core::udp::packet::Car;
 use neon::js::{JsArray, JsBoolean, JsNumber, JsObject, JsString, JsUndefined, Object};
 use neon::mem::Handle;
@@ -66,15 +67,15 @@ fn get_next_tick(call: Call) -> JsResult<JsObject> {
     );
 
     if let Some(session) = tick.session_started {
-        object.set("sessionStarted", build_session_js_object(scope, session));
+        object.set("sessionStarted", build_session_js_object(scope, &session));
     }
 
     if let Some(lap) = tick.lap_finished {
-        object.set("lapFinished", build_lap_js_object(scope, lap));
+        object.set("lapFinished", build_lap_js_object(scope, &lap));
     }
 
     if let Some(sector) = tick.sector_finished {
-        object.set("sectorFinished", build_sector_js_object(scope, sector));
+        object.set("sectorFinished", build_sector_js_object(scope, &sector));
     }
 
     Ok(object)
@@ -149,7 +150,7 @@ fn build_lap_metadata_js_object<'a>(
     object.set("era", JsNumber::new(scope, metadata.era as f64));
     object.set(
         "tyreCompound",
-        JsNumber::new(scope, metadata.tyre_compount as f64),
+        JsNumber::new(scope, metadata.tyre_compound as f64),
     );
     object.set(
         "sessionType",
@@ -169,10 +170,7 @@ fn build_lap_metadata_js_object<'a>(
     sector_times.set(0, JsNumber::new(scope, metadata.sector_times[0] as f64));
     sector_times.set(1, JsNumber::new(scope, metadata.sector_times[1] as f64));
     sector_times.set(2, JsNumber::new(scope, metadata.sector_times[2] as f64));
-    object.set(
-        "sectorTimes",
-        sector_times
-    );
+    object.set("sectorTimes", sector_times);
 
     object
 }
@@ -180,7 +178,7 @@ fn build_lap_metadata_js_object<'a>(
 #[allow(unused_must_use)]
 fn build_session_js_object<'a>(
     scope: &mut scope::RootScope<'a>,
-    session: Session,
+    session: &Session,
 ) -> Handle<'a, JsObject> {
     let object = JsObject::new(scope);
 
@@ -282,13 +280,13 @@ fn build_live_data_js_object<'a>(
     object.set("inPits", JsNumber::new(scope, live_data.in_pits as f64));
     object.set(
         "pitLimiterStatus",
-        JsNumber::new(scope, live_data.pit_limiter_status as f64),
+        JsBoolean::new(scope, live_data.pit_limiter_status),
     );
     object.set(
         "pitSpeedLimit",
         JsNumber::new(scope, live_data.pit_speed_limit as f64),
     );
-    object.set("drs", JsNumber::new(scope, live_data.drs as f64));
+    object.set("drs", JsBoolean::new(scope, live_data.drs));
     object.set(
         "drsAllowed",
         JsNumber::new(scope, live_data.drs_allowed as f64),
@@ -447,33 +445,33 @@ fn build_live_data_js_object<'a>(
     );
 
     let car_data = JsArray::new(scope, 20);
-    car_data.set(0, build_car_js_object(scope, live_data.car_data[0]));
-    car_data.set(1, build_car_js_object(scope, live_data.car_data[1]));
-    car_data.set(2, build_car_js_object(scope, live_data.car_data[2]));
-    car_data.set(3, build_car_js_object(scope, live_data.car_data[3]));
-    car_data.set(4, build_car_js_object(scope, live_data.car_data[4]));
-    car_data.set(5, build_car_js_object(scope, live_data.car_data[5]));
-    car_data.set(6, build_car_js_object(scope, live_data.car_data[6]));
-    car_data.set(7, build_car_js_object(scope, live_data.car_data[7]));
-    car_data.set(8, build_car_js_object(scope, live_data.car_data[8]));
-    car_data.set(9, build_car_js_object(scope, live_data.car_data[9]));
-    car_data.set(10, build_car_js_object(scope, live_data.car_data[10]));
-    car_data.set(11, build_car_js_object(scope, live_data.car_data[11]));
-    car_data.set(12, build_car_js_object(scope, live_data.car_data[12]));
-    car_data.set(13, build_car_js_object(scope, live_data.car_data[13]));
-    car_data.set(14, build_car_js_object(scope, live_data.car_data[14]));
-    car_data.set(15, build_car_js_object(scope, live_data.car_data[15]));
-    car_data.set(16, build_car_js_object(scope, live_data.car_data[16]));
-    car_data.set(17, build_car_js_object(scope, live_data.car_data[17]));
-    car_data.set(18, build_car_js_object(scope, live_data.car_data[18]));
-    car_data.set(19, build_car_js_object(scope, live_data.car_data[19]));
+    car_data.set(0, build_car_js_object(scope, &live_data.car_data[0]));
+    car_data.set(1, build_car_js_object(scope, &live_data.car_data[1]));
+    car_data.set(2, build_car_js_object(scope, &live_data.car_data[2]));
+    car_data.set(3, build_car_js_object(scope, &live_data.car_data[3]));
+    car_data.set(4, build_car_js_object(scope, &live_data.car_data[4]));
+    car_data.set(5, build_car_js_object(scope, &live_data.car_data[5]));
+    car_data.set(6, build_car_js_object(scope, &live_data.car_data[6]));
+    car_data.set(7, build_car_js_object(scope, &live_data.car_data[7]));
+    car_data.set(8, build_car_js_object(scope, &live_data.car_data[8]));
+    car_data.set(9, build_car_js_object(scope, &live_data.car_data[9]));
+    car_data.set(10, build_car_js_object(scope, &live_data.car_data[10]));
+    car_data.set(11, build_car_js_object(scope, &live_data.car_data[11]));
+    car_data.set(12, build_car_js_object(scope, &live_data.car_data[12]));
+    car_data.set(13, build_car_js_object(scope, &live_data.car_data[13]));
+    car_data.set(14, build_car_js_object(scope, &live_data.car_data[14]));
+    car_data.set(15, build_car_js_object(scope, &live_data.car_data[15]));
+    car_data.set(16, build_car_js_object(scope, &live_data.car_data[16]));
+    car_data.set(17, build_car_js_object(scope, &live_data.car_data[17]));
+    car_data.set(18, build_car_js_object(scope, &live_data.car_data[18]));
+    car_data.set(19, build_car_js_object(scope, &live_data.car_data[19]));
     object.set("carData", car_data);
 
     object
 }
 
 #[allow(unused_must_use)]
-fn build_car_js_object<'a>(scope: &mut scope::RootScope<'a>, car: Car) -> Handle<'a, JsObject> {
+fn build_car_js_object<'a>(scope: &mut scope::RootScope<'a>, car: &Car) -> Handle<'a, JsObject> {
     let object = JsObject::new(scope);
 
     let world_position = JsArray::new(scope, 3);
@@ -517,7 +515,7 @@ fn build_car_js_object<'a>(scope: &mut scope::RootScope<'a>, car: Car) -> Handle
 }
 
 #[allow(unused_must_use)]
-fn build_lap_js_object<'a>(scope: &mut scope::RootScope<'a>, lap: Lap) -> Handle<'a, JsObject> {
+fn build_lap_js_object<'a>(scope: &mut scope::RootScope<'a>, lap: &Lap) -> Handle<'a, JsObject> {
     let object = JsObject::new(scope);
 
     object.set(
@@ -536,13 +534,15 @@ fn build_lap_js_object<'a>(scope: &mut scope::RootScope<'a>, lap: Lap) -> Handle
         JsNumber::new(scope, lap.tyre_compound as f64),
     );
 
+    object.set("recordMarker", build_record_marker_js_object(scope, &lap.record_marker));
+
     object
 }
 
 #[allow(unused_must_use)]
 fn build_sector_js_object<'a>(
     scope: &mut scope::RootScope<'a>,
-    sector: Sector,
+    sector: &Sector,
 ) -> Handle<'a, JsObject> {
     let object = JsObject::new(scope);
 
@@ -559,6 +559,28 @@ fn build_sector_js_object<'a>(
         "tyreCompound",
         JsNumber::new(scope, sector.tyre_compound as f64),
     );
+
+    object.set("recordsMarker", build_record_marker_js_object(scope, &sector.record_marker));
+
+    object
+}
+
+#[allow(unused_must_use)]
+fn build_record_marker_js_object<'a>(
+    scope: &mut scope::RootScope<'a>,
+    record_marker: &RecordMarker,
+) -> Handle<'a, JsObject> {
+    let object = JsObject::new(scope);
+
+    object.set("isBestEverPersonal", JsBoolean::new(scope, record_marker.is_best_ever_personal));
+    object.set("isBestEverCompoundPersonal", JsBoolean::new(scope, record_marker.is_best_ever_compound_personal));
+    object.set("isBestSessionPersonal", JsBoolean::new(scope, record_marker.is_best_session_personal));
+    object.set(
+        "isBestSessionPersonalCompound",
+        JsBoolean::new(scope, record_marker.is_best_session_personal_compound),
+    );
+    object.set("isBestSessionAll", JsBoolean::new(scope, record_marker.is_best_session_all));
+    object.set("isBestSessionAllCompound", JsBoolean::new(scope, record_marker.is_best_session_all_compound));
 
     object
 }
