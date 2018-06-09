@@ -169,6 +169,10 @@ fn build_lap_metadata_js_object<'a>(
     sector_times.set(0, JsNumber::new(scope, metadata.sector_times[0] as f64));
     sector_times.set(1, JsNumber::new(scope, metadata.sector_times[1] as f64));
     sector_times.set(2, JsNumber::new(scope, metadata.sector_times[2] as f64));
+    object.set(
+        "sectorTimes",
+        sector_times
+    );
 
     object
 }
@@ -232,12 +236,12 @@ fn build_live_data_js_object<'a>(
         JsNumber::new(scope, live_data.last_lap_time as f64),
     );
     object.set(
-        "currentLap_sector1Time",
+        "currentLapSector1Time",
         JsNumber::new(scope, live_data.current_lap_sector1_time as f64),
     );
     object.set(
-        "currentLapSector1Time",
-        JsNumber::new(scope, live_data.current_lap_sector1_time as f64),
+        "currentLapSector2Time",
+        JsNumber::new(scope, live_data.current_lap_sector2_time as f64),
     );
     object.set(
         "totalSessionTime",
