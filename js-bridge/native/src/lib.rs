@@ -534,7 +534,7 @@ fn build_lap_js_object<'a>(scope: &mut scope::RootScope<'a>, lap: &Lap) -> Handl
         JsNumber::new(scope, lap.tyre_compound as f64),
     );
 
-    object.set("recordsMarker", build_record_marker_js_object(scope, &lap.record_marker));
+    object.set("recordMarker", build_record_marker_js_object(scope, &lap.record_marker));
 
     object
 }
