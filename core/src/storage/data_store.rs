@@ -3,14 +3,14 @@ use storage::lap::LapMetadata;
 use storage::path_helper::PathHelper;
 use udp::packet::Packet;
 
-pub struct LapStore {
+pub struct DataStore {
     pub laps_metadata: Option<Vec<LapMetadata>>,
     pub path_helper: Option<PathHelper>,
 }
 
-impl LapStore {
-    pub fn new(laps_metadata: Vec<LapMetadata>, path_helper: PathHelper) -> LapStore {
-        LapStore {
+impl DataStore {
+    pub fn new(laps_metadata: Vec<LapMetadata>, path_helper: PathHelper) -> DataStore {
+        DataStore {
             laps_metadata: Some(laps_metadata),
             path_helper: Some(path_helper),
         }

@@ -7,7 +7,7 @@ pub struct Packet {
     pub x: f32,             // World space position
     pub y: f32,             // World space position
     pub z: f32,             // World space position
-    pub speed: f32,         // Speed of car in MPH
+    pub speed: f32,         // Speed of car in M/S
     pub xv: f32,            // Velocity in world space
     pub yv: f32,            // Velocity in world space
     pub zv: f32,            // Velocity in world space

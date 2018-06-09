@@ -44,7 +44,7 @@ fn build_live_data(&packet: &Packet) -> LiveData {
         current_lap: packet.lap as i32,
         current_lap_time: packet.lap_time,
         current_sector: packet.sector as u8,
-        current_speed: packet.speed,
+        current_speed: packet.speed * 3.6 as f32, // convert mps to kph
         current_gear: packet.gear as u8,
         current_tyre_compound: packet.tyre_compound as u8,
         is_lap_valid: packet.current_lap_invalid == 0,

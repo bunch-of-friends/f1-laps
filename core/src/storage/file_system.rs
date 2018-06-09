@@ -2,15 +2,15 @@ use bincode;
 use std::fs::{create_dir, read_dir, File};
 use std::path::Path;
 use storage::lap::LapMetadata;
-use storage::lap_store::LapStore;
+use storage::data_store::DataStore;
 use storage::path_helper::PathHelper;
 use udp::packet::Packet;
 
-pub fn initialise(storage_folder_path: &str) -> LapStore {
+pub fn initialise(storage_folder_path: &str) -> DataStore {
     let path_helper = PathHelper::new(storage_folder_path);
     ensure_storage_files_created(&path_helper);
 
-    return load_lap_store(&path_helper);
+    return load_data_store(&path_helper);
 }
 
 pub fn store_lap_packets(packets: &Vec<Packet>, metadata: &LapMetadata, path_helper: &PathHelper) {
@@ -91,14 +91,14 @@ fn ensure_file_created(path: &str) {
     }
 }
 
-fn load_lap_store(path_helper: &PathHelper) -> LapStore {
+fn load_data_store(path_helper: &PathHelper) -> DataStore {
     let path = path_helper.get_laps_metadata_file_path();
     let file = File::open(path).expect("failed to open records file");
     match bincode::deserialize_from::<File, Vec<LapMetadata>>(file) {
-        Ok(x) => LapStore::new(x, path_helper.clone()),
+        Ok(x) => DataStore::new(x, path_helper.clone()),
         Err(e) => {
             println!("error opening laps file: {}", e);
-            LapStore::new(Vec::new(), path_helper.clone())
+            DataStore::new(Vec::new(), path_helper.clone())
         }
     }
 }
