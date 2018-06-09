@@ -7,9 +7,13 @@
     "build": "npm run build:neon && npm run build:typescript",
     "build:neon": "neon build",
     "build:typescript": "tsc",
-    "postinstall": "npm run build"
+    "postinstall": "npm run build",
+    "lint": "tslint '**/*.ts{,x}' -e '**/node_modules/**'"
   },
-  "maitainers": [
+  "pre-commit": [
+    "lint"
+  ],
+  "maintainers": [
     {
       "name": "David Bohunek",
       "email": "bohunek@gmail.com"
@@ -23,6 +27,10 @@
   },
   "devDependencies": {
     "@types/node": "^10.3.2",
+    "pre-commit": "^1.2.2",
+    "tslint": "^5.10.0",
+    "tslint-config-bunch-of-friends": "^1.0.2",
+    "tslint-eslint-rules": "^5.3.1",
     "typescript": "^2.9.1"
   }
 }

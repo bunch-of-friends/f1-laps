@@ -280,7 +280,7 @@ export {
     liveDataObservable as liveData,
     lapFinishedObservable as lapFinished,
     sectorFinishedObservable as sectorFinished
-}
+};
 
 export function initialise(config = { updateInterval: 50, storagePath: './storage' }) {
     core.initialise(config.storagePath);
@@ -312,17 +312,14 @@ function getNextTick() {
     }
 
     if (tick.sessionStarted) {
-        console.log('what is the session started data', tick.sessionStarted);
         newSessionSubject.notifyObservers(tick.sessionStarted);
     }
 
     if (tick.sectorFinished) {
-        console.log('what is the sector finished data', tick.sectorFinished);
         sectorFinishedSubject.notifyObservers(tick.sectorFinished);
     }
 
     if (tick.lapFinished) {
-        console.log('what is the lap finished data', tick.lapfinished);
         lapFinishedSubject.notifyObservers(tick.lapFinished);
     }
 }

@@ -3,10 +3,10 @@
     "version": "0.1.0",
     "main": "index.js",
     "scripts": {
-        "build": "npm run bridge && node index.js",
-        "bridge": "cd ../js-bridge && npm i"
+        "build": "cd ../js-bridge && npm i",
+        "start": "node ./index.js"
     },
-    "maitainers": [
+    "maintainers": [
         {
             "name": "David Bohunek",
             "email": "bohunek@gmail.com"
