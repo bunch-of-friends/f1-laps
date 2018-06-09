@@ -72,6 +72,7 @@ fn ensure_storage_files_created(path_helper: &PathHelper) {
     ensure_folder_created(path_helper.get_storage_folder_path().as_str());
     ensure_folder_created(path_helper.get_laps_data_folder_path().as_str());
     ensure_file_created(path_helper.get_laps_metadata_file_path().as_str());
+    ensure_file_created(path_helper.get_records_file_path().as_str());
 }
 
 fn ensure_folder_created(path: &str) {

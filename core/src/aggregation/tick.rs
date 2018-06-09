@@ -76,13 +76,13 @@ pub struct LiveData {
 
     pub car_position: f32,
 
-    pub in_pits: bool,
-    pub pit_limiter_status: u8,
+    pub in_pits: u8,
+    pub pit_limiter_status: bool,
     pub pit_speed_limit: u8,
 
     pub drs: bool,
-    pub drs_allowed: bool,
-    pub vehicle_fia_flags: u8,
+    pub drs_allowed: i8,
+    pub vehicle_fia_flags: i8,
 
     pub throttle: f32,
     pub steer: f32,

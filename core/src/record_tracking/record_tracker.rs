@@ -8,12 +8,12 @@ pub struct RecordTracker {
 
 #[derive(Debug, Copy, Clone)]
 pub struct RecordMarker {
-    is_best_ever_personal: bool,
-    is_best_ever_compound_personal: bool,
-    is_best_session_personal: bool,
-    is_best_session_all: bool,
-    is_best_session_personal_compound: bool,
-    is_best_session_all_compound: bool,
+    pub is_best_ever_personal: bool,
+    pub is_best_ever_compound_personal: bool,
+    pub is_best_session_personal: bool,
+    pub is_best_session_all: bool,
+    pub is_best_session_personal_compound: bool,
+    pub is_best_session_all_compound: bool,
 }
 
 impl RecordTracker {
