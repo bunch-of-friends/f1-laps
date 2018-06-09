@@ -46,7 +46,7 @@ fn build_live_data(&packet: &Packet) -> LiveData {
         current_lap_time: packet.lap_time,
         current_sector: packet.sector as u8,
         current_speed: packet.speed * 3.6 as f32, // convert mps to kph
-        current_gear: packet.gear as u8,
+        current_gear: (packet.gear as i8) - (1 as i8), //we want reverse to be -1, not 0 as codemasters provide
         current_tyre_compound: packet.tyre_compound as u8,
         is_lap_valid: packet.current_lap_invalid == 0,
         last_lap_time: packet.last_lap_time,
@@ -64,7 +64,7 @@ fn build_live_data(&packet: &Packet) -> LiveData {
         total_laps: packet.total_laps as u8,
         car_position: packet.car_position,
         in_pits: packet.in_pits as u8,
-        pit_limiter_status: packet.pit_limiter_status  == (1 as u8),
+        pit_limiter_status: packet.pit_limiter_status == (1 as u8),
         pit_speed_limit: packet.pit_speed_limit,
         drs: packet.drs == (1 as f32),
         drs_allowed: packet.drs_allowed as i8,

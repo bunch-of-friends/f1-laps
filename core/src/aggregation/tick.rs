@@ -51,7 +51,7 @@ pub struct LiveData {
 
     pub current_sector: u8,
     pub current_speed: f32,
-    pub current_gear: u8,
+    pub current_gear: i8,
     pub current_tyre_compound: u8,
 
     pub is_lap_valid: bool,
