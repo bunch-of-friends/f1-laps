@@ -3,6 +3,7 @@ extern crate neon;
 extern crate f1_laps_core;
 
 use f1_laps_core::aggregation::tick::{Lap, LiveData, Sector, Session};
+use f1_laps_core::record_tracking::record_tracker::RecordMaker;
 use f1_laps_core::storage::lap::LapMetadata;
 use f1_laps_core::udp::packet::Car;
 use neon::js::{JsArray, JsBoolean, JsNumber, JsObject, JsString, JsUndefined, Object};
@@ -149,7 +150,7 @@ fn build_lap_metadata_js_object<'a>(
     object.set("era", JsNumber::new(scope, metadata.era as f64));
     object.set(
         "tyreCompound",
-        JsNumber::new(scope, metadata.tyre_compount as f64),
+        JsNumber::new(scope, metadata.tyre_compound as f64),
     );
     object.set(
         "sessionType",
@@ -556,7 +557,22 @@ fn build_sector_js_object<'a>(
         JsNumber::new(scope, sector.tyre_compound as f64),
     );
 
+    //     is_best_ever_personal: false,
+    // is_best_ever_compound_personal: false,
+    // is_best_session_personal: false,
+    // is_best_session_all: false,
+    // is_best_session_personal_compound: false,
+    // is_best_session_all_compound: false,
+
     object
+}
+
+#[allow(unused_must_use)]
+fn build_record_marker_js_object<'a>(
+    scope: &mut scope::RootScope<'a>,
+    record_marker: RecordMaker,
+) -> Handle<'a, JsObject> {
+
 }
 
 register_module!(m, {

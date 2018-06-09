@@ -4,13 +4,14 @@ extern crate bincode;
 extern crate chrono;
 
 pub mod aggregation;
+pub mod record_tracking;
 pub mod replay;
 pub mod storage;
 pub mod udp;
+pub mod lap_metadata;
 
 use aggregation::tick::{Lap, LiveData, Sector, Session, Tick};
-use storage::lap::LapMetadata;
-
+use lap_metadata::LapMetadata;
 use std::sync::mpsc;
 use std::thread;
 

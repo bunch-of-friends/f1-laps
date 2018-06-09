@@ -1,7 +1,8 @@
 use bincode;
+use lap_metadata::LapMetadata;
+use record_tracking::RecordSet;
 use std::fs::{create_dir, read_dir, File};
 use std::path::Path;
-use storage::lap::LapMetadata;
 use storage::data_store::DataStore;
 use storage::path_helper::PathHelper;
 use udp::packet::Packet;
@@ -10,7 +11,7 @@ pub fn initialise(storage_folder_path: &str) -> DataStore {
     let path_helper = PathHelper::new(storage_folder_path);
     ensure_storage_files_created(&path_helper);
 
-    return load_data_store(&path_helper);
+    return build_data_store(&path_helper);
 }
 
 pub fn store_lap_packets(packets: &Vec<Packet>, metadata: &LapMetadata, path_helper: &PathHelper) {
@@ -91,14 +92,30 @@ fn ensure_file_created(path: &str) {
     }
 }
 
-fn load_data_store(path_helper: &PathHelper) -> DataStore {
+fn build_data_store(path_helper: &PathHelper) -> DataStore {
+    let lap_metadata = match load_lap_metadata(path_helper) {
+        Ok(x) => x,
+        Err(_) => Vec::new(),
+    };
+
+    let records = match load_records(path_helper) {
+        Ok(x) => x,
+        Err(_) => RecordSet::new(),
+    };
+
+    return DataStore::new(lap_metadata, records, path_helper.clone());
+}
+
+fn load_lap_metadata(
+    path_helper: &PathHelper,
+) -> Result<Vec<LapMetadata>, Box<bincode::ErrorKind>> {
     let path = path_helper.get_laps_metadata_file_path();
+    let file = File::open(path).expect("failed to open laps metadata file");
+    return bincode::deserialize_from::<File, Vec<LapMetadata>>(file);
+}
+
+fn load_records(path_helper: &PathHelper) -> Result<RecordSet, Box<bincode::ErrorKind>> {
+    let path = path_helper.get_records_file_path();
     let file = File::open(path).expect("failed to open records file");
-    match bincode::deserialize_from::<File, Vec<LapMetadata>>(file) {
-        Ok(x) => DataStore::new(x, path_helper.clone()),
-        Err(e) => {
-            println!("error opening laps file: {}", e);
-            DataStore::new(Vec::new(), path_helper.clone())
-        }
-    }
+    return bincode::deserialize_from::<File, RecordSet>(file);
 }

@@ -1,5 +1,6 @@
 const LAPS_DATA_DIR: &'static str = "laps";
 const LAPS_METADATA_FILE: &'static str = "laps.bin";
+const RECORDS_FILE: &'static str = "records.bin";
 
 pub struct PathHelper {
     root_folder: String,
@@ -32,6 +33,10 @@ impl PathHelper {
 
     pub fn get_laps_metadata_file_path(&self) -> String {
         return self.get_full_path(LAPS_METADATA_FILE);
+    }
+
+    pub fn get_records_file_path(&self) -> String {
+        return self.get_full_path(RECORDS_FILE);
     }
 
     pub fn get_laps_data_file_path(&self, identifier: &str) -> String {

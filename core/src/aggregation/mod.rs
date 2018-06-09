@@ -8,6 +8,7 @@ use udp::packet::Packet;
 
 static mut TRACKER: Tracker = Tracker {
     current_session: None,
+    record_tracker: None,
     last_lap: None,
     current_lap_number: -1 as f32,
     lap_packets: None,
@@ -41,7 +42,7 @@ pub fn convert_packets(packets: &Vec<Packet>) -> Vec<LiveData> {
 
 fn build_live_data(&packet: &Packet) -> LiveData {
     LiveData {
-        current_lap: packet.lap as i32,
+        current_lap: packet.lap as u8,
         current_lap_time: packet.lap_time,
         current_sector: packet.sector as u8,
         current_speed: packet.speed * 3.6 as f32, // convert mps to kph
@@ -60,14 +61,14 @@ fn build_live_data(&packet: &Packet) -> LiveData {
         session_time_left: packet.session_time_left,
         lap_distance: packet.lap_distance,
         total_distance: packet.total_distance,
-        total_laps: packet.total_laps,
+        total_laps: packet.total_laps as u8,
         car_position: packet.car_position,
-        in_pits: packet.in_pits,
+        in_pits: packet.in_pits == (1 as f32),
         pit_limiter_status: packet.pit_limiter_status,
         pit_speed_limit: packet.pit_speed_limit,
-        drs: packet.drs,
-        drs_allowed: packet.drs_allowed,
-        vehicle_fia_flags: packet.vehicle_fia_flags,
+        drs: packet.drs == (1 as f32),
+        drs_allowed: packet.drs_allowed == (1 as f32),
+        vehicle_fia_flags: packet.vehicle_fia_flags as u8,
         throttle: packet.throttle,
         steer: packet.steer,
         brake: packet.brake,
@@ -78,7 +79,7 @@ fn build_live_data(&packet: &Packet) -> LiveData {
         rev_lights_percent: packet.rev_lights_percent,
         max_rpm: packet.max_rpm,
         idle_rpm: packet.idle_rpm,
-        max_gears: packet.max_gears,
+        max_gears: packet.max_gears as u8,
         traction_control: packet.traction_control,
         anti_lock_brakes: packet.anti_lock_brakes,
         front_brake_bias: packet.front_brake_bias,
