@@ -7,7 +7,7 @@ pub struct LapMetadata {
     pub recorded_date: String,
     pub track_id: u8,
     pub team_id: u8,
-    pub era: i16, //TODO this should be u18 - left for now to keep debug data compatible
+    pub era: i16, //TODO this should be u16 - left for now to keep debug data compatible
     pub tyre_compound: u8,
     pub session_type: u8,
     pub lap_number: u8,
