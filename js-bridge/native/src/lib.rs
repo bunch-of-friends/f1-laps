@@ -141,25 +141,25 @@ fn build_lap_metadata_js_object<'a>(
         JsString::new(scope, metadata.identifier.as_str()).unwrap(),
     );
     object.set(
-        "recorded_date",
+        "recordedDate",
         JsString::new(scope, metadata.recorded_date.as_str()).unwrap(),
     );
-    object.set("track_id", JsNumber::new(scope, metadata.track_id as f64));
-    object.set("team_id", JsNumber::new(scope, metadata.team_id as f64));
+    object.set("trackId", JsNumber::new(scope, metadata.track_id as f64));
+    object.set("teamId", JsNumber::new(scope, metadata.team_id as f64));
     object.set("era", JsNumber::new(scope, metadata.era as f64));
     object.set(
-        "tyre_compount",
+        "tyreCompound",
         JsNumber::new(scope, metadata.tyre_compount as f64),
     );
     object.set(
-        "session_type",
+        "sessionType",
         JsNumber::new(scope, metadata.session_type as f64),
     );
     object.set(
-        "lap_number",
+        "lapNumber",
         JsNumber::new(scope, metadata.lap_number as f64),
     );
-    object.set("lap_time", JsNumber::new(scope, metadata.lap_time as f64));
+    object.set("lapTime", JsNumber::new(scope, metadata.lap_time as f64));
     object.set(
         "note",
         JsString::new(scope, metadata.note.as_str()).unwrap(),
