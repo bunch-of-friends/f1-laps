@@ -5,19 +5,19 @@ fn main() {
 
     f1_laps_core::initialise("../_data-storage".to_string());
 
-    let metadata = f1_laps_core::get_all_laps_metadata();
-    println!("metadata >> {:?}", metadata);
+    // let metadata = f1_laps_core::get_all_laps_metadata();
+    // println!("metadata >> {:?}", metadata);
 
-    let lap_data = f1_laps_core::get_lap_data(metadata[0].identifier.clone());
-    println!("lap data len >> {:?}", lap_data.len());
+    // let lap_data = f1_laps_core::get_lap_data(metadata[0].identifier.clone());
+    // println!("lap data len >> {:?}", lap_data.len());
 
-    f1_laps_core::replay_lap(metadata[0].identifier.clone());
+    // f1_laps_core::replay_lap(metadata[0].identifier.clone());
 
-    let records = f1_laps_core::get_all_records();
-    println!("records >> {:?}", records);
+    // let records = f1_laps_core::get_all_records();
+    // println!("records >> {:?}", records);
 
     // f1_laps_core::replay_all_laps();
-    // f1_laps_core::start_listening(20777, true);
+    f1_laps_core::start_listening(20777);
 
     subscribe_to_ticks();
 }

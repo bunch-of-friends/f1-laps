@@ -9,7 +9,7 @@ core.liveData.register(data => console.log('liveData >> ', data.currentGear));
 core.lapFinished.register(data => console.log('lapFinished >> ', data));
 core.sectorFinished.register(data => console.log('sectorFinished >> ', data));
 
-// core.startListening(20777, true);
+// core.startListening(20777);
 core.replayAllLaps();
 
 // let metadata = core.getAllLapsMetadata();

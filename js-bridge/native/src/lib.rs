@@ -25,19 +25,13 @@ fn initialise(call: Call) -> JsResult<JsUndefined> {
 
 fn start_listening(call: Call) -> JsResult<JsUndefined> {
     let port_handle = call.arguments.get(call.scope, 0).unwrap();
-    let should_store_replay_handle = call.arguments.get(call.scope, 1).unwrap();
 
     let port = port_handle
         .downcast::<JsNumber>()
         .expect("failed to downcast port argument")
         .value() as i32;
 
-    let should_store_replay = should_store_replay_handle
-        .downcast::<JsBoolean>()
-        .expect("failed to downcast shouldStoreReplay argument")
-        .value() as bool;
-
-    f1_laps_core::start_listening(port, should_store_replay);
+    f1_laps_core::start_listening(port);
 
     Ok(JsUndefined::new())
 }
