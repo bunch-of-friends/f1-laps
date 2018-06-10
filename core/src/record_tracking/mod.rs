@@ -40,6 +40,7 @@ impl RecordSet {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Record {
     pub lap: [f32; 4],
+    pub lap_data_identifier: String,
     pub sectors: [f32; 3],
 }
 
@@ -47,6 +48,7 @@ impl Record {
     pub fn new() -> Record {
         Record {
             lap: [-1 as f32, -1 as f32, -1 as f32, -1 as f32],
+            lap_data_identifier: String::new(),
             sectors: [-1 as f32, -1 as f32, -1 as f32],
         }
     }
@@ -60,11 +62,11 @@ impl Record {
         return is_better;
     }
 
-    pub fn is_better_lap(&mut self, lap: [f32; 4]) -> bool {
+    pub fn is_better_lap(&mut self, lap: [f32; 4], lap_data_identifier: &str) -> bool {
         let record_time = self.lap[0];
         let is_better = record_time <= 0 as f32 || record_time > lap[0];
         if is_better {
-            self.update_lap(lap);
+            self.update_lap(lap, lap_data_identifier);
         }
         return is_better;
     }
@@ -73,7 +75,8 @@ impl Record {
         self.sectors[sector as usize] = sector_time;
     }
 
-    fn update_lap(&mut self, lap: [f32; 4]) {
+    fn update_lap(&mut self, lap: [f32; 4], lap_data_identifier: &str) {
         self.lap = lap;
+        self.lap_data_identifier = String::from(lap_data_identifier);
     }
 }

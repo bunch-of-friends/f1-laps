@@ -8,7 +8,7 @@ use udp::packet::Packet;
 pub struct Tracker {
     pub current_session: Option<Session>,
     pub record_tracker: Option<RecordTracker>,
-    pub last_lap: Option<Lap>,
+    pub last_lap: Option<(Lap, LapMetadata)>,
 
     pub current_lap_number: f32,
     pub current_sector_times: [f32; 3],
@@ -22,8 +22,8 @@ impl Tracker {
     pub fn track(
         &mut self,
         packet: &Packet,
-        should_store: bool,
-    ) -> (Option<Session>, Option<Sector>, Option<Lap>) {
+        is_replay: bool,
+    ) -> (Option<Session>, Option<Sector>, Option<(Lap, LapMetadata)>) {
         let is_first_packet = self.current_session.is_none();
 
         let is_current_session = self.is_packet_from_current_session(&packet);
@@ -44,16 +44,16 @@ impl Tracker {
             self.last_lap = finished_lap;
         }
 
-        if should_store && self.should_store_records(&finished_sector, &finished_lap) {
+        if !is_replay && self.should_store_records(&finished_sector, self.last_lap.as_ref()) {
             self.store_records();
         }
 
-        self.track_lap_packets(packet, should_store, is_current_lap);
+        self.track_lap_packets(packet, !is_replay, is_current_lap);
 
         if is_first_packet {
             return (started_session, None, None);
         } else {
-            return (started_session, finished_sector, finished_lap);
+            return (started_session, finished_sector, self.last_lap.clone());
         }
     }
 
@@ -67,7 +67,7 @@ impl Tracker {
         let unwrapped = self.current_session.unwrap();
         return unwrapped.era == (packet.era as u16)
             && unwrapped.session_type == (packet.session_type as u8)
-            && unwrapped.team_id == (packet.team_id as u16)
+            && unwrapped.team_id == (packet.team_id as u8)
             && unwrapped.track_id == (packet.track_id as u8);
     }
 
@@ -87,7 +87,7 @@ impl Tracker {
         let session = Session {
             era: packet.era as u16,
             track_id: packet.track_id as u8,
-            team_id: packet.team_id as u16,
+            team_id: packet.team_id as u8,
             session_type: packet.session_type as u8,
             session_time_stamp: packet.time,
         };
@@ -98,7 +98,7 @@ impl Tracker {
         return Some(session);
     }
 
-    fn track_lap(&mut self, packet: &Packet, is_current_lap: bool) -> Option<Lap> {
+    fn track_lap(&mut self, packet: &Packet, is_current_lap: bool) -> Option<(Lap, LapMetadata)> {
         if is_current_lap {
             return None;
         } else {
@@ -107,7 +107,12 @@ impl Tracker {
         }
     }
 
-    fn track_lap_packets(&mut self, packet: &Packet, should_store_packets: bool, is_current_lap: bool) {
+    fn track_lap_packets(
+        &mut self,
+        packet: &Packet,
+        should_store_packets: bool,
+        is_current_lap: bool
+    ) {
         let mut lap_packets = self.lap_packets.clone();
         let is_empty = lap_packets.is_none();
         if is_empty {
@@ -119,12 +124,10 @@ impl Tracker {
 
         if !is_empty && !is_current_lap {
             if should_store_packets && self.has_all_sector_times() {
-                let session = self.current_session.unwrap();
-                let lap = self.last_lap.unwrap();
                 let packets_to_store = unwrapped.clone();
+                let m = self.last_lap.as_ref().unwrap().1.clone();
                 thread::spawn(move || {
-                    let metadata = LapMetadata::new(&lap, &session);
-                    storage::store_lap(packets_to_store, metadata);
+                    storage::store_lap(packets_to_store, &m);
                 });
             }
             unwrapped = vec![];
@@ -133,12 +136,12 @@ impl Tracker {
         self.lap_packets = Some(unwrapped);
     }
 
-    fn should_store_records(&self, sector: &Option<Sector>, lap: &Option<Lap>) -> bool {
+    fn should_store_records(&self, sector: &Option<Sector>, lap: Option<&(Lap, LapMetadata)>) -> bool {
         if sector.is_some() && sector.unwrap().record_marker.has_any_best_ever_records() {
             return true;
         }
 
-        if lap.is_some() && lap.unwrap().record_marker.has_any_best_ever_records() {
+        if lap.is_some() && lap.unwrap().0.record_marker.has_any_best_ever_records() {
             return true;
         }
 
@@ -165,7 +168,7 @@ impl Tracker {
         }
     }
 
-    fn build_lap_object(&mut self, packet: &Packet) -> Lap {
+    fn build_lap_object(&mut self, packet: &Packet) -> (Lap, LapMetadata) {
         let lap_number = self.get_previous_lap_number(packet.lap as u8); // as current packet is already from the newly started lap
         let lap_time = packet.last_lap_time;
         let sector1_time = self.current_sector_times[0];
@@ -173,12 +176,25 @@ impl Tracker {
         let sector3_time = self.current_sector_times[2];
         let tyre_compound = packet.tyre_compound;
 
+        let session = &self.current_session.as_ref().unwrap();
+
+        let metadata = LapMetadata::new(
+            session.session_type,
+            session.track_id,
+            session.team_id,
+            session.era as i16,
+            tyre_compound,
+            lap_number,
+            [lap_time, sector1_time, sector2_time, sector3_time]
+        );
+
         let record_marker = self.record_tracker.as_mut().unwrap().track_lap_finished(
             [lap_time, sector1_time, sector2_time, sector3_time],
             tyre_compound,
+            &metadata.identifier,
         );
 
-        Lap {
+        let lap = Lap {
             session_time_stamp: packet.time,
             lap_number: lap_number,
             lap_time: lap_time,
@@ -187,7 +203,9 @@ impl Tracker {
             sector3_time: sector3_time,
             tyre_compound: tyre_compound,
             record_marker: record_marker,
-        }
+        };
+
+        return (lap, metadata);
     }
 
     fn get_previous_lap_number(&self, current_lap_number: u8) -> u8 {

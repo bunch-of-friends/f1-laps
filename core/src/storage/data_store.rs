@@ -28,6 +28,10 @@ impl DataStore {
         return self.laps_metadata.clone().unwrap();
     }
 
+    pub fn get_all_records(&self) -> RecordSet {
+        return self.record_set.clone().unwrap();
+    }
+
     pub fn get_lap_data(&self, identifier: &str) -> Option<Vec<Packet>> {
         return file_system::get_lap_data(identifier, &self.path_helper.as_ref().unwrap());
     }
@@ -36,9 +40,9 @@ impl DataStore {
         return file_system::get_all_laps_data(&self.path_helper.as_ref().unwrap());
     }
 
-    pub fn store_lap(&mut self, packets: Vec<Packet>, metadata: LapMetadata) {
-        self.store_lap_metadata(&metadata);
-        file_system::store_lap_packets(&packets, &metadata, &self.path_helper.as_ref().unwrap());
+    pub fn store_lap(&mut self, packets: Vec<Packet>, metadata: &LapMetadata) {
+        self.store_lap_metadata(metadata);
+        file_system::store_lap_packets(&packets, metadata, &self.path_helper.as_ref().unwrap());
     }
 
     pub fn get_record_tracker(&self, track_id: u8, era: u16) -> RecordTracker {

@@ -34,8 +34,8 @@ impl RecordTracker {
         }
     }
 
-    pub fn track_lap_finished(&mut self, lap: [f32; 4], tyre_compound: u8) -> RecordMarker {
-        let results = self.is_best_ever_lap(lap, tyre_compound);
+    pub fn track_lap_finished(&mut self, lap: [f32; 4], tyre_compound: u8, lap_data_identifier: &str) -> RecordMarker {
+        let results = self.is_best_ever_lap(lap, tyre_compound, lap_data_identifier);
 
         RecordMarker {
             is_best_ever_personal: results.0,
@@ -78,14 +78,14 @@ impl RecordTracker {
         return (best_overall, best_compound);
     }
 
-    fn is_best_ever_lap(&mut self, lap: [f32; 4], tyre_compound: u8) -> (bool, bool) {
+    fn is_best_ever_lap(&mut self, lap: [f32; 4], tyre_compound: u8, lap_data_identifier: &str) -> (bool, bool) {
         let mut best_overall = true;
         let mut best_compound = true;
 
         let records = self.records.clone();
 
         for (compound, _) in records.iter() {
-            let is_better = self.records.get_mut(compound).unwrap().is_better_lap(lap);
+            let is_better = self.records.get_mut(compound).unwrap().is_better_lap(lap, lap_data_identifier);
             if !is_better {
                 best_overall = false;
                 if compound == &tyre_compound {

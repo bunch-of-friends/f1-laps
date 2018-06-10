@@ -13,6 +13,9 @@ fn main() {
 
     f1_laps_core::replay_lap(metadata[0].identifier.clone());
 
+    let records = f1_laps_core::get_all_records();
+    println!("records >> {:?}", records);
+
     // f1_laps_core::replay_all_laps();
     // f1_laps_core::start_listening(20777, true);
 

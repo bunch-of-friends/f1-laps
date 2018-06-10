@@ -13,7 +13,7 @@ pub struct Tick {
 pub struct Session {
     pub track_id: u8,
     pub session_type: u8,
-    pub team_id: u16,
+    pub team_id: u8,
     pub era: u16,
     pub session_time_stamp: f32,
 }

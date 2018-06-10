@@ -1,7 +1,7 @@
 pub mod tick;
 pub mod tracker;
 
-use self::tick::{LiveData, Tick};
+use self::tick::{Lap, LiveData, Tick};
 use self::tracker::Tracker;
 
 use udp::packet::Packet;
@@ -17,20 +17,25 @@ static mut TRACKER: Tracker = Tracker {
     current_session_time: -1 as f32,
 };
 
-pub fn process_packet(packet: &Packet, should_store_packets: bool) -> Option<Tick> {
+pub fn process_packet(packet: &Packet, is_replay: bool) -> Option<Tick> {
     if packet.is_spectating == 1 {
         println!("spectating");
         return None;
     }
 
-    let tracking_data = unsafe { TRACKER.track(&packet, should_store_packets) };
+    let tracking_data = unsafe { TRACKER.track(&packet, is_replay) };
     let live_data = build_live_data(&packet);
+
+    let mut lap_finished: Option<Lap> = None;
+    if tracking_data.2.is_some() {
+        lap_finished = Some(tracking_data.2.unwrap().0);
+    }
 
     let tick = Tick {
         live_data: live_data,
         session_started: tracking_data.0,
         sector_finished: tracking_data.1,
-        lap_finished: tracking_data.2,
+        lap_finished: lap_finished,
     };
 
     return Some(tick);

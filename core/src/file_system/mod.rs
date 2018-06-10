@@ -1,10 +1,12 @@
+pub mod path_helper;
+
 use bincode;
 use lap_metadata::LapMetadata;
 use record_tracking::RecordSet;
 use std::fs::{create_dir, read_dir, File};
 use std::path::Path;
 use storage::data_store::DataStore;
-use storage::path_helper::PathHelper;
+use self::path_helper::PathHelper;
 use udp::packet::Packet;
 
 pub fn initialise(storage_folder_path: &str) -> DataStore {

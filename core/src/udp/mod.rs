@@ -10,7 +10,7 @@ use self::packet::Packet;
 use aggregation::process_packet;
 use aggregation::tick::Tick;
 
-pub fn start_listening(port: i32, tx: mpsc::Sender<Tick>, should_store_packets: bool) {
+pub fn start_listening(port: i32, tx: mpsc::Sender<Tick>) {
     let socket = bind_to_address(format!("0.0.0.0:{}", port));
 
     let mut buf = [0; 1289]; //fixed sized for the f1 2017 game
@@ -25,7 +25,7 @@ pub fn start_listening(port: i32, tx: mpsc::Sender<Tick>, should_store_packets: 
             let packet = receive_packet(&mut buf[..amt]);
 
             // process the data
-            let tick = process_packet(&packet, should_store_packets);
+            let tick = process_packet(&packet, false);
 
             if tick.is_some() {
                 tx.send(tick.unwrap())

@@ -9,11 +9,13 @@ pub mod replay;
 pub mod storage;
 pub mod udp;
 pub mod lap_metadata;
+pub mod file_system;
 
 use aggregation::tick::{Lap, LiveData, Sector, Session, Tick};
 use lap_metadata::LapMetadata;
 use std::sync::mpsc;
 use std::thread;
+use record_tracking::RecordSet;
 
 static mut DATA_HOLDER: DataHolder = DataHolder {
     session: None,
@@ -26,11 +28,11 @@ pub fn initialise(storage_folder_path: String) {
     storage::initialise(&storage_folder_path);
 }
 
-pub fn start_listening(port: i32, should_store_replay: bool) {
+pub fn start_listening(port: i32) {
     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
     thread::spawn(move || {
-        udp::start_listening(port, tx, should_store_replay);
+        udp::start_listening(port, tx);
     });
 
     thread::spawn(move || loop {
@@ -58,6 +60,10 @@ pub fn get_all_laps_metadata() -> Vec<LapMetadata> {
     return storage::get_all_laps_metadata();
 }
 
+pub fn get_all_records() -> RecordSet  {
+    return storage::get_all_records();
+}
+
 pub fn get_lap_data(identifier: String) -> Vec<LiveData> {
     let packets = match storage::get_lap_data(&identifier) {
         Some(x) => x,
@@ -71,7 +77,7 @@ pub fn replay_lap(identifier: String) {
     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
     thread::spawn(move || match storage::get_lap_data(&identifier) {
-        Some(packets) => replay::stream_packets(tx, &packets, false, false),
+        Some(packets) => replay::stream_packets(tx, &packets),
         None => println!("no lap data found for identifier: {}", identifier), // TODO: add some sort of messaging/feedback mechanism
     });
 
@@ -83,16 +89,9 @@ pub fn replay_lap(identifier: String) {
 pub fn replay_all_laps() {
     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
-    // always false for replayed data, but can be set to true for debugging/testing purposes
-    // will will store all the packets (duplicating them) like if they were received via udp
-    let should_store_packets = false;
-
-    // only set to true for debugging, all packets will be streamed at once
-    let disable_sleep = false;
-
     thread::spawn(move || {
         let packets = storage::get_all_laps_data();
-        replay::stream_packets(tx, &packets, should_store_packets, disable_sleep);
+        replay::stream_packets(tx, &packets);
     });
 
     thread::spawn(move || loop {
