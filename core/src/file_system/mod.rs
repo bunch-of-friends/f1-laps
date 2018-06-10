@@ -1,10 +1,12 @@
+pub mod path_helper;
+
 use bincode;
 use lap_metadata::LapMetadata;
 use record_tracking::RecordSet;
 use std::fs::{create_dir, read_dir, File};
 use std::path::Path;
 use storage::data_store::DataStore;
-use storage::path_helper::PathHelper;
+use self::path_helper::PathHelper;
 use udp::packet::Packet;
 
 pub fn initialise(storage_folder_path: &str) -> DataStore {
@@ -20,10 +22,16 @@ pub fn store_lap_packets(packets: &Vec<Packet>, metadata: &LapMetadata, path_hel
     bincode::serialize_into(file, packets).unwrap();
 }
 
-pub fn store_metadata(metadata: &Vec<LapMetadata>, path_helper: &PathHelper) {
+pub fn store_laps_metadata(metadata: &Vec<LapMetadata>, path_helper: &PathHelper) {
     let path = path_helper.get_laps_metadata_file_path();
+    let file = File::create(path).expect("failed to create laps metadata file");
+    bincode::serialize_into(file, metadata).expect("failed to serialise laps metadata file");
+}
+
+pub fn store_records(records: &RecordSet, path_helper: &PathHelper) {
+    let path = path_helper.get_records_file_path();
     let file = File::create(path).expect("failed to create records file");
-    bincode::serialize_into(file, &metadata).expect("failed to serialise records file");
+    bincode::serialize_into(file, records).expect("failed to serialise records file");
 }
 
 pub fn get_lap_data(identifier: &str, path_helper: &PathHelper) -> Option<Vec<Packet>> {

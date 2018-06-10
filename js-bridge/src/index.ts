@@ -324,10 +324,10 @@ function getNextTick() {
     }
 }
 
-export function startListening(port = 20777, shouldStoreReplay = false) {
+export function startListening(port = 20777) {
     checkInitialised();
 
-    core.startListening(port, shouldStoreReplay);
+    core.startListening(port);
 }
 
 export function replayAllLaps() {

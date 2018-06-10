@@ -1,11 +1,12 @@
-mod data_store;
-mod file_system;
-mod path_helper;
+pub mod data_store;
 
 use self::data_store::DataStore;
+use file_system;
+use file_system::path_helper;
 use lap_metadata::LapMetadata;
-use udp::packet::Packet;
 use record_tracking::record_tracker::RecordTracker;
+use record_tracking::RecordSet;
+use udp::packet::Packet;
 
 static mut DATA_STORE: DataStore = DataStore {
     laps_metadata: None,
@@ -26,6 +27,12 @@ pub fn get_all_laps_metadata() -> Vec<LapMetadata> {
     }
 }
 
+pub fn get_all_records() -> RecordSet {
+    unsafe {
+        return DATA_STORE.get_all_records();
+    }
+}
+
 pub fn get_all_laps_data() -> Vec<Packet> {
     unsafe {
         return DATA_STORE.get_all_laps_data();
@@ -38,14 +45,20 @@ pub fn get_lap_data(identifier: &str) -> Option<Vec<Packet>> {
     }
 }
 
-pub fn store_lap(packets: Vec<Packet>, metadata: LapMetadata) {
+pub fn store_lap(packets: Vec<Packet>, metadata: &LapMetadata) {
     unsafe {
         DATA_STORE.store_lap(packets, metadata);
     }
 }
 
-    pub fn get_record_tracker(track_id: u8, era: u16) -> RecordTracker {
-        unsafe {
-            return DATA_STORE.get_record_tracker(track_id, era);
-        }
+pub fn get_record_tracker(track_id: u8, era: u16) -> RecordTracker {
+    unsafe {
+        return DATA_STORE.get_record_tracker(track_id, era);
     }
+}
+
+pub fn store_records(record_tracker: &RecordTracker) {
+    unsafe {
+        return DATA_STORE.store_records(record_tracker);
+    }
+}
