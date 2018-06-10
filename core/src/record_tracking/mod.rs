@@ -33,7 +33,7 @@ impl RecordSet {
     }
 
     fn build_track_record_key(&self, track_id: u8, era: u16) -> String {
-        return format!("{}{}", era, track_id);
+        return format!("{}_{}", era, track_id);
     }
 }
 

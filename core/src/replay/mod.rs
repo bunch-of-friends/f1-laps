@@ -5,13 +5,13 @@ use std::time::{Duration, Instant};
 use thread;
 use udp::packet::Packet;
 
-pub fn stream_packets(tx: mpsc::Sender<Tick>, packets: &Vec<Packet>) {
+pub fn stream_packets(tx: mpsc::Sender<Tick>, packets: Vec<Packet>) {
     println!("streaming stored packets");
     let packets_len = packets.len();
 
-    let mut last_packet: Option<(&Packet, Instant)> = None;
+    let mut last_packet: Option<(Packet, Instant)> = None;
     for packet in packets {
-        let tick = process_packet(&packet, true);
+        let tick = process_packet(packet, true);
 
         if tick.is_some() {
             // this whole block is here temporarily for some tests, then it will either go or get some love

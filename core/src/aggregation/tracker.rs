@@ -14,14 +14,22 @@ pub struct Tracker {
     pub current_sector_times: [f32; 3],
     pub current_sector: f32,
     pub current_session_time: f32,
+    pub current_lap_valid: bool,
 
     pub lap_packets: Option<Vec<Packet>>,
 }
 
 impl Tracker {
+    pub fn check_itinialised(&mut self) {
+        if self.lap_packets.is_none() {
+            println!("initialising lap_packets");
+            self.lap_packets = Some(Vec::new());
+        }
+    }
+
     pub fn track(
         &mut self,
-        packet: &Packet,
+        packet: Packet,
         is_replay: bool,
     ) -> (Option<Session>, Option<Sector>, Option<(Lap, LapMetadata)>) {
         let is_first_packet = self.current_session.is_none();
@@ -37,10 +45,12 @@ impl Tracker {
             self.record_tracker = Some(storage::get_record_tracker(s.track_id, s.era))
         }
 
-        let finished_sector = self.track_sector(&packet, is_current_sector);
-        let finished_lap = self.track_lap(&packet, is_current_lap);
+        let finished_sector = self.track_sector(&packet, is_current_sector && !is_first_packet);
+        let finished_lap = self.track_lap(&packet, is_current_lap && !is_first_packet);
 
-        if finished_lap.is_some() {
+        let finished_lap_clone = finished_lap.clone();
+        let is_finished_lap = finished_lap.is_some();
+        if is_finished_lap {
             self.last_lap = finished_lap;
         }
 
@@ -50,10 +60,19 @@ impl Tracker {
 
         self.track_lap_packets(packet, !is_replay, is_current_lap);
 
+        if is_finished_lap {
+            self.current_sector_times[0] = -1 as f32;
+            self.current_sector_times[1] = -1 as f32;
+            self.current_sector_times[2] = -1 as f32;
+        }
+
+        self.current_lap_valid =
+            (packet.is_spectating != 1 as u8) && (packet.current_lap_invalid != 1 as u8);
+
         if is_first_packet {
             return (started_session, None, None);
         } else {
-            return (started_session, finished_sector, self.last_lap.clone());
+            return (started_session, finished_sector, finished_lap_clone);
         }
     }
 
@@ -103,40 +122,42 @@ impl Tracker {
             return None;
         } else {
             self.current_lap_number = packet.lap;
-            return Some(self.build_lap_object(&packet));
+            let result = Some(self.build_finished_lap(&packet));
+
+            return result;
         }
     }
 
     fn track_lap_packets(
         &mut self,
-        packet: &Packet,
+        packet: Packet,
         should_store_packets: bool,
-        is_current_lap: bool
+        is_current_lap: bool,
     ) {
-        let mut lap_packets = self.lap_packets.clone();
-        let is_empty = lap_packets.is_none();
-        if is_empty {
-            lap_packets = Some(vec![]);
+        let has_all_sector_times = self.has_all_sector_times();
+        let lap_packets = self.lap_packets.as_mut().expect("lap packets not set!");
+        lap_packets.push(packet);
+
+        let is_first_packet = lap_packets.len() == 1;
+
+        if !is_first_packet && !is_current_lap && has_all_sector_times && should_store_packets {
+            let packets_to_store = lap_packets.clone();
+            let m = self.last_lap.as_ref().unwrap().1.clone();
+            thread::spawn(move || {
+                storage::store_lap(packets_to_store, &m);
+            });
         }
 
-        let mut unwrapped = lap_packets.unwrap();
-        unwrapped.push(packet.clone());
-
-        if !is_empty && !is_current_lap {
-            if should_store_packets && self.has_all_sector_times() {
-                let packets_to_store = unwrapped.clone();
-                let m = self.last_lap.as_ref().unwrap().1.clone();
-                thread::spawn(move || {
-                    storage::store_lap(packets_to_store, &m);
-                });
-            }
-            unwrapped = vec![];
+        if !is_first_packet && !is_current_lap {
+            lap_packets.clear();
         }
-
-        self.lap_packets = Some(unwrapped);
     }
 
-    fn should_store_records(&self, sector: &Option<Sector>, lap: Option<&(Lap, LapMetadata)>) -> bool {
+    fn should_store_records(
+        &self,
+        sector: &Option<Sector>,
+        lap: Option<&(Lap, LapMetadata)>,
+    ) -> bool {
         if sector.is_some() && sector.unwrap().record_marker.has_any_best_ever_records() {
             return true;
         }
@@ -153,6 +174,13 @@ impl Tracker {
     }
 
     fn has_all_sector_times(&self) -> bool {
+        println!(
+            "{} {} {}",
+            self.current_sector_times[0],
+            self.current_sector_times[1],
+            self.current_sector_times[2]
+        );
+
         return (self.current_sector_times[0] > 0 as f32)
             && (self.current_sector_times[1] > 0 as f32)
             && (self.current_sector_times[2] > 0 as f32);
@@ -168,13 +196,19 @@ impl Tracker {
         }
     }
 
-    fn build_lap_object(&mut self, packet: &Packet) -> (Lap, LapMetadata) {
+    fn is_full_lap(&self, sector1_time: f32, sector2_time: f32, sector3_time: f32) -> bool {
+        return sector1_time > 0 as f32 && sector2_time > 0 as f32 && sector3_time > 0 as f32;
+    }
+
+    fn build_finished_lap(&mut self, packet: &Packet) -> (Lap, LapMetadata) {
         let lap_number = self.get_previous_lap_number(packet.lap as u8); // as current packet is already from the newly started lap
         let lap_time = packet.last_lap_time;
         let sector1_time = self.current_sector_times[0];
         let sector2_time = self.current_sector_times[1];
         let sector3_time = self.current_sector_times[2];
         let tyre_compound = packet.tyre_compound;
+        let is_lap_valid =
+            self.current_lap_valid && self.is_full_lap(sector1_time, sector2_time, sector3_time);
 
         let session = &self.current_session.as_ref().unwrap();
 
@@ -182,13 +216,15 @@ impl Tracker {
             session.session_type,
             session.track_id,
             session.team_id,
-            session.era as i16,
+            session.era,
             tyre_compound,
             lap_number,
-            [lap_time, sector1_time, sector2_time, sector3_time]
+            [lap_time, sector1_time, sector2_time, sector3_time],
+            is_lap_valid,
         );
 
         let record_marker = self.record_tracker.as_mut().unwrap().track_lap_finished(
+            is_lap_valid,
             [lap_time, sector1_time, sector2_time, sector3_time],
             tyre_compound,
             &metadata.identifier,
@@ -212,7 +248,7 @@ impl Tracker {
         if current_lap_number > 0 {
             return current_lap_number - 1;
         } else {
-            panic!("how is this even possible??");
+            return 0;
         }
     }
 
@@ -241,9 +277,12 @@ impl Tracker {
             return (2 as u8, time);
         } else if packet.sector == 1 as f32 {
             self.current_sector_times[0] = packet.sector1_time;
+            self.current_sector_times[1] = -1 as f32;
+            self.current_sector_times[2] = -1 as f32;
             return (0 as u8, packet.sector1_time);
         } else if packet.sector == 2 as f32 {
             self.current_sector_times[1] = packet.sector2_time;
+            self.current_sector_times[2] = -1 as f32;
             return (1 as u8, packet.sector2_time);
         } else {
             panic!("unexpected sector number: , {}", packet.sector)

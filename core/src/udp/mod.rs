@@ -25,7 +25,7 @@ pub fn start_listening(port: i32, tx: mpsc::Sender<Tick>) {
             let packet = receive_packet(&mut buf[..amt]);
 
             // process the data
-            let tick = process_packet(&packet, false);
+            let tick = process_packet(packet, false);
 
             if tick.is_some() {
                 tx.send(tick.unwrap())

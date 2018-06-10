@@ -6,12 +6,13 @@ pub struct LapMetadata {
     pub recorded_date: String,
     pub track_id: u8,
     pub team_id: u8,
-    pub era: i16, //TODO this should be u16 - left for now to keep debug data compatible
+    pub era: u16,
     pub tyre_compound: u8,
     pub session_type: u8,
     pub lap_number: u8,
     pub lap_time: f32,
     pub sector_times: [f32; 3],
+    pub is_valid: bool,
     pub note: String,
 }
 
@@ -20,10 +21,11 @@ impl LapMetadata {
         session_type: u8,
         track_id: u8,
         team_id: u8,
-        era: i16,
+        era: u16,
         tyre_compound: u8,
         lap_number: u8,
         lap_time: [f32; 4],
+        is_valid: bool,
     ) -> LapMetadata {
         let date = Utc::now();
         let identifier = format!(
@@ -44,6 +46,7 @@ impl LapMetadata {
             lap_number: lap_number,
             lap_time: lap_time[0],
             sector_times: [lap_time[1], lap_time[2], lap_time[3]],
+            is_valid: is_valid,
             note: String::new(),
         }
     }

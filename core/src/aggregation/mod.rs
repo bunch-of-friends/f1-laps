@@ -15,15 +15,20 @@ static mut TRACKER: Tracker = Tracker {
     current_sector_times: [-1 as f32, -1 as f32, -1 as f32],
     current_sector: -1 as f32,
     current_session_time: -1 as f32,
+    current_lap_valid: true,
 };
 
-pub fn process_packet(packet: &Packet, is_replay: bool) -> Option<Tick> {
+pub fn process_packet(packet: Packet, is_replay: bool) -> Option<Tick> {
     if packet.is_spectating == 1 {
         println!("spectating");
         return None;
     }
 
-    let tracking_data = unsafe { TRACKER.track(&packet, is_replay) };
+    let tracking_data = unsafe {
+        TRACKER.check_itinialised();
+        TRACKER.track(packet, is_replay)
+    };
+
     let live_data = build_live_data(&packet);
 
     let mut lap_finished: Option<Lap> = None;
