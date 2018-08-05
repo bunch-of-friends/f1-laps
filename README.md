@@ -9,10 +9,12 @@ Current plan
 
 ## Structure
 
+### Modules
 - **core** - Main library, written in Rust, containing most of the logic - receiving the packets, processing them, storing them.
-- **desktop** - An [Electron](https://github.com/electron/electron) app, currenntly in early stages.
 - **js-bridge** -Mapping to the JS world (Node.js specifically) using [neon](https://crates.io/crates/neon).
-- **hue** -A placeholder. There is nothing interesting there at the moment. But that's where the Hue EDK integration will be kept.
+
+### Apps
+- **desktop** - An [Electron](https://github.com/electron/electron) app, currenntly in early stages.
 - **node-demo** - Just a small node app to execute some quick tests.
 
 ## Disclaimer
@@ -23,5 +25,4 @@ None of us working on this project are by far Rust experts. We are experienced s
 
 1. Make sure you have the latest stable [Rust installed](https://doc.rust-lang.org/book/second-edition/ch01-01-installation.html)
 2. Clone the repo
-3. Navigate to the `js-bridge` folder and `npm install` there
-4. Go to the `desktop` folder, run `npm install` there and then `npm run start`
+3. Run `sh ./start.sh` in the root

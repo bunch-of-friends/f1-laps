@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "main": "index.js",
     "scripts": {
-        "refresh": "cd ../modules/js-bridge && npm i",
+        "refresh": "cd ../../modules/js-bridge && npm i",
         "start": "node ./index.js"
     },
     "maintainers": [

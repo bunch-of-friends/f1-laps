@@ -4,6 +4,7 @@
   "description": "F1 laps desktop app",
   "main": "index.js",
   "scripts": {
+    "refresh": "cd ../../modules/js-bridge && npm i",
     "start": "electron ."
   },
   "author": "",
