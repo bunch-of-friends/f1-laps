@@ -43,9 +43,6 @@ pub fn start_listening(port: i32) {
 
 pub fn get_next_tick() -> Option<Tick> {
     let mut data_holder = DATA_HOLDER.lock().unwrap();
-    if data_holder.has_data() {
-        return None;
-    }
 
     let data = data_holder.get_data();
 

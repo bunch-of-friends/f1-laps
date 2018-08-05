@@ -17,10 +17,6 @@ impl Collector {
         }
     }
 
-    pub fn has_data(&self) -> bool {
-        return self.live_data.is_some();
-    }
-
     pub fn set_data(&mut self, tick: Tick) {
         self.live_data = Some(tick.live_data);
 
@@ -37,13 +33,15 @@ impl Collector {
         }
     }
 
-    pub fn get_data(&mut self) -> (Option<LiveData>, Option<Session>, Option<Lap>, Option<Sector>) {
-        let res = (
-            self.live_data,
-            self.session,
-            self.lap,
-            self.sector,
-        );
+    pub fn get_data(
+        &mut self,
+    ) -> (
+        Option<LiveData>,
+        Option<Session>,
+        Option<Lap>,
+        Option<Sector>,
+    ) {
+        let res = (self.live_data, self.session, self.lap, self.sector);
 
         self.live_data = None;
         self.session = None;
