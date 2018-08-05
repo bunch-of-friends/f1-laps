@@ -37,9 +37,9 @@ impl Collector {
         }
     }
 
-    pub fn get_data(&mut self) -> (LiveData, Option<Session>, Option<Lap>, Option<Sector>) {
+    pub fn get_data(&mut self) -> (Option<LiveData>, Option<Session>, Option<Lap>, Option<Sector>) {
         let res = (
-            self.live_data.expect("live data not set"),
+            self.live_data,
             self.session,
             self.lap,
             self.sector,

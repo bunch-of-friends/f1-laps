@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "main": "index.js",
     "scripts": {
-        "build": "cd ../js-bridge && npm i",
+        "refresh": "cd ../../modules/js-bridge && npm i",
         "start": "node ./index.js"
     },
     "maintainers": [
@@ -14,6 +14,6 @@
     ],
     "license": "MIT",
     "dependencies": {
-        "f1-laps-js-bridge": "file:../js-bridge"
+        "f1-laps-js-bridge": "file:../../modules/js-bridge"
     }
 }

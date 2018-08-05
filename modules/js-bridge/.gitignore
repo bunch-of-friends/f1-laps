@@ -1,3 +1,5 @@
 node_modules
 native/target
 native/index.node
+lib
+package-lock.json

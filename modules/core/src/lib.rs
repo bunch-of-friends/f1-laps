@@ -49,13 +49,16 @@ pub fn get_next_tick() -> Option<Tick> {
 
     let data = data_holder.get_data();
 
-    let tick = Tick {
-        live_data: data.0,
-        session_started: data.1,
-        lap_finished: data.2,
-        sector_finished: data.3,
-    };
-    return Some(tick);
+    if let Some(live_data) = data.0 {
+        Some(Tick {
+            live_data: live_data,
+            session_started: data.1,
+            lap_finished: data.2,
+            sector_finished: data.3,
+        })
+    } else {
+        None
+    }
 }
 
 pub fn get_all_laps_metadata() -> Vec<LapMetadata> {
