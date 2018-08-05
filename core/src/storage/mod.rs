@@ -6,59 +6,45 @@ use file_system::path_helper;
 use lap_metadata::LapMetadata;
 use record_tracking::record_tracker::RecordTracker;
 use record_tracking::RecordSet;
+use std::sync::Mutex;
 use udp::packet::Packet;
 
-static mut DATA_STORE: DataStore = DataStore {
-    laps_metadata: None,
-    record_set: None,
-    path_helper: None,
-};
+lazy_static! {
+    static ref DATA_STORE: Mutex<DataStore> = Mutex::new(DataStore::new());
+}
 
 pub fn initialise(storage_folder_path: &str) {
-    let store = file_system::initialise(storage_folder_path);
-    unsafe {
-        DATA_STORE = store;
-    }
+    let fs_init_result = file_system::initialise(storage_folder_path);
+    DATA_STORE
+        .lock()
+        .unwrap()
+        .initialise(fs_init_result.0, fs_init_result.1, fs_init_result.2)
 }
 
 pub fn get_all_laps_metadata() -> Vec<LapMetadata> {
-    unsafe {
-        return DATA_STORE.get_all_laps_metadata();
-    }
+    return DATA_STORE.lock().unwrap().get_all_laps_metadata();
 }
 
 pub fn get_all_records() -> RecordSet {
-    unsafe {
-        return DATA_STORE.get_all_records();
-    }
+    return DATA_STORE.lock().unwrap().get_all_records();
 }
 
 pub fn get_all_laps_data() -> Vec<Packet> {
-    unsafe {
-        return DATA_STORE.get_all_laps_data();
-    }
+    return DATA_STORE.lock().unwrap().get_all_laps_data();
 }
 
 pub fn get_lap_data(identifier: &str) -> Option<Vec<Packet>> {
-    unsafe {
-        return DATA_STORE.get_lap_data(&identifier);
-    }
+    return DATA_STORE.lock().unwrap().get_lap_data(&identifier);
 }
 
 pub fn store_lap(packets: Vec<Packet>, metadata: &LapMetadata) {
-    unsafe {
-        DATA_STORE.store_lap(packets, metadata);
-    }
+    DATA_STORE.lock().unwrap().store_lap(packets, metadata);
 }
 
 pub fn get_record_tracker(track_id: u8, era: u16) -> RecordTracker {
-    unsafe {
-        return DATA_STORE.get_record_tracker(track_id, era);
-    }
+    return DATA_STORE.lock().unwrap().get_record_tracker(track_id, era);
 }
 
 pub fn store_records(record_tracker: &RecordTracker) {
-    unsafe {
-        return DATA_STORE.store_records(record_tracker);
-    }
+    return DATA_STORE.lock().unwrap().store_records(record_tracker);
 }

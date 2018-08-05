@@ -12,16 +12,23 @@ pub struct DataStore {
 }
 
 impl DataStore {
-    pub fn new(
+    pub fn new() -> DataStore {
+        DataStore {
+            laps_metadata: None,
+            record_set: None,
+            path_helper: None,
+        }
+    }
+
+    pub fn initialise(
+        &mut self,
         laps_metadata: Vec<LapMetadata>,
         record_set: RecordSet,
         path_helper: PathHelper,
-    ) -> DataStore {
-        DataStore {
-            laps_metadata: Some(laps_metadata),
-            record_set: Some(record_set),
-            path_helper: Some(path_helper),
-        }
+    ) {
+        self.laps_metadata = Some(laps_metadata);
+        self.record_set = Some(record_set);
+        self.path_helper = Some(path_helper);
     }
 
     pub fn get_all_laps_metadata(&self) -> Vec<LapMetadata> {

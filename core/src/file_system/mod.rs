@@ -5,11 +5,10 @@ use lap_metadata::LapMetadata;
 use record_tracking::RecordSet;
 use std::fs::{create_dir, read_dir, File};
 use std::path::Path;
-use storage::data_store::DataStore;
 use self::path_helper::PathHelper;
 use udp::packet::Packet;
 
-pub fn initialise(storage_folder_path: &str) -> DataStore {
+pub fn initialise(storage_folder_path: &str) -> (Vec<LapMetadata>, RecordSet, PathHelper) {
     let path_helper = PathHelper::new(storage_folder_path);
     ensure_storage_files_created(&path_helper);
 
@@ -101,7 +100,7 @@ fn ensure_file_created(path: &str) {
     }
 }
 
-fn build_data_store(path_helper: &PathHelper) -> DataStore {
+fn build_data_store(path_helper: &PathHelper) -> (Vec<LapMetadata>, RecordSet, PathHelper) {
     let lap_metadata = match load_lap_metadata(path_helper) {
         Ok(x) => x,
         Err(_) => Vec::new(),
@@ -112,7 +111,7 @@ fn build_data_store(path_helper: &PathHelper) -> DataStore {
         Err(_) => RecordSet::new(),
     };
 
-    return DataStore::new(lap_metadata, records, path_helper.clone());
+    return (lap_metadata, records, path_helper.clone());
 }
 
 fn load_lap_metadata(

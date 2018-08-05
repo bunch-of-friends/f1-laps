@@ -1,28 +1,28 @@
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate lazy_static;
 extern crate bincode;
 extern crate chrono;
 
 pub mod aggregation;
+pub mod file_system;
+pub mod lap_metadata;
 pub mod record_tracking;
 pub mod replay;
 pub mod storage;
 pub mod udp;
-pub mod lap_metadata;
-pub mod file_system;
 
-use aggregation::tick::{Lap, LiveData, Sector, Session, Tick};
+use aggregation::collector::Collector;
+use aggregation::tick::{LiveData, Tick};
 use lap_metadata::LapMetadata;
-use std::sync::mpsc;
-use std::thread;
 use record_tracking::RecordSet;
+use std::sync::{mpsc, Mutex};
+use std::thread;
 
-static mut DATA_HOLDER: DataHolder = DataHolder {
-    session: None,
-    live_data: None,
-    lap: None,
-    sector: None,
-};
+lazy_static! {
+    static ref DATA_HOLDER: Mutex<Collector> = Mutex::new(Collector::new());
+}
 
 pub fn initialise(storage_folder_path: String) {
     storage::initialise(&storage_folder_path);
@@ -41,11 +41,12 @@ pub fn start_listening(port: i32) {
 }
 
 pub fn get_next_tick() -> Option<Tick> {
-    if unsafe { !DATA_HOLDER.has_data() } {
+    let mut data_holder = DATA_HOLDER.lock().unwrap();
+    if data_holder.has_data() {
         return None;
     }
 
-    let data = unsafe { DATA_HOLDER.get_data() };
+    let data = data_holder.get_data();
 
     let tick = Tick {
         live_data: data.0,
@@ -60,7 +61,7 @@ pub fn get_all_laps_metadata() -> Vec<LapMetadata> {
     return storage::get_all_laps_metadata();
 }
 
-pub fn get_all_records() -> RecordSet  {
+pub fn get_all_records() -> RecordSet {
     return storage::get_all_records();
 }
 
@@ -103,53 +104,6 @@ fn receive_tick(rx: &mpsc::Receiver<Tick>) {
     let tick_result = rx.recv().ok();
 
     if let Some(tick) = tick_result {
-        unsafe {
-            DATA_HOLDER.set_data(tick);
-        }
-    }
-}
-
-struct DataHolder {
-    session: Option<Session>,
-    live_data: Option<LiveData>,
-    lap: Option<Lap>,
-    sector: Option<Sector>,
-}
-
-impl DataHolder {
-    pub fn has_data(&self) -> bool {
-        return self.live_data.is_some();
-    }
-
-    pub fn set_data(&mut self, tick: Tick) {
-        self.live_data = Some(tick.live_data);
-
-        if let Some(session) = tick.session_started {
-            self.session = Some(session);
-        }
-
-        if let Some(lap) = tick.lap_finished {
-            self.lap = Some(lap);
-        }
-
-        if let Some(sector) = tick.sector_finished {
-            self.sector = Some(sector);
-        }
-    }
-
-    pub fn get_data(&mut self) -> (LiveData, Option<Session>, Option<Lap>, Option<Sector>) {
-        let res = (
-            self.live_data.expect("live data not set"),
-            self.session,
-            self.lap,
-            self.sector,
-        );
-
-        self.live_data = None;
-        self.session = None;
-        self.lap = None;
-        self.sector = None;
-
-        return res;
+        DATA_HOLDER.lock().unwrap().set_data(tick);
     }
 }

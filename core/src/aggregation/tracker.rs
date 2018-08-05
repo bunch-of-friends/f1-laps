@@ -20,6 +20,20 @@ pub struct Tracker {
 }
 
 impl Tracker {
+    pub fn new() -> Tracker {
+        Tracker {
+            current_session: None,
+            record_tracker: None,
+            last_lap: None,
+            current_lap_number: -1 as f32,
+            lap_packets: None,
+            current_sector_times: [-1 as f32, -1 as f32, -1 as f32],
+            current_sector: -1 as f32,
+            current_session_time: -1 as f32,
+            current_lap_valid: true,
+        }
+    }
+
     pub fn check_itinialised(&mut self) {
         if self.lap_packets.is_none() {
             println!("initialising lap_packets");

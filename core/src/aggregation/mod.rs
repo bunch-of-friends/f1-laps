@@ -1,22 +1,15 @@
+pub mod collector;
 pub mod tick;
 pub mod tracker;
 
 use self::tick::{Lap, LiveData, Tick};
 use self::tracker::Tracker;
-
+use std::sync::Mutex;
 use udp::packet::Packet;
 
-static mut TRACKER: Tracker = Tracker {
-    current_session: None,
-    record_tracker: None,
-    last_lap: None,
-    current_lap_number: -1 as f32,
-    lap_packets: None,
-    current_sector_times: [-1 as f32, -1 as f32, -1 as f32],
-    current_sector: -1 as f32,
-    current_session_time: -1 as f32,
-    current_lap_valid: true,
-};
+lazy_static! {
+    static ref TRACKER: Mutex<Tracker> = Mutex::new(Tracker::new());
+}
 
 pub fn process_packet(packet: Packet, is_replay: bool) -> Option<Tick> {
     if packet.is_spectating == 1 {
@@ -24,10 +17,9 @@ pub fn process_packet(packet: Packet, is_replay: bool) -> Option<Tick> {
         return None;
     }
 
-    let tracking_data = unsafe {
-        TRACKER.check_itinialised();
-        TRACKER.track(packet, is_replay)
-    };
+    let mut tracker = TRACKER.lock().unwrap();
+    tracker.check_itinialised();
+    let tracking_data = tracker.track(packet, is_replay);
 
     let live_data = build_live_data(&packet);
 
