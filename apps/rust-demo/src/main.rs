@@ -3,7 +3,7 @@ extern crate f1_laps_core;
 fn main() {
     println!("rust demo is running");
 
-    f1_laps_core::initialise("../_data-storage".to_string());
+    f1_laps_core::initialise("../../_data-storage".to_string());
 
     let metadata = f1_laps_core::get_all_laps_metadata();
     println!("metadata >> {:?}", metadata);

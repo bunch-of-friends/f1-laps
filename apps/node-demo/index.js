@@ -2,7 +2,7 @@ const core = require('f1-laps-js-bridge');
 
 console.log('node test is running');
 
-core.initialise({ updateInterval: 50, storagePath: '../_data-storage' });
+core.initialise({ updateInterval: 50, storagePath: '../../_data-storage' });
 
 core.newSession.register(data => console.log('newSession >> ', data));
 core.liveData.register(data => console.log('liveData >> ', data.currentGear));
