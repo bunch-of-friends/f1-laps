@@ -16,6 +16,7 @@ Current plan
 ### Apps
 - **desktop** - An [Electron](https://github.com/electron/electron) app, currenntly in early stages.
 - **node-demo** - Just a small node app to execute some quick tests.
+- **rust-demo** - A small rust console app to run quick manual tests.
 
 ## Disclaimer
 

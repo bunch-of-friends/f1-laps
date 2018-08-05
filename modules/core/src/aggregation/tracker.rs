@@ -36,7 +36,6 @@ impl Tracker {
 
     pub fn check_itinialised(&mut self) {
         if self.lap_packets.is_none() {
-            println!("initialising lap_packets");
             self.lap_packets = Some(Vec::new());
         }
     }
@@ -188,13 +187,6 @@ impl Tracker {
     }
 
     fn has_all_sector_times(&self) -> bool {
-        println!(
-            "{} {} {}",
-            self.current_sector_times[0],
-            self.current_sector_times[1],
-            self.current_sector_times[2]
-        );
-
         return (self.current_sector_times[0] > 0 as f32)
             && (self.current_sector_times[1] > 0 as f32)
             && (self.current_sector_times[2] > 0 as f32);
