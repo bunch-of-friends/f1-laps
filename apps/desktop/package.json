@@ -4,13 +4,12 @@
   "description": "F1 laps desktop app",
   "main": "index.js",
   "scripts": {
-    "start": "electron .",
-    "rebuild-core-start": "(cd ../js-bridge && npm run build) && npm run start"
+    "start": "electron ."
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "f1-laps-js-bridge": "file:../js-bridge"
+    "f1-laps-js-bridge": "file:../../modules/js-bridge"
   },
   "devDependencies": {
     "electron": "^2.0.0"

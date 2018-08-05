@@ -7,7 +7,6 @@
     "build": "npm run build:neon && npm run build:typescript",
     "build:neon": "neon build",
     "build:typescript": "tsc",
-    "postinstall": "npm run build",
     "lint": "tslint '**/*.ts{,x}' -e '**/node_modules/**'"
   },
   "pre-commit": [
