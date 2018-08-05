@@ -8,6 +8,7 @@ extern crate chrono;
 pub mod aggregation;
 pub mod file_system;
 pub mod lap_metadata;
+pub mod prelude;
 pub mod record_tracking;
 pub mod replay;
 pub mod storage;
