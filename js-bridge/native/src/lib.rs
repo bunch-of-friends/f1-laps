@@ -2,52 +2,43 @@
 extern crate neon;
 extern crate f1_laps_core;
 
-use f1_laps_core::aggregation::tick::{Lap, LiveData, Sector, Session};
-use f1_laps_core::record_tracking::record_tracker::RecordMarker;
-use f1_laps_core::lap_metadata::LapMetadata;
-use f1_laps_core::udp::packet::Car;
-use neon::js::{JsArray, JsBoolean, JsNumber, JsObject, JsString, JsUndefined, Object};
-use neon::mem::Handle;
-use neon::scope;
-use neon::vm::{Call, JsResult};
+pub mod arr_helpers;
+pub mod obj_helpers;
 
-fn initialise(call: Call) -> JsResult<JsUndefined> {
-    let storage_folder_path_handle = call.arguments.get(call.scope, 0).unwrap();
-    let storage_folder_path = storage_folder_path_handle
-        .downcast::<JsString>()
-        .expect("failed to downcast storageFolderPath argument")
-        .value();
+use arr_helpers as ah;
+use f1_laps_core::aggregation::tick::{Lap, LiveData, Sector, Session};
+use f1_laps_core::lap_metadata::LapMetadata;
+use f1_laps_core::record_tracking::record_tracker::RecordMarker;
+use f1_laps_core::udp::packet::Car;
+use neon::prelude::*;
+use obj_helpers as oh;
+
+fn initialise(mut cx: FunctionContext) -> JsResult<JsUndefined> {
+    let storage_folder_path = cx.argument::<JsString>(0)?.value();
 
     f1_laps_core::initialise(storage_folder_path);
 
     Ok(JsUndefined::new())
 }
 
-fn start_listening(call: Call) -> JsResult<JsUndefined> {
-    let port_handle = call.arguments.get(call.scope, 0).unwrap();
-
-    let port = port_handle
-        .downcast::<JsNumber>()
-        .expect("failed to downcast port argument")
-        .value() as i32;
+fn start_listening(mut cx: FunctionContext) -> JsResult<JsUndefined> {
+    let port = cx.argument::<JsNumber>(0)?.value() as i32;
 
     f1_laps_core::start_listening(port);
 
     Ok(JsUndefined::new())
 }
 
-fn replay_all_laps(_call: Call) -> JsResult<JsUndefined> {
+fn replay_all_laps(_cx: FunctionContext) -> JsResult<JsUndefined> {
     f1_laps_core::replay_all_laps();
 
     Ok(JsUndefined::new())
 }
 
-#[allow(unused_must_use)]
-fn get_next_tick(call: Call) -> JsResult<JsObject> {
+fn get_next_tick(mut cx: FunctionContext) -> JsResult<JsObject> {
     let tick_option = f1_laps_core::get_next_tick();
 
-    let scope = call.scope;
-    let object = JsObject::new(scope);
+    let object = cx.empty_object();
 
     if tick_option.is_none() {
         return Ok(object);
@@ -55,544 +46,356 @@ fn get_next_tick(call: Call) -> JsResult<JsObject> {
 
     let tick = tick_option.unwrap();
 
-    object.set(
-        "liveData",
-        build_live_data_js_object(scope, &tick.live_data),
-    );
+    let live_data_obj = build_live_data_js_object(&mut cx, &tick.live_data);
+    oh::set_obj_prop(&mut cx, &object, "liveData", live_data_obj)?;
 
     if let Some(session) = tick.session_started {
-        object.set("sessionStarted", build_session_js_object(scope, &session));
+        let session_obj = build_session_js_object(&mut cx, &session);
+        oh::set_obj_prop(&mut cx, &object, "sessionStarted", session_obj)?;
     }
 
     if let Some(lap) = tick.lap_finished {
-        object.set("lapFinished", build_lap_js_object(scope, &lap));
+        let lap_obj = build_lap_js_object(&mut cx, &lap);
+        oh::set_obj_prop(&mut cx, &object, "lapFinished", lap_obj)?;
     }
 
     if let Some(sector) = tick.sector_finished {
-        object.set("sectorFinished", build_sector_js_object(scope, &sector));
+        let sector_obj = build_sector_js_object(&mut cx, &sector);
+        oh::set_obj_prop(&mut cx, &object, "sectorFinished", sector_obj)?;
     }
 
     Ok(object)
 }
 
-#[allow(unused_must_use)]
-fn get_lap_data(call: Call) -> JsResult<JsArray> {
-    let identifier_handle = call.arguments.get(call.scope, 0).unwrap();
-
-    let identifier = identifier_handle
-        .downcast::<JsString>()
-        .expect("failed to downcast identifier argument")
-        .value();
+fn get_lap_data(mut cx: FunctionContext) -> JsResult<JsArray> {
+    let identifier = cx.argument::<JsString>(0)?.value();
 
     let data = f1_laps_core::get_lap_data(identifier);
-    let array = JsArray::new(call.scope, data.len() as u32);
+    let arr = cx.empty_array();
+
     let mut index = 0;
     for item in data.iter() {
-        let js_object = build_live_data_js_object(call.scope, item);
-        array.set(index, js_object);
+        let js_object = build_live_data_js_object(&mut cx, item);
+        ah::set_obj_item(&mut cx, &arr, index, js_object)?;
         index += 1;
     }
 
-    Ok(array)
+    Ok(arr)
 }
 
-#[allow(unused_must_use)]
-fn get_all_laps_metadata(call: Call) -> JsResult<JsArray> {
+fn get_all_laps_metadata(mut cx: FunctionContext) -> JsResult<JsArray> {
     let metadata = f1_laps_core::get_all_laps_metadata();
-    let array = JsArray::new(call.scope, metadata.len() as u32);
+    let arr = cx.empty_array();
     let mut index = 0;
     for item in metadata.iter() {
-        let js_object = build_lap_metadata_js_object(call.scope, item);
-        array.set(index, js_object);
+        let js_object = build_lap_metadata_js_object(&mut cx, &item);
+        ah::set_obj_item(&mut cx, &arr, index, js_object)?;
         index += 1;
     }
 
-    Ok(array)
+    Ok(arr)
 }
 
-#[allow(unused_must_use)]
-fn replay_lap(call: Call) -> JsResult<JsUndefined> {
-    let identifier_handle = call.arguments.get(call.scope, 0).unwrap();
-
-    let identifier = identifier_handle
-        .downcast::<JsString>()
-        .expect("failed to downcast identifier argument")
-        .value();
+fn replay_lap(mut cx: FunctionContext) -> JsResult<JsUndefined> {
+    let identifier = cx.argument::<JsString>(0)?.value();
 
     f1_laps_core::replay_lap(identifier);
 
     Ok(JsUndefined::new())
 }
 
-#[allow(unused_must_use)]
 fn build_lap_metadata_js_object<'a>(
-    scope: &mut scope::RootScope<'a>,
-    metadata: &LapMetadata,
-) -> Handle<'a, JsObject> {
-    let object = JsObject::new(scope);
+    cx: &mut FunctionContext<'a>,
+    d: &LapMetadata,
+) -> NeonResult<Handle<'a, JsObject>> {
+    let obj = cx.empty_object();
 
-    object.set(
-        "identifier",
-        JsString::new(scope, metadata.identifier.as_str()).unwrap(),
-    );
-    object.set(
-        "recordedDate",
-        JsString::new(scope, metadata.recorded_date.as_str()).unwrap(),
-    );
-    object.set("trackId", JsNumber::new(scope, metadata.track_id as f64));
-    object.set("teamId", JsNumber::new(scope, metadata.team_id as f64));
-    object.set("era", JsNumber::new(scope, metadata.era as f64));
-    object.set(
-        "tyreCompound",
-        JsNumber::new(scope, metadata.tyre_compound as f64),
-    );
-    object.set(
-        "sessionType",
-        JsNumber::new(scope, metadata.session_type as f64),
-    );
-    object.set(
-        "lapNumber",
-        JsNumber::new(scope, metadata.lap_number as f64),
-    );
-    object.set("lapTime", JsNumber::new(scope, metadata.lap_time as f64));
-    object.set(
-        "note",
-        JsString::new(scope, metadata.note.as_str()).unwrap(),
-    );
+    oh::set_str_prop(cx, &obj, "identifier", d.identifier.as_str())?;
+    oh::set_str_prop(cx, &obj, "recordedDate", d.recorded_date.as_str())?;
+    oh::set_num_prop(cx, &obj, "trackId", d.track_id as f64)?;
+    oh::set_num_prop(cx, &obj, "teamId", d.team_id as f64)?;
+    oh::set_num_prop(cx, &obj, "era", d.era as f64)?;
+    oh::set_num_prop(cx, &obj, "tyreCompound", d.tyre_compound as f64)?;
+    oh::set_num_prop(cx, &obj, "sessionType", d.session_type as f64)?;
+    oh::set_num_prop(cx, &obj, "lapNumber", d.lap_number as f64)?;
+    oh::set_num_prop(cx, &obj, "lapTime", d.lap_time as f64)?;
+    oh::set_str_prop(cx, &obj, "note", d.note.as_str())?;
 
-    let sector_times = JsArray::new(scope, 3);
-    sector_times.set(0, JsNumber::new(scope, metadata.sector_times[0] as f64));
-    sector_times.set(1, JsNumber::new(scope, metadata.sector_times[1] as f64));
-    sector_times.set(2, JsNumber::new(scope, metadata.sector_times[2] as f64));
-    object.set("sectorTimes", sector_times);
+    let sector_times = cx.empty_array();
+    for i in 0..d.sector_times.len() {
+        ah::set_num_item(cx, &sector_times, i as u32, d.sector_times[i] as f64)?;
+    }
+    obj.set(cx, "sectorTimes", sector_times)?;
 
-    object
+    Ok(obj)
 }
 
-#[allow(unused_must_use)]
 fn build_session_js_object<'a>(
-    scope: &mut scope::RootScope<'a>,
-    session: &Session,
-) -> Handle<'a, JsObject> {
-    let object = JsObject::new(scope);
+    cx: &mut FunctionContext<'a>,
+    d: &Session,
+) -> NeonResult<Handle<'a, JsObject>> {
+    let obj = cx.empty_object();
 
-    object.set(
-        "sessionTimeStamp",
-        JsNumber::new(scope, session.session_time_stamp as f64),
-    );
-    object.set("era", JsNumber::new(scope, session.era as f64));
-    object.set("trackId", JsNumber::new(scope, session.track_id as f64));
-    object.set("teamId", JsNumber::new(scope, session.team_id as f64));
-    object.set(
-        "sessionType",
-        JsNumber::new(scope, session.session_type as f64),
-    );
+    oh::set_num_prop(cx, &obj, "sessionTimeStamp", d.session_time_stamp as f64)?;
+    oh::set_num_prop(cx, &obj, "era", d.era as f64)?;
+    oh::set_num_prop(cx, &obj, "trackId", d.track_id as f64)?;
+    oh::set_num_prop(cx, &obj, "teamId", d.team_id as f64)?;
+    oh::set_num_prop(cx, &obj, "sessionType", d.session_type as f64)?;
 
-    object
+    Ok(obj)
 }
 
-#[allow(unused_must_use)]
 fn build_live_data_js_object<'a>(
-    scope: &mut scope::RootScope<'a>,
-    live_data: &LiveData,
-) -> Handle<'a, JsObject> {
-    let object = JsObject::new(scope);
+    cx: &mut FunctionContext<'a>,
+    d: &LiveData,
+) -> NeonResult<Handle<'a, JsObject>> {
+    let obj = cx.empty_object();
 
-    object.set(
-        "currentLap",
-        JsNumber::new(scope, live_data.current_lap as f64),
-    );
-    object.set(
-        "currentLapTime",
-        JsNumber::new(scope, live_data.current_lap_time as f64),
-    );
-    object.set(
-        "currentSector",
-        JsNumber::new(scope, live_data.current_sector as f64),
-    );
-    object.set(
-        "currentSpeed",
-        JsNumber::new(scope, live_data.current_speed as f64),
-    );
-    object.set(
-        "currentGear",
-        JsNumber::new(scope, live_data.current_gear as f64),
-    );
-    object.set(
+    oh::set_num_prop(cx, &obj, "currentLap", d.current_lap as f64)?;
+    oh::set_num_prop(cx, &obj, "currentLapTime", d.current_lap_time as f64)?;
+    oh::set_num_prop(cx, &obj, "currentSector", d.current_sector as f64)?;
+    oh::set_num_prop(cx, &obj, "currentSpeed", d.current_speed as f64)?;
+    oh::set_num_prop(cx, &obj, "currentGear", d.current_gear as f64)?;
+    oh::set_num_prop(
+        cx,
+        &obj,
         "currentTyreCompound",
-        JsNumber::new(scope, live_data.current_tyre_compound as f64),
-    );
-    object.set("isLapValid", JsBoolean::new(scope, live_data.is_lap_valid));
-    object.set(
-        "lastLapTime",
-        JsNumber::new(scope, live_data.last_lap_time as f64),
-    );
-    object.set(
+        d.current_tyre_compound as f64,
+    )?;
+    oh::set_bool_prop(cx, &obj, "isLapValid", d.is_lap_valid)?;
+    oh::set_num_prop(cx, &obj, "lastLapTime", d.last_lap_time as f64)?;
+    oh::set_num_prop(
+        cx,
+        &obj,
         "currentLapSector1Time",
-        JsNumber::new(scope, live_data.current_lap_sector1_time as f64),
-    );
-    object.set(
+        d.current_lap_sector1_time as f64,
+    )?;
+    oh::set_num_prop(
+        cx,
+        &obj,
         "currentLapSector2Time",
-        JsNumber::new(scope, live_data.current_lap_sector2_time as f64),
-    );
-    object.set(
-        "totalSessionTime",
-        JsNumber::new(scope, live_data.total_session_time as f64),
-    );
-    object.set(
-        "totalSessionDistance",
-        JsNumber::new(scope, live_data.total_session_distance as f64),
-    );
-
-    object.set("x", JsNumber::new(scope, live_data.x as f64));
-    object.set("y", JsNumber::new(scope, live_data.y as f64));
-    object.set("z", JsNumber::new(scope, live_data.z as f64));
-    object.set(
-        "sessionTime",
-        JsNumber::new(scope, live_data.session_time as f64),
-    );
-    object.set(
-        "sessionTimeLeft",
-        JsNumber::new(scope, live_data.session_time_left as f64),
-    );
-    object.set(
-        "lapDistance",
-        JsNumber::new(scope, live_data.lap_distance as f64),
-    );
-    object.set(
-        "totalDistance",
-        JsNumber::new(scope, live_data.total_distance as f64),
-    );
-    object.set(
-        "totalLaps",
-        JsNumber::new(scope, live_data.total_laps as f64),
-    );
-    object.set(
-        "carPosition",
-        JsNumber::new(scope, live_data.car_position as f64),
-    );
-    object.set("inPits", JsNumber::new(scope, live_data.in_pits as f64));
-    object.set(
-        "pitLimiterStatus",
-        JsBoolean::new(scope, live_data.pit_limiter_status),
-    );
-    object.set(
-        "pitSpeedLimit",
-        JsNumber::new(scope, live_data.pit_speed_limit as f64),
-    );
-    object.set("drs", JsBoolean::new(scope, live_data.drs));
-    object.set(
-        "drsAllowed",
-        JsNumber::new(scope, live_data.drs_allowed as f64),
-    );
-    object.set(
-        "vehicleFiaFlags",
-        JsNumber::new(scope, live_data.vehicle_fia_flags as f64),
-    );
-    object.set("throttle", JsNumber::new(scope, live_data.throttle as f64));
-    object.set("steer", JsNumber::new(scope, live_data.steer as f64));
-    object.set("brake", JsNumber::new(scope, live_data.brake as f64));
-    object.set(
-        "gforceLat",
-        JsNumber::new(scope, live_data.gforce_lat as f64),
-    );
-    object.set(
-        "gforceLon",
-        JsNumber::new(scope, live_data.gforce_lon as f64),
-    );
-    object.set(
-        "gforceVert",
-        JsNumber::new(scope, live_data.gforce_vert as f64),
-    );
-    object.set(
-        "engineRate",
-        JsNumber::new(scope, live_data.engine_rate as f64),
-    );
-    object.set(
-        "revLightsPercent",
-        JsNumber::new(scope, live_data.rev_lights_percent as f64),
-    );
-    object.set("maxRpm", JsNumber::new(scope, live_data.max_rpm as f64));
-    object.set("idleRpm", JsNumber::new(scope, live_data.idle_rpm as f64));
-    object.set("maxGears", JsNumber::new(scope, live_data.max_gears as f64));
-    object.set(
-        "tractionControl",
-        JsNumber::new(scope, live_data.traction_control as f64),
-    );
-    object.set(
-        "antiLockBrakes",
-        JsNumber::new(scope, live_data.anti_lock_brakes as f64),
-    );
-    object.set(
-        "frontBrakeBias",
-        JsNumber::new(scope, live_data.front_brake_bias as f64),
-    );
-    object.set(
-        "fuelInTank",
-        JsNumber::new(scope, live_data.fuel_in_tank as f64),
-    );
-    object.set(
-        "fuelCapacity",
-        JsNumber::new(scope, live_data.fuel_capacity as f64),
-    );
-    object.set("fuelMix", JsNumber::new(scope, live_data.fuel_mix as f64));
-    object.set(
-        "engineTemperature",
-        JsNumber::new(scope, live_data.engine_temperature as f64),
-    );
-
-    let brakes_temperature = JsArray::new(scope, 4);
-    brakes_temperature.set(
-        0,
-        JsNumber::new(scope, live_data.brakes_temperature[0] as f64),
-    );
-    brakes_temperature.set(
-        1,
-        JsNumber::new(scope, live_data.brakes_temperature[1] as f64),
-    );
-    brakes_temperature.set(
-        2,
-        JsNumber::new(scope, live_data.brakes_temperature[2] as f64),
-    );
-    brakes_temperature.set(
-        3,
-        JsNumber::new(scope, live_data.brakes_temperature[3] as f64),
-    );
-    object.set("brakesTemperature", brakes_temperature);
-
-    let tyres_pressure = JsArray::new(scope, 4);
-    tyres_pressure.set(0, JsNumber::new(scope, live_data.tyres_pressure[0] as f64));
-    tyres_pressure.set(1, JsNumber::new(scope, live_data.tyres_pressure[1] as f64));
-    tyres_pressure.set(2, JsNumber::new(scope, live_data.tyres_pressure[2] as f64));
-    tyres_pressure.set(3, JsNumber::new(scope, live_data.tyres_pressure[3] as f64));
-    object.set("tyresPressure", tyres_pressure);
-
-    let tyres_temperature = JsArray::new(scope, 4);
-    tyres_temperature.set(
-        0,
-        JsNumber::new(scope, live_data.tyres_temperature[0] as f64),
-    );
-    tyres_temperature.set(
-        1,
-        JsNumber::new(scope, live_data.tyres_temperature[1] as f64),
-    );
-    tyres_temperature.set(
-        2,
-        JsNumber::new(scope, live_data.tyres_temperature[2] as f64),
-    );
-    tyres_temperature.set(
-        3,
-        JsNumber::new(scope, live_data.tyres_temperature[3] as f64),
-    );
-    object.set("tyresTemperature", tyres_temperature);
-
-    let tyres_wear = JsArray::new(scope, 4);
-    tyres_wear.set(0, JsNumber::new(scope, live_data.tyres_wear[0] as f64));
-    tyres_wear.set(1, JsNumber::new(scope, live_data.tyres_wear[1] as f64));
-    tyres_wear.set(2, JsNumber::new(scope, live_data.tyres_wear[2] as f64));
-    tyres_wear.set(3, JsNumber::new(scope, live_data.tyres_wear[3] as f64));
-    object.set("tyresWear", tyres_wear);
-
-    object.set(
-        "tyreCompound",
-        JsNumber::new(scope, live_data.tyre_compound as f64),
-    );
-
-    let tyres_damage = JsArray::new(scope, 4);
-    tyres_damage.set(0, JsNumber::new(scope, live_data.tyres_damage[0] as f64));
-    tyres_damage.set(1, JsNumber::new(scope, live_data.tyres_damage[1] as f64));
-    tyres_damage.set(2, JsNumber::new(scope, live_data.tyres_damage[2] as f64));
-    tyres_damage.set(3, JsNumber::new(scope, live_data.tyres_damage[3] as f64));
-    object.set("tyresDamage", tyres_damage);
-
-    object.set(
+        d.current_lap_sector2_time as f64,
+    )?;
+    oh::set_num_prop(cx, &obj, "totalSessionTime", d.total_session_time as f64)?;
+    oh::set_num_prop(
+        cx,
+        &obj,
+        "total_session_distance",
+        d.total_session_distance as f64,
+    )?;
+    oh::set_num_prop(cx, &obj, "x", d.x as f64)?;
+    oh::set_num_prop(cx, &obj, "y", d.y as f64)?;
+    oh::set_num_prop(cx, &obj, "z", d.z as f64)?;
+    oh::set_num_prop(cx, &obj, "sessionTime", d.session_time as f64)?;
+    oh::set_num_prop(cx, &obj, "sessionTimeLeft", d.session_time_left as f64)?;
+    oh::set_num_prop(cx, &obj, "lapDistance", d.lap_distance as f64)?;
+    oh::set_num_prop(cx, &obj, "totalDistance", d.total_distance as f64)?;
+    oh::set_num_prop(cx, &obj, "totalLaps", d.total_laps as f64)?;
+    oh::set_num_prop(cx, &obj, "carPosition", d.car_position as f64)?;
+    oh::set_num_prop(cx, &obj, "inPits", d.in_pits as f64)?;
+    oh::set_bool_prop(cx, &obj, "pitLimiterStatus", d.pit_limiter_status)?;
+    oh::set_num_prop(cx, &obj, "pitSpeedLimit", d.pit_speed_limit as f64)?;
+    oh::set_bool_prop(cx, &obj, "drs", d.drs)?;
+    oh::set_num_prop(cx, &obj, "drsAllowed", d.drs_allowed as f64)?;
+    oh::set_num_prop(cx, &obj, "vehicleFiaFlags", d.vehicle_fia_flags as f64)?;
+    oh::set_num_prop(cx, &obj, "throttle", d.throttle as f64)?;
+    oh::set_num_prop(cx, &obj, "steer", d.steer as f64)?;
+    oh::set_num_prop(cx, &obj, "brake", d.brake as f64)?;
+    oh::set_num_prop(cx, &obj, "gforceLat", d.gforce_lat as f64)?;
+    oh::set_num_prop(cx, &obj, "gforceLon", d.gforce_lon as f64)?;
+    oh::set_num_prop(cx, &obj, "gforceVert", d.gforce_vert as f64)?;
+    oh::set_num_prop(cx, &obj, "engineRate", d.engine_rate as f64)?;
+    oh::set_num_prop(cx, &obj, "revLightsPercent", d.rev_lights_percent as f64)?;
+    oh::set_num_prop(cx, &obj, "maxRpm", d.max_rpm as f64)?;
+    oh::set_num_prop(cx, &obj, "idleRpm", d.idle_rpm as f64)?;
+    oh::set_num_prop(cx, &obj, "maxGears", d.max_gears as f64)?;
+    oh::set_num_prop(cx, &obj, "tractionControl", d.traction_control as f64)?;
+    oh::set_num_prop(cx, &obj, "antiLockBrakes", d.anti_lock_brakes as f64)?;
+    oh::set_num_prop(cx, &obj, "frontBrakeBias", d.front_brake_bias as f64)?;
+    oh::set_num_prop(cx, &obj, "fuelInTank", d.fuel_in_tank as f64)?;
+    oh::set_num_prop(cx, &obj, "fuelCapacity", d.fuel_capacity as f64)?;
+    oh::set_num_prop(cx, &obj, "fuelMix", d.fuel_mix as f64)?;
+    oh::set_num_prop(cx, &obj, "engineTemperature", d.engine_temperature as f64)?;
+    oh::set_num_prop(cx, &obj, "tyreCompound", d.tyre_compound as f64)?;
+    oh::set_num_prop(
+        cx,
+        &obj,
         "frontLeftWingDamage",
-        JsNumber::new(scope, live_data.front_left_wing_damage as f64),
-    );
-    object.set(
+        d.front_left_wing_damage as f64,
+    )?;
+    oh::set_num_prop(
+        cx,
+        &obj,
         "frontRightWingDamage",
-        JsNumber::new(scope, live_data.front_right_wing_damage as f64),
-    );
-    object.set(
-        "rearWingDamage",
-        JsNumber::new(scope, live_data.rear_wing_damage as f64),
-    );
-    object.set(
-        "engineDamage",
-        JsNumber::new(scope, live_data.engine_damage as f64),
-    );
-    object.set(
-        "gearBoxDamage",
-        JsNumber::new(scope, live_data.gear_box_damage as f64),
-    );
-    object.set(
-        "exhaustDamage",
-        JsNumber::new(scope, live_data.exhaust_damage as f64),
-    );
-    object.set(
-        "carsTotal",
-        JsNumber::new(scope, live_data.cars_total as f64),
-    );
-    object.set(
-        "playerCarIndex",
-        JsNumber::new(scope, live_data.player_car_index as f64),
-    );
+        d.front_right_wing_damage as f64,
+    )?;
+    oh::set_num_prop(cx, &obj, "rearWingDamage", d.rear_wing_damage as f64)?;
+    oh::set_num_prop(cx, &obj, "engineDamage", d.engine_damage as f64)?;
+    oh::set_num_prop(cx, &obj, "gearBoxDamage", d.gear_box_damage as f64)?;
+    oh::set_num_prop(cx, &obj, "exhaustDamage", d.exhaust_damage as f64)?;
+    oh::set_num_prop(cx, &obj, "carsTotal", d.cars_total as f64)?;
+    oh::set_num_prop(cx, &obj, "playerCarIndex", d.player_car_index as f64)?;
 
-    let car_data = JsArray::new(scope, 20);
-    car_data.set(0, build_car_js_object(scope, &live_data.car_data[0]));
-    car_data.set(1, build_car_js_object(scope, &live_data.car_data[1]));
-    car_data.set(2, build_car_js_object(scope, &live_data.car_data[2]));
-    car_data.set(3, build_car_js_object(scope, &live_data.car_data[3]));
-    car_data.set(4, build_car_js_object(scope, &live_data.car_data[4]));
-    car_data.set(5, build_car_js_object(scope, &live_data.car_data[5]));
-    car_data.set(6, build_car_js_object(scope, &live_data.car_data[6]));
-    car_data.set(7, build_car_js_object(scope, &live_data.car_data[7]));
-    car_data.set(8, build_car_js_object(scope, &live_data.car_data[8]));
-    car_data.set(9, build_car_js_object(scope, &live_data.car_data[9]));
-    car_data.set(10, build_car_js_object(scope, &live_data.car_data[10]));
-    car_data.set(11, build_car_js_object(scope, &live_data.car_data[11]));
-    car_data.set(12, build_car_js_object(scope, &live_data.car_data[12]));
-    car_data.set(13, build_car_js_object(scope, &live_data.car_data[13]));
-    car_data.set(14, build_car_js_object(scope, &live_data.car_data[14]));
-    car_data.set(15, build_car_js_object(scope, &live_data.car_data[15]));
-    car_data.set(16, build_car_js_object(scope, &live_data.car_data[16]));
-    car_data.set(17, build_car_js_object(scope, &live_data.car_data[17]));
-    car_data.set(18, build_car_js_object(scope, &live_data.car_data[18]));
-    car_data.set(19, build_car_js_object(scope, &live_data.car_data[19]));
-    object.set("carData", car_data);
+    let brakes_temperature = cx.empty_array();
+    for i in 0..d.brakes_temperature.len() {
+        ah::set_num_item(
+            cx,
+            &brakes_temperature,
+            i as u32,
+            d.brakes_temperature[i] as f64,
+        )?;
+    }
+    obj.set(cx, "brakesTemperature", brakes_temperature)?;
 
-    object
+    let tyres_pressure = cx.empty_array();
+    for i in 0..d.tyres_pressure.len() {
+        ah::set_num_item(cx, &tyres_pressure, i as u32, d.tyres_pressure[i] as f64)?;
+    }
+    obj.set(cx, "tyresPressure", tyres_pressure)?;
+
+    let tyres_temperature = cx.empty_array();
+    for i in 0..d.tyres_temperature.len() {
+        ah::set_num_item(
+            cx,
+            &tyres_temperature,
+            i as u32,
+            d.tyres_temperature[i] as f64,
+        )?;
+    }
+    obj.set(cx, "tyresTemperature", tyres_temperature)?;
+
+    let tyres_wear = cx.empty_array();
+    for i in 0..d.tyres_wear.len() {
+        ah::set_num_item(cx, &tyres_wear, i as u32, d.tyres_wear[i] as f64)?;
+    }
+    obj.set(cx, "tyresWear", tyres_wear)?;
+
+    let tyres_damage = cx.empty_array();
+    for i in 0..d.tyres_damage.len() {
+        ah::set_num_item(cx, &tyres_damage, i as u32, d.tyres_damage[i] as f64)?;
+    }
+    obj.set(cx, "tyresDamage", tyres_damage)?;
+
+    let car_data = cx.empty_array();
+    for i in 0..d.car_data.len() {
+        let car_data_obj = build_car_js_object(cx, &d.car_data[i]);
+        ah::set_obj_item(cx, &car_data, i as u32, car_data_obj)?;
+    }
+    obj.set(cx, "carData", car_data)?;
+
+    Ok(obj)
 }
 
-#[allow(unused_must_use)]
-fn build_car_js_object<'a>(scope: &mut scope::RootScope<'a>, car: &Car) -> Handle<'a, JsObject> {
-    let object = JsObject::new(scope);
+fn build_car_js_object<'a>(
+    cx: &mut FunctionContext<'a>,
+    d: &Car,
+) -> NeonResult<Handle<'a, JsObject>> {
+    let obj = cx.empty_object();
 
-    let world_position = JsArray::new(scope, 3);
-    world_position.set(0, JsNumber::new(scope, car.world_position[0] as f64));
-    world_position.set(1, JsNumber::new(scope, car.world_position[1] as f64));
-    world_position.set(2, JsNumber::new(scope, car.world_position[2] as f64));
+    let world_position = cx.empty_array();
+    for i in 0..d.world_position.len() {
+        ah::set_num_item(cx, &world_position, i as u32, d.world_position[i] as f64)?;
+    }
+    obj.set(cx, "worldPosition", world_position)?;
 
-    object.set("worldPosition", world_position);
-    object.set(
-        "lastLapTime",
-        JsNumber::new(scope, car.last_lap_time as f64),
-    );
-    object.set(
-        "currentLapTime",
-        JsNumber::new(scope, car.current_lap_time as f64),
-    );
-    object.set(
-        "bestLapTime",
-        JsNumber::new(scope, car.best_lap_time as f64),
-    );
-    object.set("sector1Time", JsNumber::new(scope, car.sector1_time as f64));
-    object.set("sector2Time", JsNumber::new(scope, car.sector2_time as f64));
-    object.set("lapDistance", JsNumber::new(scope, car.lap_distance as f64));
-    object.set("driverId", JsNumber::new(scope, car.driver_id as f64));
-    object.set("teamId", JsNumber::new(scope, car.team_id as f64));
-    object.set("carPosition", JsNumber::new(scope, car.car_position as f64));
+    oh::set_num_prop(cx, &obj, "lastLapTime", d.last_lap_time as f64)?;
+    oh::set_num_prop(cx, &obj, "currentLapTime", d.current_lap_time as f64)?;
+    oh::set_num_prop(cx, &obj, "bestLapTime", d.best_lap_time as f64)?;
+    oh::set_num_prop(cx, &obj, "sector1Time", d.sector1_time as f64)?;
+    oh::set_num_prop(cx, &obj, "sector2Time", d.sector2_time as f64)?;
+    oh::set_num_prop(cx, &obj, "lapDistance", d.lap_distance as f64)?;
+    oh::set_num_prop(cx, &obj, "driverId", d.driver_id as f64)?;
+    oh::set_num_prop(cx, &obj, "teamId", d.team_id as f64)?;
+    oh::set_num_prop(cx, &obj, "carPosition", d.car_position as f64)?;
+    oh::set_num_prop(cx, &obj, "currentLapNum", d.current_lap_num as f64)?;
+    oh::set_num_prop(cx, &obj, "inPits", d.in_pits as f64)?;
+    oh::set_num_prop(cx, &obj, "sector", d.sector as f64)?;
+    oh::set_num_prop(cx, &obj, "currentLapInvalid", d.current_lap_invalid as f64)?;
+    oh::set_num_prop(cx, &obj, "penalties", d.penalties as f64)?;
 
-    object.set(
-        "currentLapNum",
-        JsNumber::new(scope, car.current_lap_num as f64),
-    );
-    object.set("inPits", JsNumber::new(scope, car.in_pits as f64));
-    object.set("sector", JsNumber::new(scope, car.sector as f64));
-    object.set(
-        "currentLapInvalid",
-        JsNumber::new(scope, car.current_lap_invalid as f64),
-    );
-    object.set("penalties", JsNumber::new(scope, car.penalties as f64));
-
-    object
+    Ok(obj)
 }
 
-#[allow(unused_must_use)]
-fn build_lap_js_object<'a>(scope: &mut scope::RootScope<'a>, lap: &Lap) -> Handle<'a, JsObject> {
-    let object = JsObject::new(scope);
+fn build_lap_js_object<'a>(
+    cx: &mut FunctionContext<'a>,
+    d: &Lap,
+) -> NeonResult<Handle<'a, JsObject>> {
+    let obj = cx.empty_object();
 
-    object.set(
-        "sessionTimeStamp",
-        JsNumber::new(scope, lap.session_time_stamp as f64),
-    );
+    oh::set_num_prop(cx, &obj, "sessionTimeStamp", d.session_time_stamp as f64)?;
+    oh::set_num_prop(cx, &obj, "lapNumber", d.lap_number as f64)?;
+    oh::set_num_prop(cx, &obj, "lapTime", d.lap_time as f64)?;
+    oh::set_num_prop(cx, &obj, "sector1Time", d.sector1_time as f64)?;
+    oh::set_num_prop(cx, &obj, "sector2Time", d.sector2_time as f64)?;
+    oh::set_num_prop(cx, &obj, "sector3Time", d.sector3_time as f64)?;
+    oh::set_num_prop(cx, &obj, "tyreCompound", d.tyre_compound as f64)?;
 
-    object.set("lapNumber", JsNumber::new(scope, lap.lap_number as f64));
-    object.set("lapTime", JsNumber::new(scope, lap.lap_time as f64));
-    object.set("sector1Time", JsNumber::new(scope, lap.sector1_time as f64));
-    object.set("sector2Time", JsNumber::new(scope, lap.sector2_time as f64));
-    object.set("sector3Time", JsNumber::new(scope, lap.sector3_time as f64));
+    let record_marker_obj = build_record_marker_js_object(cx, &d.record_marker);
+    oh::set_obj_prop(cx, &obj, "recordMarker", record_marker_obj)?;
 
-    object.set(
-        "tyreCompound",
-        JsNumber::new(scope, lap.tyre_compound as f64),
-    );
-
-    object.set("recordMarker", build_record_marker_js_object(scope, &lap.record_marker));
-
-    object
+    Ok(obj)
 }
 
-#[allow(unused_must_use)]
 fn build_sector_js_object<'a>(
-    scope: &mut scope::RootScope<'a>,
-    sector: &Sector,
-) -> Handle<'a, JsObject> {
-    let object = JsObject::new(scope);
+    cx: &mut FunctionContext<'a>,
+    d: &Sector,
+) -> NeonResult<Handle<'a, JsObject>> {
+    let obj = cx.empty_object();
 
-    object.set(
-        "sessionTimeStamp",
-        JsNumber::new(scope, sector.session_time_stamp as f64),
-    );
-    object.set("sector", JsNumber::new(scope, sector.sector as f64));
-    object.set(
-        "sectorTime",
-        JsNumber::new(scope, sector.sector_time as f64),
-    );
-    object.set(
-        "tyreCompound",
-        JsNumber::new(scope, sector.tyre_compound as f64),
-    );
+    oh::set_num_prop(cx, &obj, "sessionTimeStamp", d.session_time_stamp as f64)?;
+    oh::set_num_prop(cx, &obj, "sector", d.sector as f64)?;
+    oh::set_num_prop(cx, &obj, "sectorTime", d.sector_time as f64)?;
+    oh::set_num_prop(cx, &obj, "tyreCompound", d.tyre_compound as f64)?;
 
-    object.set("recordsMarker", build_record_marker_js_object(scope, &sector.record_marker));
+    let record_marker_obj = build_record_marker_js_object(cx, &d.record_marker);
+    oh::set_obj_prop(cx, &obj, "recordMarker", record_marker_obj)?;
 
-    object
+    Ok(obj)
 }
 
-#[allow(unused_must_use)]
 fn build_record_marker_js_object<'a>(
-    scope: &mut scope::RootScope<'a>,
-    record_marker: &RecordMarker,
-) -> Handle<'a, JsObject> {
-    let object = JsObject::new(scope);
+    cx: &mut FunctionContext<'a>,
+    d: &RecordMarker,
+) -> NeonResult<Handle<'a, JsObject>> {
+    let obj = cx.empty_object();
 
-    object.set("isBestEverPersonal", JsBoolean::new(scope, record_marker.is_best_ever_personal));
-    object.set("isBestEverCompoundPersonal", JsBoolean::new(scope, record_marker.is_best_ever_compound_personal));
-    object.set("isBestSessionPersonal", JsBoolean::new(scope, record_marker.is_best_session_personal));
-    object.set(
+    oh::set_bool_prop(cx, &obj, "isBestEverPersonal", d.is_best_ever_personal)?;
+    oh::set_bool_prop(
+        cx,
+        &obj,
+        "isBestEverCompoundPersonal",
+        d.is_best_ever_compound_personal,
+    )?;
+    oh::set_bool_prop(
+        cx,
+        &obj,
+        "isBestSessionPersonal",
+        d.is_best_session_personal,
+    )?;
+    oh::set_bool_prop(
+        cx,
+        &obj,
         "isBestSessionPersonalCompound",
-        JsBoolean::new(scope, record_marker.is_best_session_personal_compound),
-    );
-    object.set("isBestSessionAll", JsBoolean::new(scope, record_marker.is_best_session_all));
-    object.set("isBestSessionAllCompound", JsBoolean::new(scope, record_marker.is_best_session_all_compound));
+        d.is_best_session_personal_compound,
+    )?;
+    oh::set_bool_prop(cx, &obj, "isBestSessionAll", d.is_best_session_all)?;
+    oh::set_bool_prop(
+        cx,
+        &obj,
+        "isBestSessionAllCompound",
+        d.is_best_session_all_compound,
+    )?;
 
-    object
+    Ok(obj)
 }
 
-register_module!(m, {
-    m.export("initialise", initialise)
-        .expect("failed to export initialise");
-    m.export("getNextTick", get_next_tick)
-        .expect("failed to export getNextTick");
-    m.export("startListening", start_listening)
-        .expect("failed to export startListening");
-    m.export("replayAllLaps", replay_all_laps)
-        .expect("failed to export replayAllLaps");
-    m.export("getLapData", get_lap_data)
-        .expect("failed to export getLapData");
-    m.export("getAllLapsMetadata", get_all_laps_metadata)
-        .expect("failed to export getAllLapsMetadata");
-    m.export("replayLap", replay_lap)
-        .expect("failed to export replayLap");
+register_module!(mut cx, {
+    cx.export_function("initialise", initialise)?;
+    cx.export_function("startListening", start_listening)?;
+    cx.export_function("replayAllLaps", replay_all_laps)?;
+    cx.export_function("getNextTick", get_next_tick)?;
+    cx.export_function("getLapData", get_lap_data)?;
+    cx.export_function("getAllLapsMetadata", get_all_laps_metadata)?;
+    cx.export_function("replayLap", replay_lap)?;
     Ok(())
 });

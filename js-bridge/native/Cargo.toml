@@ -6,10 +6,10 @@ build = "build.rs"
 
 [dependencies]
 f1-laps-core = { path = "../../core" }
-neon = "0.1.22"
+neon = "0.2.0"
 
 [build-dependencies]
-neon-build = "0.1.22"
+neon-build = "0.2.0"
 
 [lib]
 name = "f1_laps_core"
