@@ -1,3 +1,35 @@
+import Chart from 'chart.js';
+import { round } from 'lodash';
+
+document.querySelector('#app').innerHTML = `
+        <div class="log">
+            <h3 class="lap-counter">Lap:</h3>
+            <h3 class="time">Time:</h3>
+            <div>
+                <h3>Stats</h3>
+                <ul class="stats">
+                    <li class="fps"></li>
+                    <li class="total-points"></li>
+                    <li class="displayed-points"></li>
+                    <li class="speed-points"></li>
+                    <li class="throttle-points"></li>
+                    <li class="brake-points"></li>
+                    <li class="gear-points"></li>
+                    <li class="steering-points"></li>
+                    <li class="compressed-points"></li>
+                </ul>
+            </div>
+        </div>
+        <canvas width="1200" height="200" id="speed-plot"></canvas>
+        <canvas width="1200" height="200" id="throttle-plot"></canvas>
+        <canvas width="1200" height="200" id="brake-plot"></canvas>
+        <canvas width="1200" height="200" id="gear-plot"></canvas>
+        <canvas width="1200" height="200" id="compressed-plot"></canvas>
+        <canvas width="1200" height="200" id="steering-plot"></canvas>
+`;
+
+
+
 let logElem = document.querySelector('.log');
 let lapCounter = document.querySelector('.lap-counter');
 let timeElem = document.querySelector('.time');
@@ -156,7 +188,7 @@ function updatePlotScale(plot, currentTime) {
 
 function filterXBoundingTicks(tickVal, index, allTicks) {
     if (index === 0) {
-        return _.round(tickVal, 1);
+        return round(tickVal, 1);
     }
 
     if (index === allTicks.length - 1) {
@@ -273,7 +305,7 @@ function updatePlots(timestamp) {
     }
 
     if (timestamp - lastScaleUpdateTime > SCALE_UPDATE_INTERVAL) {
-        timeElem.innerHTML = 'Data Time: ' + _.round(currentDataTime, 3) + ' Elapsed: ' + _.round(currentElapsedTime, 3) + ' Drift: ' + _.round(currentDataTime - currentElapsedTime, 3);
+        timeElem.innerHTML = 'Data Time: ' + round(currentDataTime, 3) + ' Elapsed: ' + round(currentElapsedTime, 3) + ' Drift: ' + round(currentDataTime - currentElapsedTime, 3);
         updatePlotScale(speedPlot, currentDataTime);
         updatePlotScale(throttlePlot, currentDataTime);
         updatePlotScale(compressedPlot, currentDataTime);
@@ -289,7 +321,7 @@ function updatePlots(timestamp) {
         framesSinceUpdate++;
     }
     if (timestamp - lastFPSUpdateTime > FPS_UPDATE_INTERVAL) {
-        fpsElem.innerHTML = 'FPS: ' + _.round((framesSinceUpdate / FPS_UPDATE_INTERVAL) * 1000);
+        fpsElem.innerHTML = 'FPS: ' + round((framesSinceUpdate / FPS_UPDATE_INTERVAL) * 1000);
         totalPointsElem.innerHTML = 'Total points: ' + totalDataPoints;
         displayedPointsElem.innerHTML = ' Total in range (uncompressed): ' + time.length;
         speedPointsElem.innerHTML = 'Speed displayed: ' + speed.length;
@@ -311,6 +343,6 @@ brakePlot = createPlot('brake-plot', 'Brake', [-0.05, 1.05]);
 gearPlot = createPlot('gear-plot', 'Gear', [-1.2, 9.2]);
 steeringPlot = createPlot('steering-plot', 'Steering', [-1, 1]);
 
-f1.liveData.register(onLiveDataReceived);
+window.f1.liveData.register(onLiveDataReceived);
 requestAnimationFrame(updatePlots);
-f1.replayAllLaps();
+window.f1.replayAllLaps();
