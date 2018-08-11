@@ -7,21 +7,21 @@ const actions = {};
 const view = () => {
     return (
         <div id="container" onCreate={setTimeout(setupApp, 1000)}>
-            <div className="log">
-                <h3 className="lap-counter">Lap:</h3>
-                <h3 className="time">Time:</h3>
+            <div class="log">
+                <h3 class="lap-counter">Lap:</h3>
+                <h3 class="time">Time:</h3>
                 <div>
                     <h3>Stats</h3>
-                    <ul className="stats">
-                        <li className="fps"></li>
-                        <li className="total-points"></li>
-                        <li className="displayed-points"></li>
-                        <li className="speed-points"></li>
-                        <li className="throttle-points"></li>
-                        <li className="brake-points"></li>
-                        <li className="gear-points"></li>
-                        <li className="steering-points"></li>
-                        <li className="compressed-points"></li>
+                    <ul class="stats">
+                        <li class="fps"></li>
+                        <li class="total-points"></li>
+                        <li class="displayed-points"></li>
+                        <li class="speed-points"></li>
+                        <li class="throttle-points"></li>
+                        <li class="brake-points"></li>
+                        <li class="gear-points"></li>
+                        <li class="steering-points"></li>
+                        <li class="compressed-points"></li>
                     </ul>
                 </div>
             </div>
@@ -36,6 +36,7 @@ const view = () => {
 };
 
 app(state, actions, view, document.querySelector('#app'));
+
 function setupApp() {
     let lapCounter = document.querySelector('.lap-counter');
     let timeElem = document.querySelector('.time');
