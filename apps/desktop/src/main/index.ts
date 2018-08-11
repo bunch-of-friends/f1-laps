@@ -1,7 +1,6 @@
-const { app, BrowserWindow } = require('electron');
-const path = require('path');
-const url = require('url');
-const f1 = require('f1-laps-js-bridge');
+import { app, BrowserWindow } from 'electron';
+import path from 'path';
+import url from 'url';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
