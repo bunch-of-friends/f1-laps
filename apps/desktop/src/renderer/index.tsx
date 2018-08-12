@@ -179,7 +179,7 @@ function setupApp() {
     let steeringPlot: Plot;
     let anyDataReceived = false;
 
-    const DATA_UPDATE_INTERVAL = 1000;
+    const DATA_UPDATE_INTERVAL = 20;
     const DELAY_SECONDS = DATA_UPDATE_INTERVAL / 1000;
     const SCALE_UPDATE_INTERVAL = 75;
     const FPS_UPDATE_INTERVAL = 500;
