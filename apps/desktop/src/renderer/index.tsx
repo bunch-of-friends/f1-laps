@@ -3,7 +3,6 @@ import { round } from 'lodash';
 import { h, app } from 'hyperapp';
 import * as core from 'f1-laps-js-bridge';
 
-
 core.initialise({ updateInterval: 30, storagePath: '../../_data-storage' });
 
 const state = {};
