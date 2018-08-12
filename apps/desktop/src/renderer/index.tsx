@@ -62,7 +62,6 @@ function setupApp() {
     let gear = new Array<Point>();
     let steering = new Array<Point>();
     let time = new Array<number>();
-    let lap = -1;
 
     function resetTraces() {
         speed = new Array<Point>();
@@ -126,52 +125,49 @@ function setupApp() {
         }
     }
 
+    core.lapFinished.register(data => {
+        resetTraces();
+    })
+
     core.liveData.register(data => {
         anyDataReceived = true;
 
-        if (data.currentLap === 0 && lap > 0) {
-            resetTraces();
-        } else {
-            removeHistory(speed, data.sessionTime);
-            removeHistory(throttle, data.sessionTime);
-            removeHistory(compressed, data.sessionTime);
-            removeHistory(brake, data.sessionTime);
-            removeHistory(gear, data.sessionTime);
-            removeHistory(steering, data.sessionTime);
-            removeHistory(time, data.sessionTime);
+        removeHistory(speed, data.currentLapTime);
+        removeHistory(throttle, data.currentLapTime);
+        removeHistory(compressed, data.currentLapTime);
+        removeHistory(brake, data.currentLapTime);
+        removeHistory(gear, data.currentLapTime);
+        removeHistory(steering, data.currentLapTime);
+        removeHistory(time, data.currentLapTime);
 
-            updateData(speed, {
-                x: data.sessionTime,
-                y: data.currentSpeed
-            });
-            updateData(throttle, {
-                x: data.sessionTime,
-                y: data.throttle
-            });
-            updateData(compressed, { x: data.sessionTime, y: data.currentSpeed });
+        updateData(speed, {
+            x: data.currentLapTime,
+            y: data.currentSpeed
+        });
+        updateData(throttle, {
+            x: data.currentLapTime,
+            y: data.throttle
+        });
+        updateData(compressed, { x: data.currentLapTime, y: data.currentSpeed });
 
 
-            updateData(brake, {
-                x: data.sessionTime,
-                y: data.brake
-            });
-            updateData(gear, {
-                x: data.sessionTime,
-                y: data.currentGear
-            });
-            updateData(steering, {
-                x: data.sessionTime,
-                y: data.steer
-            });
-            time.push(data.sessionTime);
+        updateData(brake, {
+            x: data.currentLapTime,
+            y: data.brake
+        });
+        updateData(gear, {
+            x: data.currentLapTime,
+            y: data.currentGear
+        });
+        updateData(steering, {
+            x: data.currentLapTime,
+            y: data.steer
+        });
+        time.push(data.currentLapTime);
 
-            totalDataPoints++;
-        }
+        totalDataPoints++;
 
-        if (data.currentLap !== lap) {
-            lap = data.currentLap;
-            lapCounter.innerHTML = 'Lap: ' + lap;
-        }
+        lapCounter.innerHTML = 'Lap: ' + data.currentLap;
     });
 
     let speedPlot: Plot;
@@ -246,7 +242,7 @@ function setupApp() {
                 animation: {
                     duration: 0
                 },
-                events: 'click',
+                events: ['click'],
                 elements: {
                     point: {
                         radius: 0,
@@ -261,8 +257,8 @@ function setupApp() {
                         {
                             ticks: {
                                 maxRotation: 0,
-                                min: -100,
-                                max: 0,
+                                min: 0,
+                                max: 120,
                                 callback: filterXBoundingTicks
                             },
                         }
@@ -278,7 +274,7 @@ function setupApp() {
                     ]
                 }
             }
-        } as any);
+        } as ChartConfiguration);
     }
 
     let currentElapsedTime: number;
@@ -344,14 +340,21 @@ function setupApp() {
         }
     }
 
-    speedPlot = createPlot('speed-plot', 'Speed(mph)', [0, 250]);
+    speedPlot = createPlot('speed-plot', 'Speed(kph)', [0, 420]);
     throttlePlot = createPlot('throttle-plot', 'Throttle', [-0.05, 1.05]);
-    compressedPlot = createPlot('compressed-plot', 'Compressed', [0, 250]);
+    compressedPlot = createPlot('compressed-plot', 'Compressed speed', [0, 420]);
     brakePlot = createPlot('brake-plot', 'Brake', [-0.05, 1.05]);
     gearPlot = createPlot('gear-plot', 'Gear', [-1.2, 9.2]);
     steeringPlot = createPlot('steering-plot', 'Steering', [-1, 1]);
 
     requestAnimationFrame(updatePlots);
+    const metadata = core.getAllLapsMetadata();
+    console.log("metadata >>", metadata);
+
+    // if (metadata.length > 0) {
+    //     core.replayLap(metadata[0].identifier);
+    // }
+
     core.replayAllLaps();
 }
 
