@@ -30,7 +30,6 @@ document.querySelector('#app').innerHTML = `
 
 
 
-let logElem = document.querySelector('.log');
 let lapCounter = document.querySelector('.lap-counter');
 let timeElem = document.querySelector('.time');
 let fpsElem = document.querySelector('.fps');
@@ -62,10 +61,8 @@ function resetTraces() {
     time = [];
 }
 
-const MAX_POINTS_TO_RENDER = 3100;
 const TIME_RANGE = 100;
 let totalDataPoints = 0;
-let outOfOrderPoints = 0;
 function subtract(a, b) {
     return {
         x: a.x - b.x,
@@ -211,7 +208,7 @@ function filterYBoundingTicks(tickVal, index, allTicks) {
 }
 
 function createPlot(plotId, name, suggestedYRange) {
-    return new Chart(document.getElementById(plotId).getContext('2d'), {
+    return new Chart((document.getElementById(plotId) as HTMLCanvasElement).getContext('2d'), {
         type: 'scatter',
         data: {
             datasets: [
@@ -262,16 +259,7 @@ function createPlot(plotId, name, suggestedYRange) {
                 ]
             }
         }
-    });
-}
-
-function uniformSample(a, nToSkip) {
-    let rs = [];
-    for (let i = 0; i < a.length; i+= nToSkip) {
-        rs.push(a[i]);
-    }
-
-    return rs;
+    } as any);
 }
 
 let currentElapsedTime;
@@ -293,12 +281,12 @@ function updatePlots(timestamp) {
 
     let plotUpdated = false;
     if (timestamp - lastDataUpdateTime > DATA_UPDATE_INTERVAL) {
-        updatePlotData(speedPlot, speed, currentDataTime);
-        updatePlotData(throttlePlot, throttle, currentDataTime);
-        updatePlotData(compressedPlot, compressed, currentDataTime);
-        updatePlotData(brakePlot, brake, currentDataTime);
-        updatePlotData(gearPlot, gear, currentDataTime);
-        updatePlotData(steeringPlot, steering, currentDataTime);
+        updatePlotData(speedPlot, speed);
+        updatePlotData(throttlePlot, throttle);
+        updatePlotData(compressedPlot, compressed);
+        updatePlotData(brakePlot, brake);
+        updatePlotData(gearPlot, gear);
+        updatePlotData(steeringPlot, steering);
 
         plotUpdated = true;
         lastDataUpdateTime = timestamp;
@@ -343,6 +331,6 @@ brakePlot = createPlot('brake-plot', 'Brake', [-0.05, 1.05]);
 gearPlot = createPlot('gear-plot', 'Gear', [-1.2, 9.2]);
 steeringPlot = createPlot('steering-plot', 'Steering', [-1, 1]);
 
-window.f1.liveData.register(onLiveDataReceived);
+(window as any).f1.liveData.register(onLiveDataReceived);
 requestAnimationFrame(updatePlots);
-window.f1.replayAllLaps();
+(window as any).f1.replayAllLaps();
