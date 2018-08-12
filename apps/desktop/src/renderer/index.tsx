@@ -3,11 +3,12 @@ import { round } from 'lodash';
 import { h, app } from 'hyperapp';
 import * as core from 'f1-laps-js-bridge';
 
-
 core.initialise({ updateInterval: 30, storagePath: '../../_data-storage' });
 
 const state = {};
 const actions = {};
+
+const MAX_CHART_X = 120;
 
 const view = () => {
     return (
@@ -193,8 +194,7 @@ function setupApp() {
     }
 
     function updatePlotScale(plot: Plot, currentTime: number) {
-        plot.options.scales.xAxes[0].ticks.min = currentTime - TIME_RANGE - DELAY_SECONDS;
-        plot.options.scales.xAxes[0].ticks.max = currentTime - DELAY_SECONDS;
+        plot.options.scales.xAxes[0].ticks.max = Math.max(currentTime, MAX_CHART_X);
         plot.update();
     }
 
@@ -258,7 +258,7 @@ function setupApp() {
                             ticks: {
                                 maxRotation: 0,
                                 min: 0,
-                                max: 120,
+                                max: MAX_CHART_X,
                                 callback: filterXBoundingTicks
                             },
                         }
