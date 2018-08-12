@@ -1,9 +1,14 @@
-import Chart from 'chart.js';
+import Chart, { ChartConfiguration } from 'chart.js';
 import { round } from 'lodash';
 import { h, app } from 'hyperapp';
+import * as core from 'f1-laps-js-bridge';
+
+
+core.initialise({ updateInterval: 30, storagePath: '../../_data-storage' });
 
 const state = {};
 const actions = {};
+
 const view = () => {
     return (
         <div id="container" onCreate={setTimeout(setupApp, 1000)}>
@@ -50,51 +55,58 @@ function setupApp() {
     let gearPointsElem = document.querySelector('.gear-points');
     let steeringPointsElem = document.querySelector('.steering-points');
 
-    let speed = [];
-    let throttle = [];
-    let compressed = [];
-    let brake = [];
-    let gear = [];
-    let steering = [];
-    let time = [];
+    let speed = new Array<Point>();
+    let throttle = new Array<Point>();
+    let compressed = new Array<Point>();
+    let brake = new Array<Point>();
+    let gear = new Array<Point>();
+    let steering = new Array<Point>();
+    let time = new Array<number>();
     let lap = -1;
 
     function resetTraces() {
-        speed = [];
-        throttle = [];
-        compressed = [];
-        brake = [];
-        gear = [];
-        steering = [];
-        time = [];
+        speed = new Array<Point>();
+        throttle = new Array<Point>();
+        compressed = new Array<Point>();
+        brake = new Array<Point>();
+        gear = new Array<Point>();
+        steering = new Array<Point>();
+        time = new Array<number>();
     }
 
     const TIME_RANGE = 100;
     let totalDataPoints = 0;
-    function subtract(a, b) {
+
+    function subtract(a: Point, b: Point) {
         return {
             x: a.x - b.x,
             y: a.y - b.y
         };
     }
 
-    function determinant(u, v) {
+    function determinant(u: Point, v: Point) {
         return u.x * v.y - u.y * v.x;
     }
 
-    function magnitude(u) {
+    function magnitude(u: Point) {
         return Math.sqrt(u.x ** 2 + u.y ** 2);
     }
 
-    function removeHistory(arr, currentTime) {
-        const firstVisible = arr.findIndex(a => typeof(a) === 'number' && a > currentTime - TIME_RANGE - DELAY_SECONDS || a.x > currentTime - TIME_RANGE - DELAY_SECONDS);
+    function removeHistory(arr: Array<Point | number>, currentTime: number) {
+        const firstVisible = arr.findIndex(a => {
+            if (typeof a === 'number') {
+                return a > currentTime - TIME_RANGE - DELAY_SECONDS;
+            } else {
+                return a.x > currentTime - TIME_RANGE - DELAY_SECONDS
+            }
+        });
 
         if (firstVisible !== -1) {
             arr.splice(0, firstVisible - 1);
         }
     }
 
-    function updateData(allData, newPoint, compressionTolerance = 0.001) {
+    function updateData(allData: Array<Point>, newPoint: Point, compressionTolerance = 0.001) {
         if (allData.length > 2) {
             const a = allData[allData.length - 2];
             const b = allData[allData.length - 1];
@@ -114,10 +126,10 @@ function setupApp() {
         }
     }
 
-    function onLiveDataReceived(data) {
+    core.liveData.register(data => {
         anyDataReceived = true;
 
-        if (data.lap === 0 && lap > 0) {
+        if (data.currentLap === 0 && lap > 0) {
             resetTraces();
         } else {
             removeHistory(speed, data.sessionTime);
@@ -160,14 +172,14 @@ function setupApp() {
             lap = data.currentLap;
             lapCounter.innerHTML = 'Lap: ' + lap;
         }
-    }
+    });
 
-    let speedPlot;
-    let throttlePlot;
-    let compressedPlot;
-    let brakePlot;
-    let gearPlot;
-    let steeringPlot;
+    let speedPlot: Plot;
+    let throttlePlot: Plot;
+    let compressedPlot: Plot;
+    let brakePlot: Plot;
+    let gearPlot: Plot;
+    let steeringPlot: Plot;
     let anyDataReceived = false;
 
     const DATA_UPDATE_INTERVAL = 1000;
@@ -179,18 +191,18 @@ function setupApp() {
     let lastFPSUpdateTime = -FPS_UPDATE_INTERVAL;
     let framesSinceUpdate = 0;
 
-    function updatePlotData(plot, data) {
+    function updatePlotData(plot: Chart, data: Array<Point>) {
         plot.data.datasets[0].data = data.slice();
         plot.update();
     }
 
-    function updatePlotScale(plot, currentTime) {
+    function updatePlotScale(plot: Plot, currentTime: number) {
         plot.options.scales.xAxes[0].ticks.min = currentTime - TIME_RANGE - DELAY_SECONDS;
         plot.options.scales.xAxes[0].ticks.max = currentTime - DELAY_SECONDS;
         plot.update();
     }
 
-    function filterXBoundingTicks(tickVal, index, allTicks) {
+    function filterXBoundingTicks(tickVal: number, index: number, allTicks: Array<Point>) {
         if (index === 0) {
             return round(tickVal, 1);
         }
@@ -202,7 +214,7 @@ function setupApp() {
         return tickVal;
     }
 
-    function filterYBoundingTicks(tickVal, index, allTicks) {
+    function filterYBoundingTicks(tickVal: number, index: number, allTicks: Array<Point>) {
         if (index === 0) {
             return null;
         }
@@ -214,7 +226,7 @@ function setupApp() {
         return tickVal;
     }
 
-    function createPlot(plotId, name, suggestedYRange) {
+    function createPlot(plotId: string, name: string, suggestedYRange: Array<number>) {
         return new Chart((document.getElementById(plotId) as HTMLCanvasElement).getContext('2d'), {
             type: 'scatter',
             data: {
@@ -269,9 +281,10 @@ function setupApp() {
         } as any);
     }
 
-    let currentElapsedTime;
-    let lastUpdateTime;
-    function updatePlots(timestamp) {
+    let currentElapsedTime: number;
+    let lastUpdateTime: number;
+
+    function updatePlots(timestamp: number) {
         requestAnimationFrame(updatePlots);
 
         if (!anyDataReceived) {
@@ -338,7 +351,13 @@ function setupApp() {
     gearPlot = createPlot('gear-plot', 'Gear', [-1.2, 9.2]);
     steeringPlot = createPlot('steering-plot', 'Steering', [-1, 1]);
 
-    (window as any).f1.liveData.register(onLiveDataReceived);
     requestAnimationFrame(updatePlots);
-    (window as any).f1.replayAllLaps();
+    core.replayAllLaps();
 }
+
+interface Point {
+    x: number;
+    y: number;
+}
+
+type Plot = Chart & ChartConfiguration;
