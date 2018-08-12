@@ -226,7 +226,7 @@ function setupApp() {
         return tickVal;
     }
 
-    function createPlot(plotId: string, name: string, suggestedYRange: Array<number>) {
+    function createPlot(plotId: string, name: string, suggestedYRange: [number, number]) {
         return new Chart((document.getElementById(plotId) as HTMLCanvasElement).getContext('2d'), {
             type: 'scatter',
             data: {
