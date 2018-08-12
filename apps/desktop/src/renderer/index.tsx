@@ -5,6 +5,7 @@ import { startApp } from './start-app';
 import { appInitialState } from './app-state';
 import { appActions } from './app-actions';
 import { AppContainer } from './app-container/app-container';
+import { Point } from './math/linear-algebra';
 
 const MAX_CHART_X = 120;
 
@@ -321,11 +322,6 @@ function setupApp() {
     // }
 
     core.replayAllLaps();
-}
-
-interface Point {
-    x: number;
-    y: number;
 }
 
 type Plot = Chart & ChartConfiguration;

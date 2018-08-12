@@ -1,6 +1,7 @@
 import { AppState } from '../app-state';
 import { LapCounter } from '../lap-counter/lap-counter';
 import { h } from 'hyperapp';
+import { TelemetryPlot } from '../chart/telemetry-plot';
 
 export const AppContainer = (state: AppState) => {
     return (
@@ -23,6 +24,7 @@ export const AppContainer = (state: AppState) => {
                     </ul>
                 </div>
             </div>
+            <TelemetryPlot key="speed" suggestedYRange={[0, 420]} data={state.liveData.speed} />
             <canvas width="1200" height="200" id="speed-plot"></canvas>
             <canvas width="1200" height="200" id="throttle-plot"></canvas>
             <canvas width="1200" height="200" id="brake-plot"></canvas>

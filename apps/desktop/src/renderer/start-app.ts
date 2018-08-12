@@ -14,8 +14,9 @@ export function startApp(
     const boundActions = app(state, actions, view, container);
 
     core.liveData.register(data => {
-        boundActions.liveData.liveDataReceived(),
-        boundActions.liveData.currentLapChanged(data.currentLap)
+        boundActions.liveData.liveDataReceived();
+        boundActions.liveData.currentLapChanged(data.currentLap);
+        boundActions.liveData.dataPointReceived(data);
     });
     (window as any).gs = boundActions.getState;
 }
