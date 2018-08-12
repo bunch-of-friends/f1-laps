@@ -13,7 +13,10 @@ pub mod record_tracking;
 pub mod replay;
 pub mod storage;
 pub mod udp;
+
+// new/refactor
 pub mod pipeline;
+pub mod conversion;
 
 use aggregation::collector::Collector;
 use aggregation::tick::{LiveData, Tick};
