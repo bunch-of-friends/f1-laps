@@ -19,7 +19,7 @@ pub fn process_packet(packet: Packet, is_replay: bool) -> Option<Tick> {
 
     let mut tracker = TRACKER.lock().unwrap();
     tracker.check_itinialised();
-    let tracking_data = tracker.track(packet, is_replay);
+    let tracking_data = tracker.track(packet.clone(), is_replay);
 
     let live_data = build_live_data(&packet);
 
@@ -33,6 +33,7 @@ pub fn process_packet(packet: Packet, is_replay: bool) -> Option<Tick> {
         session_started: tracking_data.0,
         sector_finished: tracking_data.1,
         lap_finished: lap_finished,
+        message: None
     };
 
     return Some(tick);
@@ -42,7 +43,7 @@ pub fn convert_packets(packets: &Vec<Packet>) -> Vec<LiveData> {
     return packets.into_iter().map(|x| build_live_data(x)).collect();
 }
 
-fn build_live_data(&packet: &Packet) -> LiveData {
+fn build_live_data(packet: &Packet) -> LiveData {
     LiveData {
         current_lap: packet.lap as u8,
         current_lap_time: packet.lap_time,
@@ -103,6 +104,6 @@ fn build_live_data(&packet: &Packet) -> LiveData {
         exhaust_damage: packet.exhaust_damage,
         cars_total: packet.cars_total,
         player_car_index: packet.player_car_index,
-        car_data: packet.car_data,
+        car_data: packet.car_data.clone(),
     }
 }

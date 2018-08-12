@@ -71,7 +71,7 @@ impl Tracker {
             self.store_records();
         }
 
-        self.track_lap_packets(packet, !is_replay, is_current_lap);
+        self.track_lap_packets(packet.clone(), !is_replay, is_current_lap);
 
         if is_finished_lap {
             self.current_sector_times[0] = -1 as f32;
@@ -96,7 +96,7 @@ impl Tracker {
 
         // naive check if the packet is coming from the same session
         // a player can be in the same era, same car, same team, same track, but different session -> so this needs improvements
-        let unwrapped = self.current_session.unwrap();
+        let unwrapped = self.current_session.clone().unwrap();
         return unwrapped.era == (packet.era as u16)
             && unwrapped.session_type == (packet.session_type as u8)
             && unwrapped.team_id == (packet.team_id as u8)
@@ -126,7 +126,7 @@ impl Tracker {
         self.current_session_time = packet.time;
         self.current_lap_number = packet.lap;
         self.current_sector = packet.sector;
-        self.current_session = Some(session);
+        self.current_session = Some(session.clone());
         return Some(session);
     }
 
@@ -171,7 +171,8 @@ impl Tracker {
         sector: &Option<Sector>,
         lap: Option<&(Lap, LapMetadata)>,
     ) -> bool {
-        if sector.is_some() && sector.unwrap().record_marker.has_any_best_ever_records() {
+        let s = sector.clone();
+        if s.is_some() && s.unwrap().record_marker.has_any_best_ever_records() {
             return true;
         }
 

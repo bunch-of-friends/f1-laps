@@ -13,6 +13,7 @@ pub mod record_tracking;
 pub mod replay;
 pub mod storage;
 pub mod udp;
+pub mod pipeline;
 
 use aggregation::collector::Collector;
 use aggregation::tick::{LiveData, Tick};
@@ -52,6 +53,7 @@ pub fn get_next_tick() -> Option<Tick> {
             session_started: data.1,
             lap_finished: data.2,
             sector_finished: data.3,
+            message: None
         })
     } else {
         None
