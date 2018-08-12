@@ -1,17 +1,17 @@
 use udp::packet::Packet;
 
-trait DataReceiver {
+pub(crate) trait DataReceiver {
     fn start_receiving();
     fn receive(packet: Packet);
 }
 
-trait PipeLine {
+pub(crate) trait PipeLine {
     fn build_labels(entry: &PipelineEntry) -> PacketLabels;
     fn build_stats(entry: &PipelineEntry, labels: PacketLabels) -> PacketStats;
     fn build_context(entry: &PipelineEntry, labels: PacketLabels) -> Context;
 }
 
-struct InputTick {
+pub(crate) struct InputTick {
     pub session_time: f32,
     pub session_distance: f32,
     pub lap_time: f32,
@@ -39,54 +39,53 @@ struct InputTick {
     pub track_id: u8,
     pub vehicle_fia_flags: i8,
     pub era: u16,
-    pub tyre_compound: u8, 
+    pub tyre_compound: u8,
     pub current_lap_invalid: bool,
     pub is_spectating: bool,
-    
     pub cars_total: u8,
 }
 
-struct PipelineEntry<'a> {
+pub(crate) struct PipelineEntry<'a> {
     input_tick: &'a InputTick,
     context: &'a Context,
 }
 
-struct PacketLabels {
+pub(crate) struct PacketLabels {
     is_new_session: bool,
     is_new_lap: bool,
     is_new_sector: bool,
 }
 
-struct PacketStats {
+pub(crate) struct PacketStats {
     previous_lap: Option<FinishedLap>,
     previous_sector: Option<FinishedSector>,
     session: Session,
 }
 
-struct FinishedLap {
+pub(crate) struct FinishedLap {
     number: u8,
     sectors: [f32; 3],
     tyre_compound: u8,
 }
 
-struct FinishedSector {
+pub(crate) struct FinishedSector {
     number: u8,
     time: f32,
     tyre_compound: u8,
 }
 
-struct Session {
+pub(crate) struct Session {
     pub track_id: u8,
     pub session_type: u8,
     pub team_id: u8,
     pub era: u16,
 }
 
-struct Context {
+pub(crate) struct Context {
     session_context: SessionContext,
     history_context: HistoryContext,
 }
 
-struct SessionContext {}
+pub(crate) struct SessionContext {}
 
-struct HistoryContext {}
+pub(crate) struct HistoryContext {}
