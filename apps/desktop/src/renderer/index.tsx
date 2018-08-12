@@ -1,50 +1,17 @@
 import Chart, { ChartConfiguration } from 'chart.js';
 import { round } from 'lodash';
-import { h, app } from 'hyperapp';
 import * as core from 'f1-laps-js-bridge';
-
-core.initialise({ updateInterval: 30, storagePath: '../../_data-storage' });
-
-const state = {};
-const actions = {};
+import { startApp } from './start-app';
+import { appInitialState } from './app-state';
+import { appActions } from './app-actions';
+import { AppContainer } from './app-container/app-container';
 
 const MAX_CHART_X = 120;
 
-const view = () => {
-    return (
-        <div id="container" onCreate={setTimeout(setupApp, 1000)}>
-            <div class="log">
-                <h3 class="lap-counter">Lap:</h3>
-                <h3 class="time">Time:</h3>
-                <div>
-                    <h3>Stats</h3>
-                    <ul class="stats">
-                        <li class="fps"></li>
-                        <li class="total-points"></li>
-                        <li class="displayed-points"></li>
-                        <li class="speed-points"></li>
-                        <li class="throttle-points"></li>
-                        <li class="brake-points"></li>
-                        <li class="gear-points"></li>
-                        <li class="steering-points"></li>
-                        <li class="compressed-points"></li>
-                    </ul>
-                </div>
-            </div>
-            <canvas width="1200" height="200" id="speed-plot"></canvas>
-            <canvas width="1200" height="200" id="throttle-plot"></canvas>
-            <canvas width="1200" height="200" id="brake-plot"></canvas>
-            <canvas width="1200" height="200" id="gear-plot"></canvas>
-            <canvas width="1200" height="200" id="compressed-plot"></canvas>
-            <canvas width="1200" height="200" id="steering-plot"></canvas>
-        </div>
-    );
-};
-
-app(state, actions, view, document.querySelector('#app'));
+startApp(core, appInitialState, appActions, AppContainer, document.getElementById('app'));
+setTimeout(setupApp, 1000);
 
 function setupApp() {
-    let lapCounter = document.querySelector('.lap-counter');
     let timeElem = document.querySelector('.time');
     let fpsElem = document.querySelector('.fps');
     let displayedPointsElem = document.querySelector('.displayed-points');
@@ -167,8 +134,6 @@ function setupApp() {
         time.push(data.currentLapTime);
 
         totalDataPoints++;
-
-        lapCounter.innerHTML = 'Lap: ' + data.currentLap;
     });
 
     let speedPlot: Plot;
