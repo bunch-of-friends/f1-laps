@@ -25,7 +25,8 @@ impl DataProcessor for Pipeline {
         input_tick: &InputTick,
         context: &Context,
         labels: &PacketLabels,
+        stats: &PacketStats
     ) -> Context {
-        context::build_context(&input_tick, &context, &labels)
+        context::build_context(&input_tick, &context, &labels, &stats)
     }
 }

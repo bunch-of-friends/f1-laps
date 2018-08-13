@@ -6,7 +6,12 @@ pub(crate) trait DataReceiver {
 pub(crate) trait DataProcessor {
     fn build_labels(&self, input_tick: &InputTick, context: &Context) -> PacketLabels;
     fn build_stats(&self, input_tick: &InputTick, context: &Context, labels: &PacketLabels) -> PacketStats;
-    fn build_context(&self, input_tick: &InputTick, context: &Context, labels: &PacketLabels) -> Context;
+    fn build_context(&self, input_tick: &InputTick, context: &Context, labels: &PacketLabels, stats: &PacketStats) -> Context;
+}
+
+pub(crate) trait StorageManager {
+    fn store_lap(&self, input_tick: &InputTick, context: &Context, labels: &PacketLabels, stats: &PacketStats) -> StoreLapResult;
+    fn store_metadata(&self, input_tick: &InputTick, context: &Context, labels: &PacketLabels, stats: &PacketStats) -> StoreLapResult;
 }
 
 pub(crate) struct InputTick {
@@ -82,3 +87,7 @@ pub(crate) struct Context {
 pub(crate) struct SessionContext {}
 
 pub(crate) struct HistoryContext {}
+
+pub(crate) struct StoreLapResult {}
+
+pub(crate) struct StoreMetadataResult {}
