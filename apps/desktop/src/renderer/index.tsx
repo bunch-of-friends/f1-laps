@@ -1,7 +1,7 @@
 import Chart, { ChartConfiguration } from 'chart.js';
 import { round } from 'lodash';
 import * as core from 'f1-laps-js-bridge';
-import { startApp } from './start-app';
+import { startApp, AppContext } from './start-app';
 import { appInitialState } from './app-state';
 import { appActions } from './app-actions';
 import { AppContainer } from './app-container/app-container';
@@ -9,7 +9,13 @@ import { Point } from './math/linear-algebra';
 
 const MAX_CHART_X = 120;
 
-startApp(core, appInitialState, appActions, AppContainer, document.getElementById('app'));
+const context: AppContext = {
+    lastUpdateTime: -1,
+    liveDataBuffer: []
+};
+
+startApp(core, appInitialState, appActions, AppContainer, document.getElementById('app'), context);
+
 setTimeout(setupApp, 1000);
 
 function setupApp() {
