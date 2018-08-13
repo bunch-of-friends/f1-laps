@@ -1,12 +1,22 @@
+import { Point } from "./math/linear-algebra";
+
+export interface LiveData {
+    anyDataReceived: boolean;
+    currentLap?: number;
+    speed: Array<Point>;
+}
+
+export type ActivePlots = { [key: string]: Chart }
+
 export interface AppState {
-    liveData: {
-        anyDataReceived: boolean;
-        currentLap?: number;
-    }
+    liveData: LiveData;
+    activePlots: ActivePlots;
 };
 
-export const appInitialState = {
+export const appInitialState: AppState = {
     liveData: {
-        anyDataReceived: false
-    }
+        anyDataReceived: false,
+        speed: []
+    },
+    activePlots: {}
 };
