@@ -1,29 +1,31 @@
 import { AppState, LiveData, ActivePlots } from "./app-state";
 import { LapTick } from "f1-laps-js-bridge";
-import { Point } from "./math/linear-algebra";
-
 const TIME_RANGE = 100;
 
-function filterInvisible(arr: Array<Point>, currentTime: number) {
-    const firstVisible = arr.findIndex(a => a.x > currentTime - TIME_RANGE);
+function filterInvisible(lapTicks: Array<LapTick>) {
+    const currentTime = lapTicks.length > 0 ? lapTicks[lapTicks.length - 1].currentLapTime : 0;
+    const firstVisible = lapTicks.findIndex(
+        a => a.currentLapTime > currentTime - TIME_RANGE
+    );
 
-    return arr.slice(firstVisible);
+    return lapTicks.slice(firstVisible);
 }
 
-function updateLapPlot(arr: Array<Point>, newPoint: Point) {
-    return filterInvisible(arr, newPoint.x).concat([newPoint]);
+function updateLapPlot(lapTicks: Array<LapTick>, newPoints: Array<LapTick>) {
+    return filterInvisible(lapTicks.concat(newPoints));
 }
 
 export const appActions = {
     liveData: {
-        liveDataReceived: () => ({ anyDataReceived: true }),
         currentLapChanged: (currentLap: number) => ({ currentLap }),
-        dataPointReceived: (lapTick: LapTick) => ({ speed }: LiveData) => {
+        liveDataReceived: (
+            newLapTicks: Array<LapTick>
+        ) => (
+            { lapTicks }: LiveData
+        ) => {
             return {
-                speed: updateLapPlot(speed, {
-                    x: lapTick.currentLapTime,
-                    y: lapTick.currentSpeed
-                })
+                anyDataReceived: true,
+                lapTicks: updateLapPlot(lapTicks, newLapTicks)
             };
         }
     },

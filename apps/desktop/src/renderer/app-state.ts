@@ -1,9 +1,9 @@
-import { Point } from "./math/linear-algebra";
+import { LapTick } from "f1-laps-js-bridge";
 
 export interface LiveData {
     anyDataReceived: boolean;
     currentLap?: number;
-    speed: Array<Point>;
+    lapTicks: Array<LapTick>;
 }
 
 export type ActivePlots = { [key: string]: Chart }
@@ -16,7 +16,7 @@ export interface AppState {
 export const appInitialState: AppState = {
     liveData: {
         anyDataReceived: false,
-        speed: []
+        lapTicks: []
     },
     activePlots: {}
 };
