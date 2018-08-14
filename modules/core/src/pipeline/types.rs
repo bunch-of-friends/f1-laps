@@ -1,20 +1,4 @@
-pub(crate) trait DataReceiver {
-    fn start_receiving();
-    fn receive(input_tick: InputTick);
-}
-
-pub(crate) trait DataProcessor {
-    fn build_labels(&self, input_tick: &InputTick, context: &Context) -> PacketLabels;
-    fn build_stats(&self, input_tick: &InputTick, context: &Context, labels: &PacketLabels) -> PacketStats;
-    fn build_context(&self, input_tick: &InputTick, context: &Context, labels: &PacketLabels, stats: &PacketStats) -> Context;
-}
-
-pub(crate) trait StorageManager {
-    fn store_lap(&self, input_tick: &InputTick, context: &Context, labels: &PacketLabels, stats: &PacketStats) -> StoreLapResult;
-    fn store_metadata(&self, input_tick: &InputTick, context: &Context, labels: &PacketLabels, stats: &PacketStats) -> StoreLapResult;
-}
-
-pub(crate) struct InputTick {
+pub struct InputTick {
     pub session_time: f32,
     pub session_distance: f32,
     pub lap_time: f32,
@@ -48,46 +32,54 @@ pub(crate) struct InputTick {
     pub cars_total: u8,
 }
 
-pub(crate) struct PacketLabels {
+pub struct PacketLabels {
     pub is_new_session: bool,
     pub is_new_lap: bool,
     pub is_new_sector: bool,
 }
 
-pub(crate) struct PacketStats {
+pub struct PacketStats {
     pub previous_lap: Option<FinishedLap>,
     pub previous_sector: Option<FinishedSector>,
     pub session: Session,
 }
 
-pub(crate) struct FinishedLap {
+pub struct FinishedLap {
     number: u8,
     sectors: [f32; 3],
     tyre_compound: u8,
 }
 
-pub(crate) struct FinishedSector {
+pub struct FinishedSector {
     number: u8,
     time: f32,
     tyre_compound: u8,
 }
 
-pub(crate) struct Session {
+pub struct Session {
     pub track_id: u8,
     pub session_type: u8,
     pub team_id: u8,
     pub era: u16,
 }
 
-pub(crate) struct Context {
+pub struct Context {
     pub session_context: SessionContext,
     pub history_context: HistoryContext,
 }
 
-pub(crate) struct SessionContext {}
+pub struct SessionContext {}
 
-pub(crate) struct HistoryContext {}
+pub struct HistoryContext {}
 
-pub(crate) struct StoreLapResult {}
+pub struct StoreLapResult {}
 
-pub(crate) struct StoreMetadataResult {}
+pub struct StoreMetadataResult {}
+
+pub struct PipelineResult {
+    pub labels: PacketLabels,
+    pub stats: PacketStats,
+    pub lap_store_result: StoreLapResult,
+    pub metadata_store_result: StoreMetadataResult,
+    pub new_context: Context,
+}

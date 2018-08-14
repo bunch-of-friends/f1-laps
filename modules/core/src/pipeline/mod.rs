@@ -1,32 +1,27 @@
-mod context;
-mod labels;
-mod stats;
+mod routines;
 pub(crate) mod types;
 
 use self::types::*;
 
-struct Pipeline {}
-impl DataProcessor for Pipeline {
-    fn build_labels(&self, input_tick: &InputTick, context: &Context) -> PacketLabels {
-        labels::build_labels(&input_tick, &context)
-    }
+pub fn process(input_tick: &InputTick, context: &Context) -> PipelineResult {
+    let labels = routines::labels::build_labels(input_tick, context);
+    let stats = routines::stats::build_stats(input_tick, context, &labels);
+    let lap_store_result = routines::lap_storage::store_lap(input_tick, context, &labels, &stats);
+    let metadata_store_result = routines::metadata_storage::store_metadata(
+        input_tick,
+        context,
+        &labels,
+        &stats,
+        &lap_store_result,
+    );
 
-    fn build_stats(
-        &self,
-        input_tick: &InputTick,
-        context: &Context,
-        labels: &PacketLabels,
-    ) -> PacketStats {
-        stats::build_stats(&input_tick, &context, &labels)
-    }
+    let new_context = routines::context::build_context(&input_tick, &context, &labels, &stats);
 
-    fn build_context(
-        &self,
-        input_tick: &InputTick,
-        context: &Context,
-        labels: &PacketLabels,
-        stats: &PacketStats
-    ) -> Context {
-        context::build_context(&input_tick, &context, &labels, &stats)
+    PipelineResult {
+        labels: labels,
+        stats: stats,
+        lap_store_result: lap_store_result,
+        metadata_store_result: metadata_store_result,
+        new_context: new_context,
     }
 }
