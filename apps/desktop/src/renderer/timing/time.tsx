@@ -17,7 +17,7 @@ export const Time = () => (state: AppState) => (
             <h3>Time: {round(currentLapTick(state).currentLapTime, 2)}</h3>
             <h3>Wall Clock Time: {round(wallClockElapsedTime(state), 2)}</h3>
             <h3>Drift: {round(
-                currentLapTick(state).currentLapTime - wallClockElapsedTime(state),
+                    wallClockElapsedTime(state) - currentLapTick(state).currentLapTime ,
                 2
             )}</h3>
         </div> : null

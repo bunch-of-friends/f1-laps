@@ -15,18 +15,17 @@ const updatePlots = (
     context: AppContext,
     boundActions: AppActions
 ) => (timestamp: number) => {
-    requestAnimationFrame(updatePlots(context, boundActions));
     boundActions.liveData.frameUpdate(timestamp);
     const shouldUpdateData = timestamp - context.lastUpdateTime > DATA_UPDATE_INTERVAL;
     const hasNewData = context.liveDataBuffer.length > 0;
-    if (!shouldUpdateData || !hasNewData) {
-        return;
+    if (shouldUpdateData && hasNewData) {
+        boundActions.liveData.liveDataReceived(context.liveDataBuffer);
+
+        context.liveDataBuffer = [];
+        context.lastUpdateTime = timestamp;
     }
 
-    boundActions.liveData.liveDataReceived(context.liveDataBuffer);
-
-    context.liveDataBuffer = [];
-    context.lastUpdateTime = timestamp;
+    requestAnimationFrame(updatePlots(context, boundActions));
 }
 
 export function startApp(

@@ -19,7 +19,6 @@ startApp(core, appInitialState, appActions, AppContainer, document.getElementByI
 setTimeout(setupApp, 1000);
 
 function setupApp() {
-    let fpsElem = document.querySelector('.fps');
     let displayedPointsElem = document.querySelector('.displayed-points');
     let compressedPointsElem = document.querySelector('.compressed-points');
     let totalPointsElem = document.querySelector('.total-points');
@@ -157,7 +156,6 @@ function setupApp() {
     let lastDataUpdateTime = -DATA_UPDATE_INTERVAL;
     let lastScaleUpdateTime = -SCALE_UPDATE_INTERVAL;
     let lastFPSUpdateTime = -FPS_UPDATE_INTERVAL;
-    let framesSinceUpdate = 0;
 
     function updatePlotData(plot: Chart, data: Array<Point>) {
         plot.data.datasets[0].data = data.slice();
@@ -266,7 +264,6 @@ function setupApp() {
         }
         lastUpdateTime = timestamp;
 
-        let plotUpdated = false;
         if (timestamp - lastDataUpdateTime > DATA_UPDATE_INTERVAL) {
             updatePlotData(speedPlot, speed);
             updatePlotData(throttlePlot, throttle);
@@ -275,7 +272,6 @@ function setupApp() {
             updatePlotData(gearPlot, gear);
             updatePlotData(steeringPlot, steering);
 
-            plotUpdated = true;
             lastDataUpdateTime = timestamp;
         }
 
@@ -287,15 +283,10 @@ function setupApp() {
             updatePlotScale(gearPlot, currentDataTime);
             updatePlotScale(steeringPlot, currentDataTime);
 
-            plotUpdated = true;
             lastScaleUpdateTime = timestamp;
         }
 
-        if (plotUpdated) {
-            framesSinceUpdate++;
-        }
         if (timestamp - lastFPSUpdateTime > FPS_UPDATE_INTERVAL) {
-            fpsElem.innerHTML = 'FPS: ' + round((framesSinceUpdate / FPS_UPDATE_INTERVAL) * 1000);
             totalPointsElem.innerHTML = 'Total points: ' + totalDataPoints;
             displayedPointsElem.innerHTML = ' Total in range (uncompressed): ' + time.length;
             speedPointsElem.innerHTML = 'Speed displayed: ' + speed.length;
@@ -305,7 +296,6 @@ function setupApp() {
             steeringPointsElem.innerHTML = 'Steering displayed: ' + steering.length;
             compressedPointsElem.innerHTML = 'Compressed displayed: ' + compressed.length;
 
-            framesSinceUpdate = 0;
             lastFPSUpdateTime = timestamp;
         }
     }
