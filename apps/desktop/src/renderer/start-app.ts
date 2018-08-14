@@ -16,6 +16,7 @@ const updatePlots = (
     boundActions: AppActions
 ) => (timestamp: number) => {
     requestAnimationFrame(updatePlots(context, boundActions));
+    boundActions.liveData.frameUpdate(timestamp);
     const shouldUpdateData = timestamp - context.lastUpdateTime > DATA_UPDATE_INTERVAL;
     const hasNewData = context.liveDataBuffer.length > 0;
     if (!shouldUpdateData || !hasNewData) {
@@ -40,8 +41,6 @@ export function startApp(
     const boundActions = app(state, actions, view, container);
 
     core.liveData.register(data => {
-        boundActions.liveData.currentLapChanged(data.currentLap);
-
         context.liveDataBuffer.push(data);
     });
 

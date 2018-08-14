@@ -2,8 +2,10 @@ import { LapTick } from "f1-laps-js-bridge";
 
 export interface LiveData {
     anyDataReceived: boolean;
-    currentLap?: number;
     lapTicks: Array<LapTick>;
+    currentLap?: number;
+    wallClockStartTime?: number;
+    wallClockTime?: number;
 }
 
 export type ActivePlots = { [key: string]: Chart }
