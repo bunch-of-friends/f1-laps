@@ -19,7 +19,6 @@ startApp(core, appInitialState, appActions, AppContainer, document.getElementByI
 setTimeout(setupApp, 1000);
 
 function setupApp() {
-    let timeElem = document.querySelector('.time');
     let fpsElem = document.querySelector('.fps');
     let displayedPointsElem = document.querySelector('.displayed-points');
     let compressedPointsElem = document.querySelector('.compressed-points');
@@ -281,7 +280,6 @@ function setupApp() {
         }
 
         if (timestamp - lastScaleUpdateTime > SCALE_UPDATE_INTERVAL) {
-            timeElem.innerHTML = 'Data Time: ' + round(currentDataTime, 3) + ' Elapsed: ' + round(currentElapsedTime, 3) + ' Drift: ' + round(currentDataTime - currentElapsedTime, 3);
             updatePlotScale(speedPlot, currentDataTime);
             updatePlotScale(throttlePlot, currentDataTime);
             updatePlotScale(compressedPlot, currentDataTime);

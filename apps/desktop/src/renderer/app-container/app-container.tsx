@@ -3,6 +3,7 @@ import { LapCounter } from '../lap-counter/lap-counter';
 import { h } from 'hyperapp';
 import { TelemetryPlot } from '../chart/telemetry-plot';
 import { LapTick } from 'f1-laps-js-bridge';
+import { Time } from '../timing/time';
 
 function speedSelector(lapTick: LapTick) {
     return {
@@ -14,9 +15,9 @@ function speedSelector(lapTick: LapTick) {
 export const AppContainer = (state: AppState) => {
     return (
         <div id="container">
+            <LapCounter />
+            <Time />
             <div class="log">
-                <LapCounter />
-                <h3 class="time">Time:</h3>
                 <div>
                     <h3>Stats</h3>
                     <ul class="stats">
