@@ -1,6 +1,8 @@
-import { AppState, LiveData, ActivePlots } from "./app-state";
+import { AppState, LiveData, ActivePlots, FPSState } from "./app-state";
 import { LapTick } from "f1-laps-js-bridge";
+
 const TIME_RANGE = 100;
+const FPS_UPDATE_INTERVAL = 0.5;
 
 function latestLapTick(lapTicks: Array<LapTick>) {
     return lapTicks[lapTicks.length - 1];
@@ -15,6 +17,31 @@ function filterInvisible(lapTicks: Array<LapTick>) {
     return lapTicks.slice(firstVisible);
 }
 
+function updateFPS(timeSeconds: number, fps: FPSState) {
+    if (!fps.lastUpdateTime) {
+        return {
+            currentFPS: 0,
+            lastUpdateTime: timeSeconds,
+            framesSinceLastUpdate: 0
+        };
+    }
+
+    const timeSinceLastUpdate = timeSeconds - fps.lastUpdateTime;
+    if (timeSinceLastUpdate > FPS_UPDATE_INTERVAL) {
+        return {
+            currentFPS: (fps.framesSinceLastUpdate + 1) / timeSinceLastUpdate,
+            lastUpdateTime: timeSeconds,
+            framesSinceLastUpdate: 0
+        }
+    }
+
+    return {
+        lastUpdateTime: fps.lastUpdateTime,
+        currentFPS: fps.currentFPS,
+        framesSinceLastUpdate: fps.framesSinceLastUpdate + 1
+    };
+}
+
 export const appActions = {
     liveData: {
         liveDataReceived: (
@@ -27,14 +54,18 @@ export const appActions = {
                 wallClockTime
             }: LiveData
         ) => {
-            const allLapTicks = lapTicks.concat(newLapTicks);
+            let allLapTicks = lapTicks.concat(newLapTicks);
             const latestLap = latestLapTick(allLapTicks).currentLap;
+            const lapChanged = latestLap !== currentLap;
+            if (lapChanged) {
+                allLapTicks = newLapTicks.filter((lapTick) => lapTick.currentLap === latestLap);
+            }
 
             return {
                 anyDataReceived: true,
                 lapTicks: filterInvisible(allLapTicks),
                 currentLap: latestLap,
-                wallClockStartTime: latestLap === currentLap ? wallClockStartTime : wallClockTime
+                wallClockStartTime: lapChanged ? wallClockTime : wallClockStartTime
 
             };
         },
@@ -43,14 +74,17 @@ export const appActions = {
         ) => (
             {
                 wallClockStartTime,
-                anyDataReceived
+                anyDataReceived,
+                fps
             }: LiveData
-        ) => (
-            anyDataReceived ? {
-                wallClockStartTime: wallClockStartTime ? wallClockStartTime : timestamp / 1000,
-                wallClockTime: timestamp / 1000
+        ) => {
+            const timeSeconds = timestamp / 1000;
+            return anyDataReceived ? {
+                wallClockStartTime: wallClockStartTime ? wallClockStartTime : timeSeconds,
+                wallClockTime: timeSeconds,
+                fps: updateFPS(timeSeconds, fps)
             } : null
-        )
+        }
     },
     activePlots: {
         plotActive: ({
