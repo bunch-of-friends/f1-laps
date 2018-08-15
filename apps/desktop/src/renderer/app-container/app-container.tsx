@@ -13,34 +13,46 @@ function speedSelector(lapTick: LapTick) {
     };
 }
 
+function throttleSelector(lapTick: LapTick) {
+    return {
+        x: lapTick.currentLapTime,
+        y: lapTick.throttle
+    };
+}
+
+function brakeSelector(lapTick: LapTick) {
+    return {
+        x: lapTick.currentLapTime,
+        y: lapTick.brake
+    };
+}
+
+function gearSelector(lapTick: LapTick) {
+    return {
+        x: lapTick.currentLapTime,
+        y: lapTick.currentGear
+    };
+}
+
+function steeringSelector(lapTick: LapTick) {
+    return {
+        x: lapTick.currentLapTime,
+        y: lapTick.steer
+    };
+}
+
+
 export const AppContainer = (state: AppState) => {
     return (
         <div id="container">
             <LapCounter />
             <Time />
             <FPSCounter />
-            <div class="log">
-                <div>
-                    <h3>Stats</h3>
-                    <ul class="stats">
-                        <li class="total-points"></li>
-                        <li class="displayed-points"></li>
-                        <li class="speed-points"></li>
-                        <li class="throttle-points"></li>
-                        <li class="brake-points"></li>
-                        <li class="gear-points"></li>
-                        <li class="steering-points"></li>
-                        <li class="compressed-points"></li>
-                    </ul>
-                </div>
-            </div>
-            <TelemetryPlot key="speed" label="Speed (kph)" suggestedYRange={[0, 420]} data={state.liveData.lapTicks} pointSelector={speedSelector}/>
-            <canvas width="1200" height="200" id="speed-plot"></canvas>
-            <canvas width="1200" height="200" id="throttle-plot"></canvas>
-            <canvas width="1200" height="200" id="brake-plot"></canvas>
-            <canvas width="1200" height="200" id="gear-plot"></canvas>
-            <canvas width="1200" height="200" id="compressed-plot"></canvas>
-            <canvas width="1200" height="200" id="steering-plot"></canvas>
+            <TelemetryPlot key="speed" label="Speed (kph)" suggestedYRange={[0, 420]} data={state.liveData.lapTicks} pointSelector={speedSelector} debug={true}/>
+            <TelemetryPlot key="throttle" label="Throttle" suggestedYRange={[-0.05, 1.05]} data={state.liveData.lapTicks} pointSelector={throttleSelector} debug={true}/>
+            <TelemetryPlot key="brake" label="Brake" suggestedYRange={[-0.05, 1.05]} data={state.liveData.lapTicks} pointSelector={brakeSelector} debug={true}/>
+            <TelemetryPlot key="gear" label="Gear" suggestedYRange={[-0.2, 9.2]} data={state.liveData.lapTicks} pointSelector={gearSelector} debug={true}/>
+            <TelemetryPlot key="steering" label="Steering" suggestedYRange={[-1, 1]} data={state.liveData.lapTicks} pointSelector={steeringSelector} debug={true}/>
         </div>
     );
 };

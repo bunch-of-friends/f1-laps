@@ -93,8 +93,21 @@ export const appActions = {
         }: { key: string; activePlot: Chart }) => (
             activePlots: ActivePlots
         ) => ({
-            ...activePlots,
-            [key]: activePlot
+            [key]: {
+                instance: activePlot,
+                displayedPoints: 0
+            }
+        }),
+        displayedPointsChanged: ({
+            key,
+            displayedPoints
+        }: {key: string, displayedPoints: number}) => (
+            activePlots: ActivePlots
+        ) => ({
+            [key]: {
+                instance: activePlots[key].instance,
+                displayedPoints
+            }
         })
     },
     getState: () => (state: AppState) => state

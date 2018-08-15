@@ -15,7 +15,14 @@ export interface LiveData {
     fps: FPSState;
 }
 
-export type ActivePlots = { [key: string]: Chart }
+export interface ActivePlot {
+    instance: Chart;
+    displayedPoints: number;
+}
+
+export type ActivePlots = {
+    [key: string]: ActivePlot
+}
 
 export interface AppState {
     liveData: LiveData;
