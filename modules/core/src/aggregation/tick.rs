@@ -1,15 +1,16 @@
 use record_tracking::record_tracker::RecordMarker;
 use udp::packet::Car;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Tick {
     pub session_started: Option<Session>,
     pub lap_finished: Option<Lap>,
     pub sector_finished: Option<Sector>,
     pub live_data: LiveData,
+    pub message: Option<String>,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Session {
     pub track_id: u8,
     pub session_type: u8,
@@ -18,7 +19,7 @@ pub struct Session {
     pub session_time_stamp: f32,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Lap {
     pub session_time_stamp: f32,
     pub lap_number: u8,
@@ -33,7 +34,7 @@ pub struct Lap {
     pub record_marker: RecordMarker,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct Sector {
     pub session_time_stamp: f32,
     pub sector: u8,
@@ -44,7 +45,7 @@ pub struct Sector {
     pub record_marker: RecordMarker,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct LiveData {
     pub current_lap: u8,
     pub current_lap_time: f32,

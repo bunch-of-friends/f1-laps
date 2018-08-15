@@ -11,7 +11,7 @@ pub fn stream_packets(tx: mpsc::Sender<Tick>, packets: Vec<Packet>) {
 
     let mut last_packet: Option<(Packet, Instant)> = None;
     for packet in packets {
-        let tick = process_packet(packet, true);
+        let tick = process_packet(packet.clone(), true);
 
         if tick.is_none() {
             continue;

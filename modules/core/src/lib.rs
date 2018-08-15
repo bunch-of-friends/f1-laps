@@ -14,6 +14,10 @@ pub mod replay;
 pub mod storage;
 pub mod udp;
 
+// new/refactor
+pub mod conversion;
+pub mod pipeline;
+
 use aggregation::collector::Collector;
 use aggregation::tick::{LiveData, Tick};
 use lap_metadata::LapMetadata;
@@ -52,6 +56,7 @@ pub fn get_next_tick() -> Option<Tick> {
             session_started: data.1,
             lap_finished: data.2,
             sector_finished: data.3,
+            message: None,
         })
     } else {
         None
@@ -106,5 +111,46 @@ fn receive_tick(rx: &mpsc::Receiver<Tick>) {
 
     if let Some(tick) = tick_result {
         DATA_HOLDER.lock().unwrap().set_data(tick);
+    }
+}
+
+// #[cfg(test)]
+pub(crate) mod test_utils {
+    use pipeline::types::InputTick;
+
+    pub fn create_input_tick() -> InputTick {
+        InputTick {
+            session_time: 123 as f32,
+            session_distance: 123 as f32,
+            lap_time: 123 as f32,
+            lap_distance: 123 as f32,
+            x: 1 as f32,
+            y: 2 as f32,
+            z: 3 as f32,
+            speed: 123 as f32,
+            throttle: 12 as f32,
+            steer: 12 as f32,
+            brake: 12 as f32,
+            gear: 3,
+            lap_number: 1,
+            engine_rate: 90 as f32,
+            car_position: 2,
+            drs: false,
+            sector: 1,
+            sector1_time: 0 as f32,
+            sector2_time: 0 as f32,
+            team_id: 1,
+            total_laps: 0,
+            last_lap_time: 0 as f32,
+            max_gears: 8,
+            session_type: 1,
+            track_id: 1,
+            vehicle_fia_flags: -1,
+            era: 2017,
+            tyre_compound: 2,
+            current_lap_invalid: true,
+            is_spectating: false,
+            cars_total: 20,
+        }
     }
 }

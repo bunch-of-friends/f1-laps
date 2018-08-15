@@ -41,7 +41,7 @@ impl Collector {
         Option<Lap>,
         Option<Sector>,
     ) {
-        let res = (self.live_data, self.session, self.lap, self.sector);
+        let res = (self.live_data.clone(), self.session.clone(), self.lap.clone(), self.sector.clone());
 
         self.live_data = None;
         self.session = None;

@@ -1,4 +1,4 @@
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone, Copy)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct Packet {
     pub time: f32,
     pub lap_time: f32,
@@ -97,7 +97,7 @@ pub struct Packet {
     pub ang_acc_z: f32,              // NEW (v1.8) angular acceleration z-component
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone, Copy)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct Car {
     pub world_position: [f32; 3], // world co-ordinates of vehicle
     pub last_lap_time: f32,
