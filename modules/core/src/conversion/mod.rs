@@ -15,7 +15,7 @@ impl InputTick {
             throttle: packet.throttle,
             steer: packet.steer,
             brake: packet.brake,
-            gear: packet.gear,
+            gear: packet.gear as u8,
             lap_number: packet.lap as u8,
             engine_rate: packet.engine_rate,
             car_position: packet.car_position as u8,
@@ -46,6 +46,23 @@ impl Session {
             session_type: tick.session_type,
             team_id: tick.team_id,
             era: tick.era,
+        }
+    }
+
+    pub fn eq(&self, other: &Session) -> bool {
+        self.era == other.era
+            && self.session_type == other.session_type
+            && self.team_id == other.team_id
+            && self.track_id == other.track_id
+    }
+}
+
+impl SessionContext {
+    pub fn new() -> SessionContext {
+        SessionContext {
+            session: None,
+            lap_number: 0,
+            sector: 0,
         }
     }
 }

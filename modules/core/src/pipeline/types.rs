@@ -10,7 +10,7 @@ pub struct InputTick {
     pub throttle: f32,
     pub steer: f32,
     pub brake: f32,
-    pub gear: f32,
+    pub gear: u8,
     pub lap_number: u8,
     pub engine_rate: f32,
     pub car_position: u8,
@@ -36,12 +36,12 @@ pub struct PacketLabels {
     pub is_new_session: bool,
     pub is_new_lap: bool,
     pub is_new_sector: bool,
+    pub session: Session,
 }
 
 pub struct PacketStats {
     pub previous_lap: Option<FinishedLap>,
     pub previous_sector: Option<FinishedSector>,
-    pub session: Session,
 }
 
 pub struct FinishedLap {
@@ -56,6 +56,7 @@ pub struct FinishedSector {
     tyre_compound: u8,
 }
 
+#[derive(Debug, Clone)]
 pub struct Session {
     pub track_id: u8,
     pub session_type: u8,
@@ -68,7 +69,11 @@ pub struct Context {
     pub history_context: HistoryContext,
 }
 
-pub struct SessionContext {}
+pub struct SessionContext {
+    pub session: Option<Session>,
+    pub lap_number: u8,
+    pub sector: u8,
+}
 
 pub struct HistoryContext {}
 
