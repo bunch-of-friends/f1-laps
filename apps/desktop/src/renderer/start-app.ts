@@ -46,5 +46,6 @@ export function startApp(
     context.lastUpdateTime = 0;
     requestAnimationFrame(updatePlots(context, boundActions));
 
+    core.replayAllLaps();
     (window as any).gs = boundActions.getState; // Debugging
 }
