@@ -2,15 +2,15 @@ const core = require('../native');
 const stayAwake = require('stay-awake');
 
 import { createSubject, createObservable } from '@bunch-of-friends/observable';
-import { NewSession, LiveData, LapFinished, SectorFinished, LapMetadata } from './types';
+import { NewSession, LapTick, LapFinished, SectorFinished, LapMetadata } from './types';
 
 export * from './types';
 export * from '@bunch-of-friends/observable';
 
 let newSessionSubject = createSubject<NewSession>();
 let newSessionObservable = createObservable<NewSession>(newSessionSubject);
-let liveDataSubject = createSubject<LiveData>();
-let liveDataObservable = createObservable<LiveData>(liveDataSubject);
+let liveDataSubject = createSubject<LapTick>();
+let liveDataObservable = createObservable<LapTick>(liveDataSubject);
 let lapFinishedSubject = createSubject<LapFinished>();
 let lapFinishedObservable = createObservable<LapFinished>(lapFinishedSubject);
 let sectorFinishedSubject = createSubject<SectorFinished>();
@@ -79,7 +79,7 @@ export function replayAllLaps() {
     core.replayAllLaps();
 }
 
-export function getLapData(identifier: string): Array<LiveData> {
+export function getLapData(identifier: string): Array<LapTick> {
     checkInitialised();
 
     return core.getLapData(identifier);
