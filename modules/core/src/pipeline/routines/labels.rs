@@ -1,12 +1,12 @@
 use pipeline::types::*;
 
-pub fn build_labels(input_tick: &InputTick, context: &Context) -> PacketLabels {
+pub fn build_labels(input_tick: &InputTick, context: &Context) -> Labels {
     let session = Session::from_input_tick(&input_tick);
     let is_new_session = is_new_session(&session, context);
     let is_new_lap = is_new_lap(is_new_session, input_tick, context);
     let is_new_sector = is_new_sector(is_new_lap, input_tick, context);
 
-    PacketLabels {
+    Labels {
         is_new_session: is_new_session,
         is_new_lap: is_new_lap,
         is_new_sector: is_new_sector,

@@ -3,8 +3,8 @@ use pipeline::types::*;
 pub fn build_context(
     input_tick: &InputTick,
     context: &Context,
-    labels: &PacketLabels,
-    stats: &PacketStats,
+    labels: &Labels,
+    stats: &Stats,
 ) -> Context {
     Context {
         session_context: SessionContext {

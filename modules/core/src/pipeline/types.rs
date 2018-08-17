@@ -32,7 +32,7 @@ pub struct InputTick {
     pub cars_total: u8,
 }
 
-pub struct PacketLabels {
+pub struct Labels {
     pub is_new_session: bool,
     pub is_new_lap: bool,
     pub is_new_sector: bool,
@@ -41,7 +41,7 @@ pub struct PacketLabels {
     pub current_sector: Sector,
 }
 
-pub struct PacketStats {
+pub struct Stats {
     pub finished_sector: Option<Sector>,
     pub finished_lap: Option<Lap>,
 }
@@ -83,8 +83,8 @@ pub struct StoreLapResult {}
 pub struct StoreMetadataResult {}
 
 pub struct PipelineResult {
-    pub labels: PacketLabels,
-    pub stats: PacketStats,
+    pub labels: Labels,
+    pub stats: Stats,
     pub lap_store_result: StoreLapResult,
     pub metadata_store_result: StoreMetadataResult,
     pub new_context: Context,

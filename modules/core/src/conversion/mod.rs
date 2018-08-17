@@ -3,6 +3,9 @@ use udp::packet::Packet;
 
 impl InputTick {
     pub fn from_packet(packet: Packet) -> InputTick {
+        assert!(packet.sector > 0 as f32);
+        assert!(packet.lap > 0 as f32);
+
         InputTick {
             session_time: packet.time,
             session_distance: packet.total_distance,
