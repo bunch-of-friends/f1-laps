@@ -10,23 +10,21 @@ pub fn build_labels(input_tick: &InputTick, context: &Context) -> PacketLabels {
         is_new_session: is_new_session,
         is_new_lap: is_new_lap,
         is_new_sector: is_new_sector,
-        session: session,
+        current_session: session,
+        current_lap: Lap::from_input_tick(&input_tick),
+        current_sector: Sector::from_input_tick(&input_tick),
     }
 }
 
 fn is_new_session(session: &Session, context: &Context) -> bool {
-    if let Some(ref previus_session) = context.session_context.session {
-        !session.eq(previus_session)
-    } else {
-        true
-    }
+    !session.eq(&context.session_context.session)
 }
 
 fn is_new_lap(is_new_session: bool, input_tick: &InputTick, context: &Context) -> bool {
     if is_new_session {
         true
     } else {
-        input_tick.lap_number != context.session_context.lap_number
+        input_tick.lap_number != context.session_context.lap.lap_number
     }
 }
 
@@ -34,7 +32,7 @@ fn is_new_sector(is_new_lap: bool, input_tick: &InputTick, context: &Context) ->
     if is_new_lap {
         true
     } else {
-        input_tick.sector != context.session_context.sector
+        input_tick.sector_number != context.session_context.sector.sector_number
     }
 }
 
@@ -47,7 +45,7 @@ mod tests {
         (
             test_utils::create_input_tick(),
             Context {
-                session_context: SessionContext::new(),
+                session_context: SessionContext::empty(),
                 history_context: HistoryContext {},
             },
         )
@@ -61,12 +59,12 @@ mod tests {
 
         assert_eq!(true, is_new_sector(true, &tick, &context));
 
-        context.session_context.sector = 0;
-        tick.sector = 0;
+        context.session_context.sector.sector_number = 0;
+        tick.sector_number = 0;
         assert_eq!(false, is_new_sector(false, &tick, &context));
 
-        context.session_context.sector = 0;
-        tick.sector = 1;
+        context.session_context.sector.sector_number = 0;
+        tick.sector_number = 1;
         assert_eq!(true, is_new_sector(false, &tick, &context));
     }
 
@@ -78,11 +76,11 @@ mod tests {
 
         assert_eq!(true, is_new_lap(true, &tick, &context));
 
-        context.session_context.lap_number = 1;
+        context.session_context.lap.lap_number = 1;
         tick.lap_number = 1;
         assert_eq!(false, is_new_lap(false, &tick, &context));
 
-        context.session_context.lap_number = 1;
+        context.session_context.lap.lap_number = 1;
         tick.lap_number = 2;
         assert_eq!(true, is_new_lap(false, &tick, &context));
     }
@@ -93,16 +91,16 @@ mod tests {
         let mut session = Session::from_input_tick(&i.0);
         let mut context = i.1;
 
-        context.session_context.session = None;
+        context.session_context = SessionContext::empty();
         assert_eq!(true, is_new_session(&session, &context));
 
         let mut s = session.clone();
-        context.session_context.session = Some(s);
+        context.session_context.session = s;
         assert_eq!(false, is_new_session(&session, &context));
 
         let mut s = session.clone();
         s.team_id = 10;
-        context.session_context.session = Some(s);
+        context.session_context.session = s;
         session.team_id = 9;
         assert_eq!(true, is_new_session(&session, &context));
     }

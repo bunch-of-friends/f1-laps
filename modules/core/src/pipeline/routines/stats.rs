@@ -6,7 +6,7 @@ pub fn build_stats(
     _: &PacketLabels,
 ) -> PacketStats {
     PacketStats {
-        previous_lap: None,
-        previous_sector: None
+        finished_lap: None,
+        finished_sector: None
     }
 }

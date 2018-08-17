@@ -8,9 +8,9 @@ pub fn build_context(
 ) -> Context {
     Context {
         session_context: SessionContext {
-            session: Some(Session::from_input_tick(input_tick)),
-            lap_number: input_tick.lap_number,
-            sector: input_tick.sector,
+            session: Session::from_input_tick(input_tick),
+            lap: Lap::from_input_tick(input_tick),
+            sector: Sector::from_input_tick(input_tick),
         },
         history_context: HistoryContext {},
     }

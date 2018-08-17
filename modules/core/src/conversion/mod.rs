@@ -19,8 +19,8 @@ impl InputTick {
             lap_number: packet.lap as u8,
             engine_rate: packet.engine_rate,
             car_position: packet.car_position as u8,
-            drs: packet.drs == 1 as f32,
-            sector: packet.sector as u8,
+            is_drs_open: packet.drs == 1 as f32,
+            sector_number: packet.sector as u8,
             sector1_time: packet.sector1_time,
             sector2_time: packet.sector2_time,
             team_id: packet.team_id as u8,
@@ -32,7 +32,7 @@ impl InputTick {
             vehicle_fia_flags: packet.vehicle_fia_flags as i8,
             era: packet.era as u16,
             tyre_compound: packet.tyre_compound,
-            current_lap_invalid: packet.current_lap_invalid == 1 as u8,
+            is_current_lap_valid: packet.current_lap_invalid != 1 as u8,
             is_spectating: packet.is_spectating == 1 as u8,
             cars_total: packet.cars_total,
         }
@@ -57,12 +57,43 @@ impl Session {
     }
 }
 
+impl Lap {
+    pub fn from_input_tick(tick: &InputTick) -> Lap {
+        Lap {
+            lap_number: tick.lap_number,
+            sector_times: [tick.sector1_time, tick.sector2_time, 0 as f32],
+            lap_time: 0 as f32,
+        }
+    }
+}
+
+impl Sector {
+    pub fn from_input_tick(tick: &InputTick) -> Sector {
+        Sector {
+            sector_number: tick.sector_number,
+            sector_time: 0 as f32,
+        }
+    }
+}
+
 impl SessionContext {
-    pub fn new() -> SessionContext {
+    pub fn empty() -> SessionContext {
         SessionContext {
-            session: None,
-            lap_number: 0,
-            sector: 0,
+            session: Session {
+                track_id: 0,
+                session_type: 0,
+                team_id: 0,
+                era: 0,
+            },
+            lap: Lap {
+                lap_number: 0,
+                sector_times: [0 as f32; 3],
+                lap_time: 0 as f32,
+            },
+            sector: Sector {
+                sector_number: 0,
+                sector_time: 0 as f32,
+            },
         }
     }
 }
