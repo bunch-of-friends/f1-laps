@@ -10,7 +10,7 @@ pub fn build_stats(input_tick: &InputTick, context: &Context, labels: &Labels) -
 }
 
 fn get_finished_lap(input_tick: &InputTick, context: &Context, labels: &Labels) -> Option<Lap> {
-    if labels.is_new_lap {
+    if labels.is_new_lap && !labels.is_teleported {
         build_finished_lap(input_tick, context)
     } else {
         None
@@ -22,7 +22,7 @@ fn get_finished_sector(
     labels: &Labels,
     finished_lap: &Option<Lap>,
 ) -> Option<Sector> {
-    if labels.is_new_sector {
+    if labels.is_new_sector && !labels.is_teleported {
         build_finished_sector(input_tick, finished_lap)
     } else {
         None

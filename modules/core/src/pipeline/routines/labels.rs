@@ -1,20 +1,23 @@
 use pipeline::types::*;
 
 pub fn build_labels(input_tick: &InputTick, context: &Context) -> Labels {
-    let session = Session::from_input_tick(&input_tick);
-    let is_new_session = is_new_session(&session, context);
+    let current_session = Session::from_input_tick(&input_tick);
+    let current_lap = Lap::from_input_tick(&input_tick);
+
+    let is_new_session = is_new_session(&current_session, context);
     let is_new_lap = is_new_lap(is_new_session, input_tick, context);
     let is_new_sector = is_new_sector(is_new_lap, input_tick, context);
-    let is_flashback = is_flashback(is_new_session, &session, context);
+    let is_flashback = is_flashback(is_new_session, is_new_lap, &current_lap, context);
+    let is_teleported = is_teleported(is_new_session, input_tick, context);
 
     Labels {
         is_new_session: is_new_session,
         is_new_lap: is_new_lap,
         is_new_sector: is_new_sector,
         is_flashback: is_flashback,
-        is_teleported: false,
-        current_session: session,
-        current_lap: Lap::from_input_tick(&input_tick),
+        is_teleported: is_teleported,
+        current_session: current_session,
+        current_lap: current_lap,
         current_sector: Sector::from_input_tick(&input_tick),
     }
 }
@@ -39,12 +42,31 @@ fn is_new_sector(is_new_lap: bool, input_tick: &InputTick, context: &Context) ->
     }
 }
 
-fn is_flashback(is_new_session: bool, session: &Session, context: &Context) -> bool {
-    if is_new_session {
+fn is_flashback(
+    is_new_session: bool,
+    is_new_lap: bool,
+    current_lap: &Lap,
+    context: &Context,
+) -> bool {
+    if is_new_session || is_new_lap {
         false
     } else {
-        context.session_context.session.session_time > session.session_time
+        context.session_context.lap.lap_time > current_lap.lap_time
     }
+}
+
+fn is_teleported(is_new_session: bool, input_tick: &InputTick, context: &Context) -> bool {
+    if is_new_session {
+        return false;
+    }
+
+    let x_diff = (input_tick.x - context.session_context.position.x).abs();
+    let y_diff = (input_tick.y - context.session_context.position.y).abs();
+    let z_diff = (input_tick.z - context.session_context.position.z).abs();
+
+    let max = 10 as f32;
+
+    x_diff > max || y_diff > max || z_diff > max
 }
 
 #[cfg(test)]
@@ -118,17 +140,21 @@ mod tests {
     #[test]
     fn is_flashback_test() {
         let i = create_input();
-        let mut session = Session::from_input_tick(&i.0);
+        let mut lap = Lap::from_input_tick(&i.0);
         let mut context = i.1;
 
-        context.session_context.session.session_time = 100.12;
-        session.session_time = 150.15;
-        assert_eq!(false, is_flashback(false, &session, &context));
-        assert_eq!(false, is_flashback(true, &session, &context));
+        context.session_context.lap.lap_time = 100.12;
+        lap.lap_time = 150.15;
+        assert_eq!(false, is_flashback(false, false, &lap, &context));
+        assert_eq!(false, is_flashback(true, true, &lap, &context));
+        assert_eq!(false, is_flashback(false, true, &lap, &context));
+        assert_eq!(false, is_flashback(true, false, &lap, &context));
 
-        context.session_context.session.session_time = 100.12;
-        session.session_time = 50.15;
-        assert_eq!(true, is_flashback(false, &session, &context));
-        assert_eq!(false, is_flashback(true, &session, &context));
+        context.session_context.lap.lap_time = 100.12;
+        lap.lap_time = 50.15;
+        assert_eq!(true, is_flashback(false, false, &lap, &context));
+        assert_eq!(false, is_flashback(true, true, &lap, &context));
+        assert_eq!(false, is_flashback(false, true, &lap, &context));
+        assert_eq!(false, is_flashback(true, false, &lap, &context));
     }
 }

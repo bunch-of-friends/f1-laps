@@ -27,7 +27,7 @@ fn replay_all_laps_test() {
         }
 
         if let Some(ref sector) = tick.stats.finished_sector {
-            println!("{:?} - {}", sector, tick.labels.current_session.session_time);
+            println!("{:?}", sector);
         }
 
         if let Some(ref lap) = tick.stats.finished_lap {

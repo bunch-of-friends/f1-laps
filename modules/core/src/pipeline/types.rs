@@ -56,8 +56,7 @@ pub struct Session {
     pub track_id: u8,
     pub session_type: u8,
     pub team_id: u8,
-    pub era: u16,
-    pub session_time: f32,
+    pub era: u16
 }
 
 #[derive(Debug)]
@@ -84,6 +83,14 @@ pub struct SessionContext {
     pub session: Session,
     pub lap: Lap,
     pub sector: Sector,
+    pub position: Position,
+}
+
+#[derive(Debug)]
+pub struct Position {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
 }
 
 #[derive(Debug)]

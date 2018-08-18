@@ -47,8 +47,16 @@ impl Session {
             track_id: tick.track_id,
             session_type: tick.session_type,
             team_id: tick.team_id,
-            era: tick.era,
-            session_time: tick.session_time,
+            era: tick.era
+        }
+    }
+
+    pub fn empty() -> Session {
+        Session {
+            track_id: 0,
+            session_type: 0,
+            team_id: 0,
+            era: 0
         }
     }
 
@@ -65,6 +73,14 @@ impl Lap {
         Lap {
             lap_number: tick.lap_number,
             sector_times: [tick.sector1_time, tick.sector2_time, 0 as f32],
+            lap_time: tick.lap_time,
+        }
+    }
+
+    pub fn empty() -> Lap {
+        Lap {
+            lap_number: 0,
+            sector_times: [0 as f32; 3],
             lap_time: 0 as f32,
         }
     }
@@ -88,27 +104,40 @@ impl Sector {
             sector_time: 0 as f32,
         }
     }
+
+    pub fn empty() -> Sector {
+        Sector {
+            sector_number: 0,
+            sector_time: 0 as f32,
+        }
+    }
+}
+
+impl Position {
+    pub fn empty() -> Position {
+        Position {
+            x: 0 as f32,
+            y: 0 as f32,
+            z: 0 as f32,
+        }
+    }
+
+    pub fn from_input_tick(tick: &InputTick) -> Position {
+        Position {
+            x: tick.x,
+            y: tick.y,
+            z: tick.z,
+        }
+    }
 }
 
 impl SessionContext {
     pub fn empty() -> SessionContext {
         SessionContext {
-            session: Session {
-                track_id: 0,
-                session_type: 0,
-                team_id: 0,
-                era: 0,
-                session_time: 0 as f32,
-            },
-            lap: Lap {
-                lap_number: 0,
-                sector_times: [0 as f32; 3],
-                lap_time: 0 as f32,
-            },
-            sector: Sector {
-                sector_number: 0,
-                sector_time: 0 as f32,
-            },
+            session: Session::empty(),
+            lap: Lap::empty(),
+            sector: Sector::empty(),
+            position: Position::empty(),
         }
     }
 }
