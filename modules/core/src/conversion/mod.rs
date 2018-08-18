@@ -3,7 +3,6 @@ use udp::packet::Packet;
 
 impl InputTick {
     pub fn from_packet(packet: &Packet) -> InputTick {
-        assert!(packet.sector > 0 as f32);
         assert!(packet.lap > 0 as f32);
 
         InputTick {
@@ -23,7 +22,7 @@ impl InputTick {
             engine_rate: packet.engine_rate,
             car_position: packet.car_position as u8,
             is_drs_open: packet.drs == 1 as f32,
-            sector_number: packet.sector as u8,
+            sector_number: (packet.sector as u8) + 1,
             sector1_time: packet.sector1_time,
             sector2_time: packet.sector2_time,
             team_id: packet.team_id as u8,
