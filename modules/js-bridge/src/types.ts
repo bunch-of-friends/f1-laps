@@ -160,7 +160,7 @@ export interface CarTick {
     penalties: number;
 }
 
-export interface LiveData {
+export interface LapTick {
     currentLap: number;
     currentLapTime: number;
     currentSector: Sector;
