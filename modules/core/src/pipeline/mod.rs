@@ -18,10 +18,12 @@ pub fn process(input_tick: &InputTick, context: &Context) -> PipelineResult {
     let new_context = routines::context::build_context(&input_tick, &context, &labels, &stats);
 
     PipelineResult {
-        labels: labels,
-        stats: stats,
-        lap_store_result: lap_store_result,
-        metadata_store_result: metadata_store_result,
+        output_tick: OutputTick {
+            labels: labels,
+            stats: stats,
+            lap_store_result: lap_store_result,
+            metadata_store_result: metadata_store_result,
+        },
         new_context: new_context,
     }
 }

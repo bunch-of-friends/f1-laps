@@ -2,9 +2,9 @@ use pipeline::types::*;
 
 pub fn build_context(
     input_tick: &InputTick,
-    context: &Context,
-    labels: &Labels,
-    stats: &Stats,
+    _context: &Context,
+    _labels: &Labels,
+    _stats: &Stats,
 ) -> Context {
     Context {
         session_context: SessionContext {

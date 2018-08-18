@@ -14,10 +14,6 @@ pub mod replay;
 pub mod storage;
 pub mod udp;
 
-// new/refactor
-pub mod conversion;
-pub mod pipeline;
-
 use aggregation::collector::Collector;
 use aggregation::tick::{LiveData, Tick};
 use lap_metadata::LapMetadata;
@@ -106,6 +102,39 @@ pub fn replay_all_laps() {
     });
 }
 
+// new/refactor
+pub mod conversion;
+pub mod pipeline;
+
+use pipeline::types::*;
+
+pub fn replay_all_laps_new() {
+    let (tx, rx): (mpsc::Sender<OutputTick>, mpsc::Receiver<OutputTick>) = mpsc::channel();
+
+    let t = thread::spawn(move || {
+        let packets = storage::get_all_laps_data();
+
+        let mut context = Context::empty();
+        for packet in packets {
+            let input_tick = InputTick::from_packet(&packet);
+            let result = pipeline::process(&input_tick, &context);
+            context = result.new_context;
+
+            tx.send(result.output_tick).ok();
+        }
+    });
+
+    let r = thread::spawn(move || {
+        let output_tick = rx.recv().ok();
+        println!(">> {:?}", output_tick);
+    });
+
+    assert!(!t.join().is_err());
+    assert!(!r.join().is_err())
+}
+
+//^^ new/refactor
+
 fn receive_tick(rx: &mpsc::Receiver<Tick>) {
     let tick_result = rx.recv().ok();
 
@@ -114,7 +143,7 @@ fn receive_tick(rx: &mpsc::Receiver<Tick>) {
     }
 }
 
-// #[cfg(test)]
+#[cfg(test)]
 pub(crate) mod test_utils {
     use pipeline::types::InputTick;
 

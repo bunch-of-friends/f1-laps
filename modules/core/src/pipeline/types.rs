@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct InputTick {
     pub session_time: f32,
     pub session_distance: f32,
@@ -32,6 +33,7 @@ pub struct InputTick {
     pub cars_total: u8,
 }
 
+#[derive(Debug)]
 pub struct Labels {
     pub is_new_session: bool,
     pub is_new_lap: bool,
@@ -42,6 +44,7 @@ pub struct Labels {
     pub current_sector: Sector,
 }
 
+#[derive(Debug)]
 pub struct Stats {
     pub finished_sector: Option<Sector>,
     pub finished_lap: Option<Lap>,
@@ -56,38 +59,55 @@ pub struct Session {
     pub session_time: f32,
 }
 
+#[derive(Debug)]
 pub struct Lap {
     pub lap_number: u8,
     pub sector_times: [f32; 3],
     pub lap_time: f32,
 }
 
+#[derive(Debug)]
 pub struct Sector {
     pub sector_number: u8,
     pub sector_time: f32,
 }
 
+#[derive(Debug)]
 pub struct Context {
     pub session_context: SessionContext,
     pub history_context: HistoryContext,
 }
 
+#[derive(Debug)]
 pub struct SessionContext {
     pub session: Session,
     pub lap: Lap,
     pub sector: Sector,
 }
 
+#[derive(Debug)]
 pub struct HistoryContext {}
 
-pub struct StoreLapResult {}
+#[derive(Debug)]
+pub struct StoreLapResult {
+    pub is_stored: bool,
+}
 
-pub struct StoreMetadataResult {}
+#[derive(Debug)]
+pub struct StoreMetadataResult {
+    pub is_stored: bool,
+}
 
+#[derive(Debug)]
 pub struct PipelineResult {
+    pub output_tick: OutputTick,
+    pub new_context: Context,
+}
+
+#[derive(Debug)]
+pub struct OutputTick {
     pub labels: Labels,
     pub stats: Stats,
     pub lap_store_result: StoreLapResult,
     pub metadata_store_result: StoreMetadataResult,
-    pub new_context: Context,
 }

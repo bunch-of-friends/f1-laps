@@ -2,7 +2,7 @@ use pipeline::types::*;
 use udp::packet::Packet;
 
 impl InputTick {
-    pub fn from_packet(packet: Packet) -> InputTick {
+    pub fn from_packet(packet: &Packet) -> InputTick {
         assert!(packet.sector > 0 as f32);
         assert!(packet.lap > 0 as f32);
 
@@ -99,6 +99,15 @@ impl SessionContext {
                 sector_number: 0,
                 sector_time: 0 as f32,
             },
+        }
+    }
+}
+
+impl Context {
+    pub fn empty() -> Context {
+        Context {
+            session_context: SessionContext::empty(),
+            history_context: HistoryContext {},
         }
     }
 }

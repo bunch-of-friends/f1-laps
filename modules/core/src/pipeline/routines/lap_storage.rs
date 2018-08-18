@@ -1,10 +1,10 @@
 use pipeline::types::*;
 
 pub fn store_lap(
-    input_tick: &InputTick,
-    context: &Context,
-    labels: &Labels,
-    stats: &Stats,
+    _input_tick: &InputTick,
+    _context: &Context,
+    _labels: &Labels,
+    _stats: &Stats,
 ) -> StoreLapResult {
-    StoreLapResult {}
+    StoreLapResult { is_stored: false }
 }
