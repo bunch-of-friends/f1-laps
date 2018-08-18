@@ -18,7 +18,8 @@ use aggregation::collector::Collector;
 use aggregation::tick::{LiveData, Tick};
 use lap_metadata::LapMetadata;
 use record_tracking::RecordSet;
-use std::sync::{mpsc, Mutex};
+use std::sync::mpsc::{self, TryRecvError};
+use std::sync::Mutex;
 use std::thread;
 
 lazy_static! {
@@ -108,7 +109,7 @@ pub mod pipeline;
 
 use pipeline::types::*;
 
-pub fn replay_all_laps_new() {
+pub fn replay_all_laps_new() -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>) {
     let (tx, rx): (mpsc::Sender<OutputTick>, mpsc::Receiver<OutputTick>) = mpsc::channel();
 
     let t = thread::spawn(move || {
@@ -124,13 +125,19 @@ pub fn replay_all_laps_new() {
         }
     });
 
-    let r = thread::spawn(move || {
-        let output_tick = rx.recv().ok();
-        println!(">> {:?}", output_tick);
+    let r = thread::spawn(move || loop {
+        match rx.try_recv() {
+            Ok(output_tick) => {
+                println!(">> {:?}", output_tick);
+            }
+            Err(TryRecvError::Disconnected) => {
+                break;
+            }
+            Err(TryRecvError::Empty) => {}
+        }
     });
 
-    assert!(!t.join().is_err());
-    assert!(!r.join().is_err())
+    (t, r)
 }
 
 //^^ new/refactor

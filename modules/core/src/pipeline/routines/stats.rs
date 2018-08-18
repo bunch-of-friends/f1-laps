@@ -42,17 +42,16 @@ fn build_finished_lap(input_tick: &InputTick, context: &Context) -> Option<Lap> 
     let finished_lap_time = input_tick.last_lap_time;
     let sector_3 = finished_lap_time - sector_1 - sector_2;
 
-    Some(Lap {
-        lap_number: context.session_context.lap.lap_number,
-        lap_time: finished_lap_time,
-        sector_times: [sector_1, sector_2, sector_3],
-    })
+    Some(Lap::finished(
+        sector_1,
+        sector_2,
+        sector_3,
+        finished_lap_time,
+        context.session_context.lap.lap_number,
+    ))
 }
 
-fn build_finished_sector(
-    input_tick: &InputTick,
-    finished_lap: &Option<Lap>,
-) -> Option<Sector> {
+fn build_finished_sector(input_tick: &InputTick, finished_lap: &Option<Lap>) -> Option<Sector> {
     match input_tick.sector_number {
         1 => {
             if let Some(lap) = finished_lap {

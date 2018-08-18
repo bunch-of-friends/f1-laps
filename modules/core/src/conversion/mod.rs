@@ -68,6 +68,17 @@ impl Lap {
             lap_time: 0 as f32,
         }
     }
+
+    pub fn finished(s1_t: f32, s2_t: f32, s3_t: f32, lap_t: f32, lap_n: u8) -> Lap {
+        assert!(lap_n > 0);
+        assert!((s1_t + s2_t + s3_t) == lap_t);
+
+        Lap {
+            lap_number: lap_n,
+            sector_times: [s1_t, s2_t, s3_t],
+            lap_time: lap_t,
+        }
+    }
 }
 
 impl Sector {
