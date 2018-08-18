@@ -36,6 +36,7 @@ pub struct Labels {
     pub is_new_session: bool,
     pub is_new_lap: bool,
     pub is_new_sector: bool,
+    pub is_flashback: bool,
     pub current_session: Session,
     pub current_lap: Lap,
     pub current_sector: Sector,
@@ -52,6 +53,7 @@ pub struct Session {
     pub session_type: u8,
     pub team_id: u8,
     pub era: u16,
+    pub session_time: f32,
 }
 
 pub struct Lap {

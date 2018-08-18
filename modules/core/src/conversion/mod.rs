@@ -49,6 +49,7 @@ impl Session {
             session_type: tick.session_type,
             team_id: tick.team_id,
             era: tick.era,
+            session_time: tick.session_time,
         }
     }
 
@@ -87,6 +88,7 @@ impl SessionContext {
                 session_type: 0,
                 team_id: 0,
                 era: 0,
+                session_time: 0 as f32,
             },
             lap: Lap {
                 lap_number: 0,

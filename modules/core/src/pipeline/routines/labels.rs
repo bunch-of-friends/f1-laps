@@ -5,11 +5,13 @@ pub fn build_labels(input_tick: &InputTick, context: &Context) -> Labels {
     let is_new_session = is_new_session(&session, context);
     let is_new_lap = is_new_lap(is_new_session, input_tick, context);
     let is_new_sector = is_new_sector(is_new_lap, input_tick, context);
+    let is_flashback = is_flashback(is_new_session, &session, context);
 
     Labels {
         is_new_session: is_new_session,
         is_new_lap: is_new_lap,
         is_new_sector: is_new_sector,
+        is_flashback: is_flashback,
         current_session: session,
         current_lap: Lap::from_input_tick(&input_tick),
         current_sector: Sector::from_input_tick(&input_tick),
@@ -33,6 +35,14 @@ fn is_new_sector(is_new_lap: bool, input_tick: &InputTick, context: &Context) ->
         true
     } else {
         input_tick.sector_number != context.session_context.sector.sector_number
+    }
+}
+
+fn is_flashback(is_new_session: bool, session: &Session, context: &Context) -> bool {
+    if is_new_session {
+        false
+    } else {
+        context.session_context.session.session_time > session.session_time
     }
 }
 
@@ -94,8 +104,7 @@ mod tests {
         context.session_context = SessionContext::empty();
         assert_eq!(true, is_new_session(&session, &context));
 
-        let mut s = session.clone();
-        context.session_context.session = s;
+        context.session_context.session = session.clone();
         assert_eq!(false, is_new_session(&session, &context));
 
         let mut s = session.clone();
@@ -105,4 +114,20 @@ mod tests {
         assert_eq!(true, is_new_session(&session, &context));
     }
 
+    #[test]
+    fn is_flashback_test() {
+        let i = create_input();
+        let mut session = Session::from_input_tick(&i.0);
+        let mut context = i.1;
+
+        context.session_context.session.session_time = 100.12;
+        session.session_time = 150.15;
+        assert_eq!(false, is_flashback(false, &session, &context));
+        assert_eq!(false, is_flashback(true, &session, &context));
+
+        context.session_context.session.session_time = 100.12;
+        session.session_time = 50.15;
+        assert_eq!(true, is_flashback(false, &session, &context));
+        assert_eq!(false, is_flashback(true, &session, &context));
+    }
 }
