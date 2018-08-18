@@ -39,6 +39,7 @@ pub struct Labels {
     pub is_new_lap: bool,
     pub is_new_sector: bool,
     pub is_flashback: bool,
+    pub is_teleported: bool,
     pub current_session: Session,
     pub current_lap: Lap,
     pub current_sector: Sector,

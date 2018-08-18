@@ -12,6 +12,7 @@ pub fn build_labels(input_tick: &InputTick, context: &Context) -> Labels {
         is_new_lap: is_new_lap,
         is_new_sector: is_new_sector,
         is_flashback: is_flashback,
+        is_teleported: false,
         current_session: session,
         current_lap: Lap::from_input_tick(&input_tick),
         current_sector: Sector::from_input_tick(&input_tick),

@@ -109,7 +109,10 @@ pub mod pipeline;
 
 use pipeline::types::*;
 
-pub fn replay_all_laps_new() -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>) {
+pub fn replay_all_laps_new<F>(f: F) -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)
+where
+    F: Fn(&OutputTick) + Send + Sync + 'static,
+{
     let (tx, rx): (mpsc::Sender<OutputTick>, mpsc::Receiver<OutputTick>) = mpsc::channel();
 
     let t = thread::spawn(move || {
@@ -128,7 +131,7 @@ pub fn replay_all_laps_new() -> (std::thread::JoinHandle<()>, std::thread::JoinH
     let r = thread::spawn(move || loop {
         match rx.try_recv() {
             Ok(output_tick) => {
-                println!(">> {:?}", output_tick);
+                f(&output_tick);
             }
             Err(TryRecvError::Disconnected) => {
                 break;

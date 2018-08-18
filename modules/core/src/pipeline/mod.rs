@@ -1,5 +1,5 @@
 mod routines;
-pub(crate) mod types;
+pub mod types;
 
 use self::types::*;
 
