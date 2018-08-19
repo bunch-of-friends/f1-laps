@@ -97,16 +97,6 @@ pub struct Position {
 pub struct HistoryContext {}
 
 #[derive(Debug)]
-pub struct StoreLapResult {
-    pub is_stored: bool,
-}
-
-#[derive(Debug)]
-pub struct StoreMetadataResult {
-    pub is_stored: bool,
-}
-
-#[derive(Debug)]
 pub struct PipelineResult {
     pub output_tick: OutputTick,
     pub new_context: Context,
@@ -115,7 +105,5 @@ pub struct PipelineResult {
 #[derive(Debug)]
 pub struct OutputTick {
     pub labels: Labels,
-    pub stats: Stats,
-    pub lap_store_result: StoreLapResult,
-    pub metadata_store_result: StoreMetadataResult,
+    pub stats: Stats
 }
