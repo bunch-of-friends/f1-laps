@@ -104,7 +104,6 @@ pub fn replay_all_laps() {
 }
 
 // new/refactor
-pub mod conversion;
 pub mod pipeline;
 
 use pipeline::types::*;

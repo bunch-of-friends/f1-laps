@@ -1,3 +1,4 @@
+mod conversion;
 mod routines;
 pub mod types;
 
@@ -13,7 +14,7 @@ pub fn process(input_tick: &InputTick, context: &Context) -> PipelineResult {
     PipelineResult {
         output_tick: OutputTick {
             labels: labels,
-            stats: stats
+            stats: stats,
         },
         new_context: new_context,
     }
