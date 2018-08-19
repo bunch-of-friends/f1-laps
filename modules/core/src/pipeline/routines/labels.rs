@@ -157,4 +157,42 @@ mod tests {
         assert_eq!(false, is_flashback(false, true, &lap, &context));
         assert_eq!(false, is_flashback(true, false, &lap, &context));
     }
+
+    #[test]
+    fn is_teleported_test() {
+        let i = create_input();
+        let mut tick = i.0;
+        let mut context = i.1;
+
+        context.session_context.position.x = 1 as f32;
+        context.session_context.position.y = 1 as f32;
+        context.session_context.position.z = 1 as f32;
+        tick.x = 500 as f32;
+        tick.y = 500 as f32;
+        tick.z = 500 as f32;
+        assert_eq!(false, is_teleported(true, &tick, &context));
+        assert_eq!(true, is_teleported(false, &tick, &context));
+
+        tick.x = 1 as f32;
+        tick.y = 1 as f32;
+        tick.z = 1 as f32;
+        assert_eq!(false, is_teleported(true, &tick, &context));
+        assert_eq!(false, is_teleported(false, &tick, &context));
+
+        tick.x = 15 as f32;
+        assert_eq!(true, is_teleported(false, &tick, &context));
+
+        tick.x = 15 as f32;
+        tick.y = 15 as f32;
+        assert_eq!(true, is_teleported(false, &tick, &context));
+
+        tick.x = 1 as f32;
+        tick.y = 15 as f32;
+        assert_eq!(true, is_teleported(false, &tick, &context));
+
+        tick.x = 1 as f32;
+        tick.y = 1 as f32;
+        tick.z = -100 as f32;
+        assert_eq!(true, is_teleported(false, &tick, &context));
+    }
 }
