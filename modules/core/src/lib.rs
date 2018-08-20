@@ -5,132 +5,75 @@ extern crate lazy_static;
 extern crate bincode;
 extern crate chrono;
 
-pub mod aggregation;
 pub mod file_system;
 pub mod lap_metadata;
+pub mod pipeline;
 pub mod prelude;
 pub mod record_tracking;
 pub mod replay;
 pub mod storage;
 pub mod udp;
 
-use aggregation::collector::Collector;
-use aggregation::tick::{LiveData, Tick};
 use lap_metadata::LapMetadata;
+use pipeline::types::*;
 use record_tracking::RecordSet;
 use std::sync::mpsc::{self, TryRecvError};
-use std::sync::Mutex;
 use std::thread;
-
-lazy_static! {
-    static ref DATA_HOLDER: Mutex<Collector> = Mutex::new(Collector::new());
-}
 
 pub fn initialise(storage_folder_path: String) {
     storage::initialise(&storage_folder_path);
 }
 
-pub fn start_listening(port: i32) {
+pub fn start_listening<F>(
+    port: i32,
+    f: F,
+) -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)
+where
+    F: Fn(Output) + Send + Sync + 'static,
+{
     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
-    thread::spawn(move || {
+    let t = thread::spawn(move || {
         udp::start_listening(port, tx);
     });
 
-    thread::spawn(move || loop {
-        receive_tick(&rx);
-    });
-}
+    let mut context = Context::empty();
 
-pub fn get_next_tick() -> Option<Tick> {
-    let mut data_holder = DATA_HOLDER.lock().unwrap();
-
-    let data = data_holder.get_data();
-
-    if let Some(live_data) = data.0 {
-        Some(Tick {
-            live_data: live_data,
-            session_started: data.1,
-            lap_finished: data.2,
-            sector_finished: data.3,
-            message: None,
-        })
-    } else {
-        None
-    }
-}
-
-pub fn get_all_laps_metadata() -> Vec<LapMetadata> {
-    return storage::get_all_laps_metadata();
-}
-
-pub fn get_all_records() -> RecordSet {
-    return storage::get_all_records();
-}
-
-pub fn get_lap_data(identifier: String) -> Vec<LiveData> {
-    let packets = match storage::get_lap_data(&identifier) {
-        Some(x) => x,
-        None => panic!("no lap data found for identifier: {}", identifier), // TODO: add some sort of messaging/feedback mechanism
-    };
-
-    return aggregation::convert_packets(&packets);
-}
-
-pub fn replay_lap(identifier: String) {
-    let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
-
-    thread::spawn(move || match storage::get_lap_data(&identifier) {
-        Some(packets) => replay::stream_packets(tx, packets),
-        None => println!("no lap data found for identifier: {}", identifier), // TODO: add some sort of messaging/feedback mechanism
+    let r = thread::spawn(move || loop {
+        if let Some(tick) = rx.recv().ok() {
+            let result = pipeline::process(&tick, &context);
+            context = result.0;
+            f(result.1);
+        }
     });
 
-    thread::spawn(move || loop {
-        receive_tick(&rx);
-    });
+    (t, r)
 }
 
-pub fn replay_all_laps() {
-    let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
-
-    thread::spawn(move || {
-        let packets = storage::get_all_laps_data();
-        replay::stream_packets(tx, packets);
-    });
-
-    thread::spawn(move || loop {
-        receive_tick(&rx);
-    });
-}
-
-// new/refactor
-pub mod pipeline;
-
-use pipeline::types::*;
-
-pub fn replay_all_laps_new<F>(f: F) -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)
+//INFO: this is to be removed, because packets will no longer be stored, instead InputTicks will be stored to reduce size
+pub fn replay_packets<F>(f: F) -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)
 where
-    F: Fn(&OutputTick) + Send + Sync + 'static,
+    F: Fn(Output) + Send + Sync + 'static,
 {
-    let (tx, rx): (mpsc::Sender<OutputTick>, mpsc::Receiver<OutputTick>) = mpsc::channel();
+    let (tx, rx): (mpsc::Sender<Output>, mpsc::Receiver<Output>) = mpsc::channel();
 
     let t = thread::spawn(move || {
         let packets = storage::get_all_laps_data();
 
         let mut context = Context::empty();
         for packet in packets {
-            let input_tick = InputTick::from_packet(&packet);
-            let result = pipeline::process(&input_tick, &context);
-            context = result.new_context;
+            let tick = Tick::from_packet(&packet);
+            let result = pipeline::process(&tick, &context);
+            context = result.0;;
 
-            tx.send(result.output_tick).ok();
+            tx.send(result.1).ok();
         }
     });
 
     let r = thread::spawn(move || loop {
         match rx.try_recv() {
-            Ok(output_tick) => {
-                f(&output_tick);
+            Ok(output) => {
+                f(output);
             }
             Err(TryRecvError::Disconnected) => {
                 break;
@@ -142,22 +85,47 @@ where
     (t, r)
 }
 
-//^^ new/refactor
+pub fn replay_lap<F>(
+    identifier: String,
+    f: F,
+) -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)
+where
+    F: Fn(Output) + Send + Sync + 'static,
+{
+    let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
-fn receive_tick(rx: &mpsc::Receiver<Tick>) {
-    let tick_result = rx.recv().ok();
+    let t = thread::spawn(move || match storage::get_lap_data(&identifier) {
+        Some(packets) => replay::stream_packets(tx, packets),
+        None => println!("no lap data found for identifier: {}", identifier), // TODO: add some sort of messaging/feedback mechanism
+    });
 
-    if let Some(tick) = tick_result {
-        DATA_HOLDER.lock().unwrap().set_data(tick);
-    }
+    let mut context = Context::empty();
+
+    let r = thread::spawn(move || loop {
+        if let Some(tick) = rx.recv().ok() {
+            let result = pipeline::process(&tick, &context);
+            context = result.0;
+            f(result.1);
+        }
+    });
+
+    (t, r)
+}
+
+pub fn get_all_laps_metadata() -> Vec<LapMetadata> {
+    return storage::get_all_laps_metadata();
+}
+
+pub fn get_all_records() -> RecordSet {
+    return storage::get_all_records();
 }
 
 #[cfg(test)]
 pub(crate) mod test_utils {
-    use pipeline::types::InputTick;
+    use pipeline::types::Tick;
 
-    pub fn create_input_tick() -> InputTick {
-        InputTick {
+    pub fn create_tick() -> Tick {
+        Tick {
             session_time: 123 as f32,
             session_distance: 123 as f32,
             lap_time: 123 as f32,

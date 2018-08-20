@@ -10,6 +10,8 @@ use f1_laps_core::prelude::*;
 use neon::prelude::*;
 use obj_helpers as oh;
 
+pub struct Collector {}
+
 fn initialise(mut cx: FunctionContext) -> JsResult<JsUndefined> {
     let storage_folder_path = cx.argument::<JsString>(0)?.value();
 
@@ -21,7 +23,9 @@ fn initialise(mut cx: FunctionContext) -> JsResult<JsUndefined> {
 fn start_listening(mut cx: FunctionContext) -> JsResult<JsUndefined> {
     let port = cx.argument::<JsNumber>(0)?.value() as i32;
 
-    f1_laps_core::start_listening(port);
+    f1_laps_core::start_listening(port, |tick| {
+        println!("tick received >> {:?}", &tick);
+    });
 
     Ok(JsUndefined::new())
 }
@@ -31,6 +35,8 @@ fn replay_all_laps(_cx: FunctionContext) -> JsResult<JsUndefined> {
 
     Ok(JsUndefined::new())
 }
+
+fn on_tick_received(tick: OutputTick)
 
 fn get_next_tick(mut cx: FunctionContext) -> JsResult<JsObject> {
     let tick_option = f1_laps_core::get_next_tick();

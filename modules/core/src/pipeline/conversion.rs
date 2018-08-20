@@ -1,11 +1,11 @@
 use pipeline::types::*;
 use udp::packet::Packet;
 
-impl InputTick {
-    pub fn from_packet(packet: &Packet) -> InputTick {
+impl Tick {
+    pub fn from_packet(packet: &Packet) -> Tick {
         assert!(packet.lap > 0 as f32);
 
-        InputTick {
+        Tick {
             session_time: packet.time,
             session_distance: packet.total_distance,
             lap_time: packet.lap_time,
@@ -42,7 +42,7 @@ impl InputTick {
 }
 
 impl Session {
-    pub fn from_input_tick(tick: &InputTick) -> Session {
+    pub fn from_tick(tick: &Tick) -> Session {
         Session {
             track_id: tick.track_id,
             session_type: tick.session_type,
@@ -69,7 +69,7 @@ impl Session {
 }
 
 impl Lap {
-    pub fn from_input_tick(tick: &InputTick) -> Lap {
+    pub fn from_tick(tick: &Tick) -> Lap {
         Lap {
             lap_number: tick.lap_number,
             sector_times: [tick.sector1_time, tick.sector2_time, 0 as f32],
@@ -98,7 +98,7 @@ impl Lap {
 }
 
 impl Sector {
-    pub fn from_input_tick(tick: &InputTick) -> Sector {
+    pub fn from_tick(tick: &Tick) -> Sector {
         Sector {
             sector_number: tick.sector_number,
             sector_time: 0 as f32,
@@ -122,7 +122,7 @@ impl Position {
         }
     }
 
-    pub fn from_input_tick(tick: &InputTick) -> Position {
+    pub fn from_tick(tick: &Tick) -> Position {
         Position {
             x: tick.x,
             y: tick.y,

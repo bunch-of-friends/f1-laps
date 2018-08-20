@@ -5,10 +5,10 @@ mod common;
 use f1_laps_core::pipeline::types::OutputTick;
 
 #[test]
-fn replay_all_laps_test() {
+fn replay_packets_test() {
     common::setup();
 
-    let closure = |tick: &OutputTick| {
+    let closure = |tick: OutputTick| {
         // println!("tick received >> {:?}", tick);
 
         // if tick.labels.current_session.session_time < time {
@@ -35,7 +35,7 @@ fn replay_all_laps_test() {
         }
     };
 
-    let h = f1_laps_core::replay_all_laps_new(closure);
+    let h = f1_laps_core::replay_packets(closure);
 
     assert!(!h.0.join().is_err());
     assert!(!h.1.join().is_err());

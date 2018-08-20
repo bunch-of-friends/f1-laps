@@ -1,5 +1,5 @@
-#[derive(Debug)]
-pub struct InputTick {
+#[derive(Debug, Clone)]
+pub struct Tick {
     pub session_time: f32,
     pub session_distance: f32,
     pub lap_number: u8,
@@ -56,7 +56,7 @@ pub struct Session {
     pub track_id: u8,
     pub session_type: u8,
     pub team_id: u8,
-    pub era: u16
+    pub era: u16,
 }
 
 #[derive(Debug)]
@@ -97,13 +97,8 @@ pub struct Position {
 pub struct HistoryContext {}
 
 #[derive(Debug)]
-pub struct PipelineResult {
-    pub output_tick: OutputTick,
-    pub new_context: Context,
-}
-
-#[derive(Debug)]
-pub struct OutputTick {
+pub struct Output {
+    pub tick: Tick,
     pub labels: Labels,
-    pub stats: Stats
+    pub stats: Stats,
 }
