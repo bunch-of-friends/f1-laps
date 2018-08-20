@@ -56,7 +56,7 @@ pub struct Session {
     pub track_id: u8,
     pub session_type: u8,
     pub team_id: u8,
-    pub era: u16,
+    pub era: u16
 }
 
 #[derive(Debug)]
@@ -101,4 +101,10 @@ pub struct Output {
     pub tick: Tick,
     pub labels: Labels,
     pub stats: Stats,
+}
+
+#[derive(Debug)]
+pub struct OutputTick {
+    pub labels: Labels,
+    pub stats: Stats
 }

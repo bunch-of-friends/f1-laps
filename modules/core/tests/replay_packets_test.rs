@@ -2,35 +2,35 @@ extern crate f1_laps_core;
 
 mod common;
 
-use f1_laps_core::pipeline::types::OutputTick;
+use f1_laps_core::pipeline::types::Output;
 
 #[test]
 fn replay_packets_test() {
     common::setup();
 
-    let closure = |tick: OutputTick| {
-        // println!("tick received >> {:?}", tick);
+    let closure = |output: Output| {
+        // println!("output received >> {:?}", output);
 
-        // if tick.labels.current_session.session_time < time {
+        // if output.labels.current_session.session_time < time {
         //     println!("flashback :/");
-        //     time = tick.labels.current_session.session_time;
+        //     time = output.labels.current_session.session_time;
         // }
 
-        // println!("{}", tick.labels.current_session.session_time);
+        // println!("{}", output.labels.current_session.session_time);
 
-        if tick.labels.is_flashback {
+        if output.labels.is_flashback {
             println!("flashback");
         }
 
-        if tick.labels.is_teleported {
+        if output.labels.is_teleported {
             println!("teleported");
         }
 
-        if let Some(ref sector) = tick.stats.finished_sector {
+        if let Some(ref sector) = output.stats.finished_sector {
             println!("{:?}", sector);
         }
 
-        if let Some(ref lap) = tick.stats.finished_lap {
+        if let Some(ref lap) = output.stats.finished_lap {
             println!("{:?}", lap);
         }
     };
