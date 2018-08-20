@@ -1,6 +1,8 @@
+#[derive(Debug)]
 pub struct InputTick {
     pub session_time: f32,
     pub session_distance: f32,
+    pub lap_number: u8,
     pub lap_time: f32,
     pub lap_distance: f32,
     pub x: f32,
@@ -11,11 +13,10 @@ pub struct InputTick {
     pub steer: f32,
     pub brake: f32,
     pub gear: u8,
-    pub lap_number: u8,
     pub engine_rate: f32,
     pub car_position: u8,
-    pub drs: bool,
-    pub sector: u8,
+    pub is_drs_open: bool,
+    pub sector_number: u8,
     pub sector1_time: f32,
     pub sector2_time: f32,
     pub team_id: u8,
@@ -27,33 +28,27 @@ pub struct InputTick {
     pub vehicle_fia_flags: i8,
     pub era: u16,
     pub tyre_compound: u8,
-    pub current_lap_invalid: bool,
+    pub is_current_lap_valid: bool,
     pub is_spectating: bool,
     pub cars_total: u8,
 }
 
-pub struct PacketLabels {
+#[derive(Debug)]
+pub struct Labels {
     pub is_new_session: bool,
     pub is_new_lap: bool,
     pub is_new_sector: bool,
-    pub session: Session,
+    pub is_flashback: bool,
+    pub is_teleported: bool,
+    pub current_session: Session,
+    pub current_lap: Lap,
+    pub current_sector: Sector,
 }
 
-pub struct PacketStats {
-    pub previous_lap: Option<FinishedLap>,
-    pub previous_sector: Option<FinishedSector>,
-}
-
-pub struct FinishedLap {
-    number: u8,
-    sectors: [f32; 3],
-    tyre_compound: u8,
-}
-
-pub struct FinishedSector {
-    number: u8,
-    time: f32,
-    tyre_compound: u8,
+#[derive(Debug)]
+pub struct Stats {
+    pub finished_sector: Option<Sector>,
+    pub finished_lap: Option<Lap>,
 }
 
 #[derive(Debug, Clone)]
@@ -61,30 +56,54 @@ pub struct Session {
     pub track_id: u8,
     pub session_type: u8,
     pub team_id: u8,
-    pub era: u16,
+    pub era: u16
 }
 
+#[derive(Debug)]
+pub struct Lap {
+    pub lap_number: u8,
+    pub sector_times: [f32; 3],
+    pub lap_time: f32,
+}
+
+#[derive(Debug)]
+pub struct Sector {
+    pub sector_number: u8,
+    pub sector_time: f32,
+}
+
+#[derive(Debug)]
 pub struct Context {
     pub session_context: SessionContext,
     pub history_context: HistoryContext,
 }
 
+#[derive(Debug)]
 pub struct SessionContext {
-    pub session: Option<Session>,
-    pub lap_number: u8,
-    pub sector: u8,
+    pub session: Session,
+    pub lap: Lap,
+    pub sector: Sector,
+    pub position: Position,
 }
 
+#[derive(Debug)]
+pub struct Position {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+}
+
+#[derive(Debug)]
 pub struct HistoryContext {}
 
-pub struct StoreLapResult {}
-
-pub struct StoreMetadataResult {}
-
+#[derive(Debug)]
 pub struct PipelineResult {
-    pub labels: PacketLabels,
-    pub stats: PacketStats,
-    pub lap_store_result: StoreLapResult,
-    pub metadata_store_result: StoreMetadataResult,
+    pub output_tick: OutputTick,
     pub new_context: Context,
+}
+
+#[derive(Debug)]
+pub struct OutputTick {
+    pub labels: Labels,
+    pub stats: Stats
 }

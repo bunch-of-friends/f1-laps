@@ -14,15 +14,12 @@ pub mod replay;
 pub mod storage;
 pub mod udp;
 
-// new/refactor
-pub mod conversion;
-pub mod pipeline;
-
 use aggregation::collector::Collector;
 use aggregation::tick::{LiveData, Tick};
 use lap_metadata::LapMetadata;
 use record_tracking::RecordSet;
-use std::sync::{mpsc, Mutex};
+use std::sync::mpsc::{self, TryRecvError};
+use std::sync::Mutex;
 use std::thread;
 
 lazy_static! {
@@ -106,6 +103,47 @@ pub fn replay_all_laps() {
     });
 }
 
+// new/refactor
+pub mod pipeline;
+
+use pipeline::types::*;
+
+pub fn replay_all_laps_new<F>(f: F) -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)
+where
+    F: Fn(&OutputTick) + Send + Sync + 'static,
+{
+    let (tx, rx): (mpsc::Sender<OutputTick>, mpsc::Receiver<OutputTick>) = mpsc::channel();
+
+    let t = thread::spawn(move || {
+        let packets = storage::get_all_laps_data();
+
+        let mut context = Context::empty();
+        for packet in packets {
+            let input_tick = InputTick::from_packet(&packet);
+            let result = pipeline::process(&input_tick, &context);
+            context = result.new_context;
+
+            tx.send(result.output_tick).ok();
+        }
+    });
+
+    let r = thread::spawn(move || loop {
+        match rx.try_recv() {
+            Ok(output_tick) => {
+                f(&output_tick);
+            }
+            Err(TryRecvError::Disconnected) => {
+                break;
+            }
+            Err(TryRecvError::Empty) => {}
+        }
+    });
+
+    (t, r)
+}
+
+//^^ new/refactor
+
 fn receive_tick(rx: &mpsc::Receiver<Tick>) {
     let tick_result = rx.recv().ok();
 
@@ -114,7 +152,7 @@ fn receive_tick(rx: &mpsc::Receiver<Tick>) {
     }
 }
 
-// #[cfg(test)]
+#[cfg(test)]
 pub(crate) mod test_utils {
     use pipeline::types::InputTick;
 
@@ -135,8 +173,8 @@ pub(crate) mod test_utils {
             lap_number: 1,
             engine_rate: 90 as f32,
             car_position: 2,
-            drs: false,
-            sector: 1,
+            is_drs_open: false,
+            sector_number: 1,
             sector1_time: 0 as f32,
             sector2_time: 0 as f32,
             team_id: 1,
@@ -148,7 +186,7 @@ pub(crate) mod test_utils {
             vehicle_fia_flags: -1,
             era: 2017,
             tyre_compound: 2,
-            current_lap_invalid: true,
+            is_current_lap_valid: true,
             is_spectating: false,
             cars_total: 20,
         }
