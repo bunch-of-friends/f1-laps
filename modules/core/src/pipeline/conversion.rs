@@ -47,7 +47,7 @@ impl Session {
             track_id: tick.track_id,
             session_type: tick.session_type,
             team_id: tick.team_id,
-            era: tick.era
+            era: tick.era,
         }
     }
 
@@ -56,7 +56,7 @@ impl Session {
             track_id: 0,
             session_type: 0,
             team_id: 0,
-            era: 0
+            era: 0,
         }
     }
 
@@ -74,6 +74,7 @@ impl Lap {
             lap_number: tick.lap_number,
             sector_times: [tick.sector1_time, tick.sector2_time, 0 as f32],
             lap_time: tick.lap_time,
+            is_finished: false,
         }
     }
 
@@ -82,6 +83,7 @@ impl Lap {
             lap_number: 0,
             sector_times: [0 as f32; 3],
             lap_time: 0 as f32,
+            is_finished: false,
         }
     }
 
@@ -93,6 +95,7 @@ impl Lap {
             lap_number: lap_n,
             sector_times: [s1_t, s2_t, s3_t],
             lap_time: lap_t,
+            is_finished: true,
         }
     }
 }
@@ -102,6 +105,7 @@ impl Sector {
         Sector {
             sector_number: tick.sector_number,
             sector_time: 0 as f32,
+            is_finished: false,
         }
     }
 
@@ -109,6 +113,15 @@ impl Sector {
         Sector {
             sector_number: 0,
             sector_time: 0 as f32,
+            is_finished: false,
+        }
+    }
+
+    pub fn finished(t: f32, n: u8) -> Sector {
+        Sector {
+            sector_number: n,
+            sector_time: t,
+            is_finished: true,
         }
     }
 }

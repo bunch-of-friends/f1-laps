@@ -16,7 +16,6 @@ pub fn build_labels(tick: &Tick, context: &Context) -> Labels {
         is_new_sector: is_new_sector,
         is_flashback: is_flashback,
         is_teleported: is_teleported,
-        current_session: current_session,
         current_lap: current_lap,
         current_sector: Sector::from_tick(&tick),
     }

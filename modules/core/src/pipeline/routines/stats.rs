@@ -1,11 +1,21 @@
 use pipeline::types::*;
 
 pub fn build_stats(tick: &Tick, context: &Context, labels: &Labels) -> Stats {
+    let started_session = get_started_session(tick, labels);
     let finished_lap = get_finished_lap(tick, context, labels);
     let finished_sector = get_finished_sector(tick, labels, &finished_lap);
     Stats {
+        started_session: started_session,
         finished_lap: finished_lap,
         finished_sector: finished_sector,
+    }
+}
+
+fn get_started_session(tick: &Tick, labels: &Labels) -> Option<Session> {
+    if labels.is_new_session {
+        Some(Session::from_tick(tick))
+    } else {
+        None
     }
 }
 
@@ -51,30 +61,21 @@ fn build_finished_sector(tick: &Tick, finished_lap: &Option<Lap>) -> Option<Sect
     match tick.sector_number {
         1 => {
             if let Some(lap) = finished_lap {
-                Some(Sector {
-                    sector_number: 3,
-                    sector_time: lap.sector_times[2],
-                })
+                Some(Sector::finished(lap.sector_times[2], 3))
             } else {
                 None
             }
         }
         2 => {
             if tick.sector1_time > 0 as f32 {
-                Some(Sector {
-                    sector_number: 1,
-                    sector_time: tick.sector1_time,
-                })
+                Some(Sector::finished(tick.sector1_time, 1))
             } else {
                 None
             }
         }
         3 => {
             if tick.sector2_time > 0 as f32 {
-                Some(Sector {
-                    sector_number: 2,
-                    sector_time: tick.sector2_time,
-                })
+                Some(Sector::finished(tick.sector2_time, 2))
             } else {
                 None
             }

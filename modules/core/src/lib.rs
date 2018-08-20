@@ -55,25 +55,21 @@ pub fn replay_packets<F>(f: F) -> (std::thread::JoinHandle<()>, std::thread::Joi
 where
     F: Fn(Output) + Send + Sync + 'static,
 {
-    let (tx, rx): (mpsc::Sender<Output>, mpsc::Receiver<Output>) = mpsc::channel();
+    let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
     let t = thread::spawn(move || {
         let packets = storage::get_all_laps_data();
-
-        let mut context = Context::empty();
-        for packet in packets {
-            let tick = Tick::from_packet(&packet);
-            let result = pipeline::process(&tick, &context);
-            context = result.0;;
-
-            tx.send(result.1).ok();
-        }
+        replay::stream_packets(tx, packets);
     });
+
+    let mut context = Context::empty();
 
     let r = thread::spawn(move || loop {
         match rx.try_recv() {
-            Ok(output) => {
-                f(output);
+            Ok(tick) => {
+                let result = pipeline::process(&tick, &context);
+                context = result.0;
+                f(result.1);
             }
             Err(TryRecvError::Disconnected) => {
                 break;
