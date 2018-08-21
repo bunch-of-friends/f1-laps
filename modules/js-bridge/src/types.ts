@@ -223,37 +223,21 @@ export interface LapTick {
 }
 
 export interface NewSession {
-    sessionTimeStamp: number;
     era: Era;
     trackId: Track;
     teamId: Team;
     sessionType: SessionType;
 }
 
-export interface RecordsMarker {
-    isBestEverPersonal: boolean;
-    isBestEverCompoundPersonal: boolean;
-    isBestSessionPersonal: boolean;
-    isBestSessionPersonalCompound: boolean;
-    isBestSessionAll: boolean;
-    isBestSessionAllCompound: boolean;
-}
-
 export interface SectorFinished {
-    sessionTimeStamp: number;
     sector: Sector;
     sectorTime: number;
-    tyreCompound: TyreCompound;
-    recordsMarker: RecordsMarker;
 }
 
 export interface LapFinished {
-    sessionTimeStamp: number;
     lapNumber: number;
     lapTime: number;
     sector1Time: number;
     sector2Time: number;
     sector3Time: number;
-    tyreCompound: TyreCompound;
-    recordMarker: RecordsMarker;
 }

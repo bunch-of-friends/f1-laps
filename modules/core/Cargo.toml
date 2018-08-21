@@ -4,10 +4,10 @@ version = "0.1.0"
 authors = ["David Bohunek <bohunek@gmail.com>"]
 
 [dependencies]
-serde = "1.0.62"
-serde_derive = "1.0.62"
-bincode = "1.0.0"
-chrono = "0.4.2"
+serde = "1.0.71"
+serde_derive = "1.0.71"
+bincode = "1.0.1"
+chrono = "0.4.5"
 lazy_static = "1.0.1"
 
 [lib]

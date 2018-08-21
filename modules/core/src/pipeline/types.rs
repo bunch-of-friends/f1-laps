@@ -1,5 +1,5 @@
-#[derive(Debug)]
-pub struct InputTick {
+#[derive(Debug, Clone)]
+pub struct Tick {
     pub session_time: f32,
     pub session_distance: f32,
     pub lap_number: u8,
@@ -40,13 +40,13 @@ pub struct Labels {
     pub is_new_sector: bool,
     pub is_flashback: bool,
     pub is_teleported: bool,
-    pub current_session: Session,
     pub current_lap: Lap,
     pub current_sector: Sector,
 }
 
 #[derive(Debug)]
 pub struct Stats {
+    pub started_session: Option<Session>,
     pub finished_sector: Option<Sector>,
     pub finished_lap: Option<Lap>,
 }
@@ -56,7 +56,7 @@ pub struct Session {
     pub track_id: u8,
     pub session_type: u8,
     pub team_id: u8,
-    pub era: u16
+    pub era: u16,
 }
 
 #[derive(Debug)]
@@ -64,12 +64,14 @@ pub struct Lap {
     pub lap_number: u8,
     pub sector_times: [f32; 3],
     pub lap_time: f32,
+    pub is_finished: bool,
 }
 
 #[derive(Debug)]
 pub struct Sector {
     pub sector_number: u8,
     pub sector_time: f32,
+    pub is_finished: bool,
 }
 
 #[derive(Debug)]
@@ -97,13 +99,8 @@ pub struct Position {
 pub struct HistoryContext {}
 
 #[derive(Debug)]
-pub struct PipelineResult {
-    pub output_tick: OutputTick,
-    pub new_context: Context,
-}
-
-#[derive(Debug)]
-pub struct OutputTick {
+pub struct Output {
+    pub tick: Tick,
     pub labels: Labels,
-    pub stats: Stats
+    pub stats: Stats,
 }

@@ -1,8 +1,8 @@
-use aggregation::process_packet;
-use aggregation::tick::Tick;
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
 use thread;
+
+use pipeline::types::Tick;
 use udp::packet::Packet;
 
 pub fn stream_packets(tx: mpsc::Sender<Tick>, packets: Vec<Packet>) {
@@ -11,13 +11,9 @@ pub fn stream_packets(tx: mpsc::Sender<Tick>, packets: Vec<Packet>) {
 
     let mut last_packet: Option<(Packet, Instant)> = None;
     for packet in packets {
-        let tick = process_packet(packet.clone(), true);
+        let tick = Tick::from_packet(&packet);
 
-        if tick.is_none() {
-            continue;
-        }
-
-        // this whole block is here temporarily for some tests, then it will either go or get some love
+         // this whole block is here temporarily for some tests, then it will either go or get some love
         if last_packet.is_some() {
             let lp = last_packet.unwrap();
 
@@ -48,8 +44,7 @@ pub fn stream_packets(tx: mpsc::Sender<Tick>, packets: Vec<Packet>) {
             }
         }
 
-        tx.send(tick.unwrap())
-            .expect("failed to update the main thread");
+        tx.send(tick).ok();
         last_packet = Some((packet, Instant::now()));
     }
 

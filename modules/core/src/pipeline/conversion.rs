@@ -1,11 +1,11 @@
 use pipeline::types::*;
 use udp::packet::Packet;
 
-impl InputTick {
-    pub fn from_packet(packet: &Packet) -> InputTick {
+impl Tick {
+    pub fn from_packet(packet: &Packet) -> Tick {
         assert!(packet.lap > 0 as f32);
 
-        InputTick {
+        Tick {
             session_time: packet.time,
             session_distance: packet.total_distance,
             lap_time: packet.lap_time,
@@ -42,12 +42,12 @@ impl InputTick {
 }
 
 impl Session {
-    pub fn from_input_tick(tick: &InputTick) -> Session {
+    pub fn from_tick(tick: &Tick) -> Session {
         Session {
             track_id: tick.track_id,
             session_type: tick.session_type,
             team_id: tick.team_id,
-            era: tick.era
+            era: tick.era,
         }
     }
 
@@ -56,7 +56,7 @@ impl Session {
             track_id: 0,
             session_type: 0,
             team_id: 0,
-            era: 0
+            era: 0,
         }
     }
 
@@ -69,11 +69,12 @@ impl Session {
 }
 
 impl Lap {
-    pub fn from_input_tick(tick: &InputTick) -> Lap {
+    pub fn from_tick(tick: &Tick) -> Lap {
         Lap {
             lap_number: tick.lap_number,
             sector_times: [tick.sector1_time, tick.sector2_time, 0 as f32],
             lap_time: tick.lap_time,
+            is_finished: false,
         }
     }
 
@@ -82,6 +83,7 @@ impl Lap {
             lap_number: 0,
             sector_times: [0 as f32; 3],
             lap_time: 0 as f32,
+            is_finished: false,
         }
     }
 
@@ -93,15 +95,17 @@ impl Lap {
             lap_number: lap_n,
             sector_times: [s1_t, s2_t, s3_t],
             lap_time: lap_t,
+            is_finished: true,
         }
     }
 }
 
 impl Sector {
-    pub fn from_input_tick(tick: &InputTick) -> Sector {
+    pub fn from_tick(tick: &Tick) -> Sector {
         Sector {
             sector_number: tick.sector_number,
             sector_time: 0 as f32,
+            is_finished: false,
         }
     }
 
@@ -109,6 +113,15 @@ impl Sector {
         Sector {
             sector_number: 0,
             sector_time: 0 as f32,
+            is_finished: false,
+        }
+    }
+
+    pub fn finished(t: f32, n: u8) -> Sector {
+        Sector {
+            sector_number: n,
+            sector_time: t,
+            is_finished: true,
         }
     }
 }
@@ -122,7 +135,7 @@ impl Position {
         }
     }
 
-    pub fn from_input_tick(tick: &InputTick) -> Position {
+    pub fn from_tick(tick: &Tick) -> Position {
         Position {
             x: tick.x,
             y: tick.y,
