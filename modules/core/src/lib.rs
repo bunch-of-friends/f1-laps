@@ -94,7 +94,7 @@ where
     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
     let t = thread::spawn(move || match storage::get_lap_data(&identifier) {
-        Some(packets) => replay::stream_packets(tx, packets, shoud_simulate_time),
+        Some(ticks) => /*replay::stream_packets(tx, packets, shoud_simulate_time)*/ println!("not implemented :/"),
         None => println!("no lap data found for identifier: {}", identifier), // TODO: add some sort of messaging/feedback mechanism
     });
 

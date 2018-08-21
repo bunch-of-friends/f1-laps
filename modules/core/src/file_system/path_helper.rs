@@ -43,6 +43,10 @@ impl PathHelper {
     pub fn get_laps_data_file_path(&self, identifier: &str) -> String {
         format!("{}/{}", self.get_laps_data_folder_path(), identifier)
     }
+
+    pub fn get_packet_file_path(&self, identifier: &str) -> String {
+        format!("{}/{}", self.get_packets_data_folder_path(), identifier)
+    }
 }
 
 impl Clone for PathHelper {

@@ -63,7 +63,7 @@ pub fn get_all_packets(path_helper: &PathHelper) -> Vec<Packet> {
 
     let mut packets = Vec::<Packet>::new();
     for file_name in file_names {
-        let full_path = path_helper.get_laps_data_file_path(&file_name);
+        let full_path = path_helper.get_packet_file_path(&file_name);
         println!("loading file >> {}", full_path);
 
         let file = File::open(full_path).expect("failed to open file");

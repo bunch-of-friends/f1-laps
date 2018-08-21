@@ -53,16 +53,17 @@ impl Pipeline {
         }
 
         if labels.is_new_lap {
-            if let Some(ref _lap) = stats.finished_lap {
-                // TODO: store...
-                println!("new lap - storing lap ticks, len: {}", self.lap_ticks.len());
-            } else {
-                println!("new lap - nothing to store");
+            if let Some(ref lap) = stats.finished_lap {
+                self.store_lap(lap);
             }
 
             self.lap_ticks.clear();
         }
 
         self.lap_ticks.push(tick.clone());
+    }
+
+    fn store_lap(&mut self, _lap: &Lap) {
+        // TODO...
     }
 }
