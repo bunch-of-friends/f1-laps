@@ -16,6 +16,7 @@ pub mod udp;
 
 use lap_metadata::LapMetadata;
 use pipeline::types::*;
+use pipeline::Pipeline;
 use record_tracking::RecordSet;
 use std::sync::mpsc::{self, TryRecvError};
 use std::thread;
@@ -37,13 +38,12 @@ where
         udp::start_listening(port, tx);
     });
 
-    let mut context = Context::empty();
+    let mut pipeline = Pipeline::new();
 
     let r = thread::spawn(move || loop {
         if let Some(tick) = rx.recv().ok() {
-            let result = pipeline::process(&tick, &context);
-            context = result.0;
-            f(result.1);
+            let output = pipeline.process(&tick);
+            f(output);
         }
     });
 
@@ -65,14 +65,13 @@ where
         replay::stream_packets(tx, packets, shoud_simulate_time);
     });
 
-    let mut context = Context::empty();
+    let mut pipeline = Pipeline::new();
 
     let r = thread::spawn(move || loop {
         match rx.try_recv() {
             Ok(tick) => {
-                let result = pipeline::process(&tick, &context);
-                context = result.0;
-                f(result.1);
+                let output = pipeline.process(&tick);
+                f(output);
             }
             Err(TryRecvError::Disconnected) => {
                 break;
@@ -99,13 +98,12 @@ where
         None => println!("no lap data found for identifier: {}", identifier), // TODO: add some sort of messaging/feedback mechanism
     });
 
-    let mut context = Context::empty();
+    let mut pipeline = Pipeline::new();
 
     let r = thread::spawn(move || loop {
         if let Some(tick) = rx.recv().ok() {
-            let result = pipeline::process(&tick, &context);
-            context = result.0;
-            f(result.1);
+            let output = pipeline.process(&tick);
+            f(output);
         }
     });
 

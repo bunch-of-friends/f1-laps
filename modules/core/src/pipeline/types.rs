@@ -106,7 +106,7 @@ pub struct SessionContext {
     pub session: Session,
     pub lap: Lap,
     pub sector: Sector,
-    pub position: Position,
+    pub position: Position
 }
 
 #[derive(Debug)]
