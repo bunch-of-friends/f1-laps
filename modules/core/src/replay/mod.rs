@@ -5,7 +5,7 @@ use thread;
 use pipeline::types::Tick;
 use udp::packet::Packet;
 
-pub fn stream_packets(tx: mpsc::Sender<Tick>, packets: Vec<Packet>) {
+pub fn stream_packets(tx: mpsc::Sender<Tick>, packets: Vec<Packet>, shoud_simulate_time: bool) {
     let packets_len = packets.len();
     println!("streaming stored packets, packets count: {}", packets_len);
 
@@ -13,8 +13,8 @@ pub fn stream_packets(tx: mpsc::Sender<Tick>, packets: Vec<Packet>) {
     for packet in packets {
         let tick = Tick::from_packet(&packet);
 
-         // this whole block is here temporarily for some tests, then it will either go or get some love
-        if last_packet.is_some() {
+        // this whole block is here temporarily for some tests, then it will either go or get some love
+        if shoud_simulate_time && last_packet.is_some() {
             let lp = last_packet.unwrap();
 
             let packet_diff = packet.time - lp.0.time;

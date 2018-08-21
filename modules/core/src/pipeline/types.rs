@@ -30,7 +30,28 @@ pub struct Tick {
     pub tyre_compound: u8,
     pub is_current_lap_valid: bool,
     pub is_spectating: bool,
+    pub car_index: u8,
     pub cars_total: u8,
+    pub cars: Vec<Car>,
+}
+
+#[derive(Debug, Clone)]
+pub struct Car {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+    pub last_lap_time: f32,
+    pub current_lap_time: f32,
+    pub best_lap_time: f32,
+    pub driver_id: u8,
+    pub team_id: u8,
+    pub position: u8,
+    pub tyre_compound: u8,
+    pub sector_number: u8,
+    pub sector1_time: f32,
+    pub sector2_time: f32,
+    pub is_current_lap_valid: bool,
+    pub penalties: u8,
 }
 
 #[derive(Debug)]

@@ -51,7 +51,10 @@ where
 }
 
 //INFO: this is to be removed, because packets will no longer be stored, instead InputTicks will be stored to reduce size
-pub fn replay_packets<F>(f: F) -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)
+pub fn replay_packets<F>(
+    shoud_simulate_time: bool,
+    f: F,
+) -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)
 where
     F: Fn(Output) + Send + Sync + 'static,
 {
@@ -59,7 +62,7 @@ where
 
     let t = thread::spawn(move || {
         let packets = storage::get_all_laps_data();
-        replay::stream_packets(tx, packets);
+        replay::stream_packets(tx, packets, shoud_simulate_time);
     });
 
     let mut context = Context::empty();
@@ -83,6 +86,7 @@ where
 
 pub fn replay_lap<F>(
     identifier: String,
+    shoud_simulate_time: bool,
     f: F,
 ) -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)
 where
@@ -91,7 +95,7 @@ where
     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
     let t = thread::spawn(move || match storage::get_lap_data(&identifier) {
-        Some(packets) => replay::stream_packets(tx, packets),
+        Some(packets) => replay::stream_packets(tx, packets, shoud_simulate_time),
         None => println!("no lap data found for identifier: {}", identifier), // TODO: add some sort of messaging/feedback mechanism
     });
 
@@ -152,7 +156,9 @@ pub(crate) mod test_utils {
             tyre_compound: 2,
             is_current_lap_valid: true,
             is_spectating: false,
-            cars_total: 20,
+            car_index: 0,
+            cars_total: 0,
+            cars: Vec::new(),
         }
     }
 }

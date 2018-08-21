@@ -84,7 +84,7 @@ pub struct Packet {
     // Car data
     pub cars_total: u8,              // number of cars in data
     pub player_car_index: u8,        // index of player's car in the array
-    pub car_data: [Car; 20],         // data for all cars on track
+    pub car_data: [PacketCar; 20],         // data for all cars on track
     pub yaw: f32,                    // NEW (v1.8)
     pub pitch: f32,                  // NEW (v1.8)
     pub roll: f32,                   // NEW (v1.8)
@@ -98,7 +98,7 @@ pub struct Packet {
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
-pub struct Car {
+pub struct PacketCar {
     pub world_position: [f32; 3], // world co-ordinates of vehicle
     pub last_lap_time: f32,
     pub current_lap_time: f32,

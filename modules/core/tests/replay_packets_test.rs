@@ -35,7 +35,7 @@ fn replay_packets_test() {
         }
     };
 
-    let h = f1_laps_core::replay_packets(closure);
+    let h = f1_laps_core::replay_packets(false, closure);
 
     assert!(!h.0.join().is_err());
     assert!(!h.1.join().is_err());

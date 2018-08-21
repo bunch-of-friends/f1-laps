@@ -1,9 +1,17 @@
 use pipeline::types::*;
-use udp::packet::Packet;
+use udp::packet::{Packet, PacketCar};
 
 impl Tick {
     pub fn from_packet(packet: &Packet) -> Tick {
         assert!(packet.lap > 0 as f32);
+
+        let cars: Vec<Car> = packet
+            .car_data
+            .into_iter()
+            .map(|c| Car::from_packet(&c))
+            .collect();
+
+        assert!(cars.len() == packet.cars_total as usize);
 
         Tick {
             session_time: packet.time,
@@ -36,7 +44,31 @@ impl Tick {
             tyre_compound: packet.tyre_compound,
             is_current_lap_valid: packet.current_lap_invalid != 1 as u8,
             is_spectating: packet.is_spectating == 1 as u8,
+            car_index: packet.player_car_index,
             cars_total: packet.cars_total,
+            cars: cars,
+        }
+    }
+}
+
+impl Car {
+    pub fn from_packet(c: &PacketCar) -> Car {
+        Car {
+            x: c.world_position[0],
+            y: c.world_position[1],
+            z: c.world_position[2],
+            last_lap_time: c.last_lap_time,
+            current_lap_time: c.current_lap_time,
+            best_lap_time: c.best_lap_time,
+            driver_id: c.driver_id,
+            team_id: c.team_id,
+            position: c.car_position,
+            tyre_compound: c.tyre_compound,
+            sector_number: c.sector,
+            sector1_time: c.sector1_time,
+            sector2_time: c.sector2_time,
+            is_current_lap_valid: c.current_lap_invalid != 1,
+            penalties: c.penalties,
         }
     }
 }
