@@ -11,8 +11,6 @@ impl Tick {
             .map(|c| Car::from_packet(&c))
             .collect();
 
-        assert!(cars.len() == packet.cars_total as usize);
-
         Tick {
             session_time: packet.time,
             session_distance: packet.total_distance,
