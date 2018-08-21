@@ -21,6 +21,8 @@ impl Pipeline {
         let result = self.process_internal(tick, &self.context);
         self.context = result.0;
 
+        self.update_lap_ticks(tick, &result.1.labels, &result.1.stats);
+
         result.1
     }
 
@@ -36,5 +38,31 @@ impl Pipeline {
         };
 
         (new_context, output)
+    }
+
+    fn update_lap_ticks(&mut self, tick: &Tick, labels: &Labels, stats: &Stats) {
+        if labels.is_flashback {
+            let len = self.lap_ticks.len();
+
+            self.lap_ticks
+                .retain(|x| x.lap_number == tick.lap_number && x.lap_time < tick.lap_time);
+
+            let new_len = self.lap_ticks.len();
+            assert!(new_len < len);
+            println!("removed {}", len - new_len);
+        }
+
+        if labels.is_new_lap {
+            if let Some(ref _lap) = stats.finished_lap {
+                // TODO: store...
+                println!("new lap - storing lap ticks, len: {}", self.lap_ticks.len());
+            } else {
+                println!("new lap - nothing to store");
+            }
+
+            self.lap_ticks.clear();
+        }
+
+        self.lap_ticks.push(tick.clone());
     }
 }
