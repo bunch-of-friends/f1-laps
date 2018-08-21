@@ -61,7 +61,7 @@ where
     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
     let t = thread::spawn(move || {
-        let packets = storage::get_all_laps_data();
+        let packets = storage::get_all_packets();
         replay::stream_packets(tx, packets, shoud_simulate_time);
     });
 

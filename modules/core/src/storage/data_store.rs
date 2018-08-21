@@ -1,4 +1,5 @@
 use lap_metadata::LapMetadata;
+use pipeline::types::Tick;
 use record_tracking::record_tracker::RecordTracker;
 use record_tracking::RecordSet;
 use storage::file_system;
@@ -39,21 +40,22 @@ impl DataStore {
         return self.record_set.clone().unwrap();
     }
 
-    pub fn get_lap_data(&self, identifier: &str) -> Option<Vec<Packet>> {
+    pub fn get_lap_data(&self, identifier: &str) -> Option<Vec<Tick>> {
         return file_system::get_lap_data(identifier, &self.path_helper.as_ref().unwrap());
     }
 
-    pub fn get_all_laps_data(&self) -> Vec<Packet> {
-        return file_system::get_all_laps_data(&self.path_helper.as_ref().unwrap());
+    pub fn get_all_packets(&self) -> Vec<Packet> {
+        return file_system::get_all_packets(&self.path_helper.as_ref().unwrap());
     }
 
-    pub fn store_lap(&mut self, packets: Vec<Packet>, metadata: &LapMetadata) {
+    pub fn store_lap(&mut self, ticks: Vec<Tick>, metadata: &LapMetadata) {
         self.store_lap_metadata(metadata);
-        file_system::store_lap_packets(&packets, metadata, &self.path_helper.as_ref().unwrap());
+        file_system::store_lap_ticks(&ticks, metadata, &self.path_helper.as_ref().unwrap());
     }
 
     pub fn get_record_tracker(&self, track_id: u8, era: u16) -> RecordTracker {
-        let records = self.record_set
+        let records = self
+            .record_set
             .as_ref()
             .unwrap()
             .get_track_records(track_id, era);

@@ -1,24 +1,26 @@
 pub mod path_helper;
 
 use bincode;
-use lap_metadata::LapMetadata;
-use record_tracking::RecordSet;
 use std::fs::{create_dir, read_dir, File};
 use std::path::Path;
+
 use self::path_helper::PathHelper;
+use lap_metadata::LapMetadata;
+use pipeline::types::Tick;
+use record_tracking::RecordSet;
 use udp::packet::Packet;
 
 pub fn initialise(storage_folder_path: &str) -> (Vec<LapMetadata>, RecordSet, PathHelper) {
     let path_helper = PathHelper::new(storage_folder_path);
     ensure_storage_files_created(&path_helper);
 
-    return build_data_store(&path_helper);
+    build_data_store(&path_helper)
 }
 
-pub fn store_lap_packets(packets: &Vec<Packet>, metadata: &LapMetadata, path_helper: &PathHelper) {
+pub fn store_lap_ticks(ticks: &Vec<Tick>, metadata: &LapMetadata, path_helper: &PathHelper) {
     let path = path_helper.get_laps_data_file_path(&metadata.identifier);
     let file = File::create(path).unwrap();
-    bincode::serialize_into(file, packets).unwrap();
+    bincode::serialize_into(file, ticks).unwrap();
 }
 
 pub fn store_laps_metadata(metadata: &Vec<LapMetadata>, path_helper: &PathHelper) {
@@ -33,17 +35,17 @@ pub fn store_records(records: &RecordSet, path_helper: &PathHelper) {
     bincode::serialize_into(file, records).expect("failed to serialise records file");
 }
 
-pub fn get_lap_data(identifier: &str, path_helper: &PathHelper) -> Option<Vec<Packet>> {
+pub fn get_lap_data(identifier: &str, path_helper: &PathHelper) -> Option<Vec<Tick>> {
     let path = path_helper.get_laps_data_file_path(identifier);
 
     println!("loading file >> {}", path);
 
     let file = File::open(path).expect("failed to open file");
-    return bincode::deserialize_from::<File, Vec<Packet>>(file).ok();
+    bincode::deserialize_from::<File, Vec<Tick>>(file).ok()
 }
 
-pub fn get_all_laps_data(path_helper: &PathHelper) -> Vec<Packet> {
-    let laps_data_folder = &path_helper.get_laps_data_folder_path();
+pub fn get_all_packets(path_helper: &PathHelper) -> Vec<Packet> {
+    let laps_data_folder = &path_helper.get_packets_data_folder_path();
     let paths = read_dir(laps_data_folder).unwrap();
 
     let mut file_names: Vec<String> = Vec::new();
@@ -72,11 +74,12 @@ pub fn get_all_laps_data(path_helper: &PathHelper) -> Vec<Packet> {
         }
     }
 
-    return packets;
+    packets
 }
 
 fn ensure_storage_files_created(path_helper: &PathHelper) {
     ensure_folder_created(path_helper.get_storage_folder_path().as_str());
+    ensure_folder_created(path_helper.get_packets_data_folder_path().as_str());
     ensure_folder_created(path_helper.get_laps_data_folder_path().as_str());
     ensure_file_created(path_helper.get_laps_metadata_file_path().as_str());
     ensure_file_created(path_helper.get_records_file_path().as_str());
@@ -111,7 +114,7 @@ fn build_data_store(path_helper: &PathHelper) -> (Vec<LapMetadata>, RecordSet, P
         Err(_) => RecordSet::new(),
     };
 
-    return (lap_metadata, records, path_helper.clone());
+    (lap_metadata, records, path_helper.clone())
 }
 
 fn load_lap_metadata(
@@ -119,11 +122,11 @@ fn load_lap_metadata(
 ) -> Result<Vec<LapMetadata>, Box<bincode::ErrorKind>> {
     let path = path_helper.get_laps_metadata_file_path();
     let file = File::open(path).expect("failed to open laps metadata file");
-    return bincode::deserialize_from::<File, Vec<LapMetadata>>(file);
+    bincode::deserialize_from::<File, Vec<LapMetadata>>(file)
 }
 
 fn load_records(path_helper: &PathHelper) -> Result<RecordSet, Box<bincode::ErrorKind>> {
     let path = path_helper.get_records_file_path();
     let file = File::open(path).expect("failed to open records file");
-    return bincode::deserialize_from::<File, RecordSet>(file);
+    bincode::deserialize_from::<File, RecordSet>(file)
 }

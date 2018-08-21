@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Tick {
     pub session_time: f32,
     pub session_distance: f32,
@@ -35,7 +35,7 @@ pub struct Tick {
     pub cars: Vec<Car>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Car {
     pub x: f32,
     pub y: f32,
@@ -67,6 +67,7 @@ pub struct Labels {
 
 #[derive(Debug)]
 pub struct Stats {
+    pub tyre_compound: u8,
     pub started_session: Option<Session>,
     pub finished_sector: Option<Sector>,
     pub finished_lap: Option<Lap>,
@@ -106,7 +107,7 @@ pub struct SessionContext {
     pub session: Session,
     pub lap: Lap,
     pub sector: Sector,
-    pub position: Position
+    pub position: Position,
 }
 
 #[derive(Debug)]

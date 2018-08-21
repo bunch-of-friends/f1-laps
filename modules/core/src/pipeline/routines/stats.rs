@@ -5,6 +5,7 @@ pub fn build_stats(tick: &Tick, context: &Context, labels: &Labels) -> Stats {
     let finished_lap = get_finished_lap(tick, context, labels);
     let finished_sector = get_finished_sector(tick, labels, &finished_lap);
     Stats {
+        tyre_compound: tick.tyre_compound,
         started_session: started_session,
         finished_lap: finished_lap,
         finished_sector: finished_sector,
