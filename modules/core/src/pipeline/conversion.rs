@@ -114,7 +114,7 @@ impl Lap {
             lap_number: 0,
             sector_times: [0 as f32; 3],
             lap_time: 0 as f32,
-            is_finished: false,
+            is_finished: false
         }
     }
 
@@ -126,7 +126,7 @@ impl Lap {
             lap_number: lap_n,
             sector_times: [s1_t, s2_t, s3_t],
             lap_time: lap_t,
-            is_finished: true,
+            is_finished: true
         }
     }
 }

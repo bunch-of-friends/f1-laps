@@ -64,11 +64,11 @@ pub struct Labels {
     pub is_teleported: bool,
     pub current_lap: Lap,
     pub current_sector: Sector,
+    pub tyre_compound: u8,
 }
 
 #[derive(Debug)]
-pub struct Stats {
-    pub tyre_compound: u8,
+pub struct Events {
     pub started_session: Option<Session>,
     pub finished_sector: Option<Sector>,
     pub finished_lap: Option<Lap>,
@@ -87,7 +87,7 @@ pub struct Lap {
     pub lap_number: u8,
     pub sector_times: [f32; 3],
     pub lap_time: f32,
-    pub is_finished: bool,
+    pub is_finished: bool
 }
 
 #[derive(Debug)]
@@ -125,5 +125,5 @@ pub struct HistoryContext {}
 pub struct Output {
     pub tick: Tick,
     pub labels: Labels,
-    pub stats: Stats,
+    pub events: Events,
 }

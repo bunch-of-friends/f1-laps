@@ -2,68 +2,86 @@ mod conversion;
 mod routines;
 pub mod types;
 
+use std::thread;
+
 use self::types::*;
+use lap_metadata::LapMetadata;
+use storage;
 
 pub struct Pipeline {
     context: Context,
-    lap_ticks: Vec<Tick>,
+    current_lap_ticks: Vec<Tick>,
+    should_store_laps: bool,
+    should_wait_for_fs: bool,
 }
 
 impl Pipeline {
     pub fn new() -> Pipeline {
         Pipeline {
             context: Context::empty(),
-            lap_ticks: Vec::new(),
+            current_lap_ticks: Vec::new(),
+            should_store_laps: true,
+            should_wait_for_fs: false,
         }
+    }
+
+    pub fn set_should_store_laps(&mut self, should_store_laps: bool) {
+        self.should_store_laps = should_store_laps;
+    }
+
+    pub fn set_should_wait_for_fs(&mut self, should_wait_for_fs: bool) {
+        self.should_wait_for_fs = should_wait_for_fs;
     }
 
     pub fn process(&mut self, tick: &Tick) -> Output {
-        let result = self.process_internal(tick, &self.context);
-        self.context = result.0;
+        let labels = routines::labels::build_labels(tick, &self.context);
+        let events = routines::events::build_events(tick, &self.context, &labels);
 
-        self.update_lap_ticks(tick, &result.1.labels, &result.1.stats);
+        let finished_lap_ticks = routines::lap_ticks::update_lap_ticks(
+            tick,
+            &labels,
+            &events,
+            &mut self.current_lap_ticks,
+        );
 
-        result.1
-    }
+        if self.should_store_laps {
+            self.try_store_lap(finished_lap_ticks, &labels, &events);
+        }
 
-    fn process_internal(&self, tick: &Tick, context: &Context) -> (Context, Output) {
-        let labels = routines::labels::build_labels(tick, context);
-        let stats = routines::stats::build_stats(tick, context, &labels);
-        let new_context = routines::context::build_context(&tick, &context, &labels, &stats);
+        let new_context = routines::context::build_context(&tick, &self.context, &labels);
 
-        let output = Output {
+        self.context = new_context;
+
+        Output {
             labels: labels,
-            stats: stats,
+            events: events,
             tick: tick.clone(),
-        };
-
-        (new_context, output)
+        }
     }
 
-    fn update_lap_ticks(&mut self, tick: &Tick, labels: &Labels, stats: &Stats) {
-        if labels.is_flashback {
-            let len = self.lap_ticks.len();
+    fn try_store_lap(
+        &self,
+        finished_lap_ticks: Option<Vec<Tick>>,
+        labels: &Labels,
+        events: &Events,
+    ) {
+        if let Some(ticks) = finished_lap_ticks {
+            if let Some(ref finished_lap) = events.finished_lap {
+                let metadata = LapMetadata::new(
+                    &self.context.session_context.session,
+                    finished_lap,
+                    labels.tyre_compound,
+                );
 
-            self.lap_ticks
-                .retain(|x| x.lap_number == tick.lap_number && x.lap_time < tick.lap_time);
+                let t = thread::spawn(move || {
+                    storage::store_lap(ticks, &metadata);
+                });
 
-            let new_len = self.lap_ticks.len();
-            assert!(new_len < len);
-            println!("removed {}", len - new_len);
-        }
-
-        if labels.is_new_lap {
-            if let Some(ref lap) = stats.finished_lap {
-                self.store_lap(lap);
+                if self.should_wait_for_fs {
+                    let j = t.join();
+                    assert!(!j.is_err());
+                }
             }
-
-            self.lap_ticks.clear();
         }
-
-        self.lap_ticks.push(tick.clone());
-    }
-
-    fn store_lap(&mut self, _lap: &Lap) {
-        // TODO...
     }
 }

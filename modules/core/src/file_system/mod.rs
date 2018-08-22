@@ -19,7 +19,7 @@ pub fn initialise(storage_folder_path: &str) -> (Vec<LapMetadata>, RecordSet, Pa
 
 pub fn store_lap_ticks(ticks: &Vec<Tick>, metadata: &LapMetadata, path_helper: &PathHelper) {
     let path = path_helper.get_laps_data_file_path(&metadata.identifier);
-    let file = File::create(path).unwrap();
+    let file = File::create(&path).unwrap();
     bincode::serialize_into(file, ticks).unwrap();
 }
 

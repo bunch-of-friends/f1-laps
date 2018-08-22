@@ -50,7 +50,6 @@ where
     (t, r)
 }
 
-//INFO: this is to be removed, because packets will no longer be stored, instead InputTicks will be stored to reduce size
 pub fn replay_packets<F>(
     shoud_simulate_time: bool,
     f: F,
@@ -66,6 +65,8 @@ where
     });
 
     let mut pipeline = Pipeline::new();
+    pipeline.set_should_wait_for_fs(false);
+    pipeline.set_should_store_laps(false);
 
     let r = thread::spawn(move || loop {
         match rx.try_recv() {
@@ -99,6 +100,8 @@ where
     });
 
     let mut pipeline = Pipeline::new();
+    pipeline.set_should_wait_for_fs(false);
+    pipeline.set_should_store_laps(false);
 
     let r = thread::spawn(move || loop {
         if let Some(tick) = rx.recv().ok() {

@@ -26,11 +26,11 @@ fn replay_packets_test() {
             println!("teleported");
         }
 
-        if let Some(ref sector) = output.stats.finished_sector {
+        if let Some(ref sector) = output.events.finished_sector {
             println!("{:?}", sector);
         }
 
-        if let Some(ref lap) = output.stats.finished_lap {
+        if let Some(ref lap) = output.events.finished_lap {
             println!("{:?}", lap);
         }
     };

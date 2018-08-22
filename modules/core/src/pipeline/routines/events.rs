@@ -1,11 +1,11 @@
 use pipeline::types::*;
 
-pub fn build_stats(tick: &Tick, context: &Context, labels: &Labels) -> Stats {
+pub fn build_events(tick: &Tick, context: &Context, labels: &Labels) -> Events {
     let started_session = get_started_session(tick, labels);
     let finished_lap = get_finished_lap(tick, context, labels);
     let finished_sector = get_finished_sector(tick, labels, &finished_lap);
-    Stats {
-        tyre_compound: tick.tyre_compound,
+
+    Events {
         started_session: started_session,
         finished_lap: finished_lap,
         finished_sector: finished_sector,
