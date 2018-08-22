@@ -62,7 +62,7 @@ where
 
     let t = thread::spawn(move || {
         let packets = storage::get_all_packets();
-        replay::stream_packets(tx, packets, shoud_simulate_time);
+        replay::stream(tx, packets, shoud_simulate_time);
     });
 
     let mut pipeline = Pipeline::new();
@@ -94,7 +94,7 @@ where
     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
     let t = thread::spawn(move || match storage::get_lap_data(&identifier) {
-        Some(ticks) => /*replay::stream_packets(tx, packets, shoud_simulate_time)*/ println!("not implemented :/"),
+        Some(ticks) => replay::stream(tx, ticks, shoud_simulate_time),
         None => println!("no lap data found for identifier: {}", identifier), // TODO: add some sort of messaging/feedback mechanism
     });
 
@@ -137,7 +137,8 @@ pub(crate) mod test_utils {
             brake: 12 as f32,
             gear: 3,
             lap_number: 1,
-            engine_rate: 90 as f32,
+            rev_lights_percent: 0,
+            tyres_wear: [0; 4],
             car_position: 2,
             is_drs_open: false,
             sector_number: 1,
