@@ -16,6 +16,7 @@ pub mod udp;
 
 use lap_metadata::LapMetadata;
 use pipeline::types::*;
+use pipeline::Pipeline;
 use record_tracking::RecordSet;
 use std::sync::mpsc::{self, TryRecvError};
 use std::thread;
@@ -37,39 +38,41 @@ where
         udp::start_listening(port, tx);
     });
 
-    let mut context = Context::empty();
+    let mut pipeline = Pipeline::new();
 
     let r = thread::spawn(move || loop {
         if let Some(tick) = rx.recv().ok() {
-            let result = pipeline::process(&tick, &context);
-            context = result.0;
-            f(result.1);
+            let output = pipeline.process(&tick);
+            f(output);
         }
     });
 
     (t, r)
 }
 
-//INFO: this is to be removed, because packets will no longer be stored, instead InputTicks will be stored to reduce size
-pub fn replay_packets<F>(f: F) -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)
+pub fn replay_packets<F>(
+    shoud_simulate_time: bool,
+    f: F,
+) -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)
 where
     F: Fn(Output) + Send + Sync + 'static,
 {
     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
     let t = thread::spawn(move || {
-        let packets = storage::get_all_laps_data();
-        replay::stream_packets(tx, packets);
+        let packets = storage::get_all_packets();
+        replay::stream(tx, packets, shoud_simulate_time);
     });
 
-    let mut context = Context::empty();
+    let mut pipeline = Pipeline::new();
+    pipeline.set_should_wait_for_fs(false);
+    pipeline.set_should_store_laps(false);
 
     let r = thread::spawn(move || loop {
         match rx.try_recv() {
             Ok(tick) => {
-                let result = pipeline::process(&tick, &context);
-                context = result.0;
-                f(result.1);
+                let output = pipeline.process(&tick);
+                f(output);
             }
             Err(TryRecvError::Disconnected) => {
                 break;
@@ -83,6 +86,7 @@ where
 
 pub fn replay_lap<F>(
     identifier: String,
+    shoud_simulate_time: bool,
     f: F,
 ) -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)
 where
@@ -91,17 +95,18 @@ where
     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
     let t = thread::spawn(move || match storage::get_lap_data(&identifier) {
-        Some(packets) => replay::stream_packets(tx, packets),
+        Some(ticks) => replay::stream(tx, ticks, shoud_simulate_time),
         None => println!("no lap data found for identifier: {}", identifier), // TODO: add some sort of messaging/feedback mechanism
     });
 
-    let mut context = Context::empty();
+    let mut pipeline = Pipeline::new();
+    pipeline.set_should_wait_for_fs(false);
+    pipeline.set_should_store_laps(false);
 
     let r = thread::spawn(move || loop {
         if let Some(tick) = rx.recv().ok() {
-            let result = pipeline::process(&tick, &context);
-            context = result.0;
-            f(result.1);
+            let output = pipeline.process(&tick);
+            f(output);
         }
     });
 
@@ -135,7 +140,8 @@ pub(crate) mod test_utils {
             brake: 12 as f32,
             gear: 3,
             lap_number: 1,
-            engine_rate: 90 as f32,
+            rev_lights_percent: 0,
+            tyres_wear: [0; 4],
             car_position: 2,
             is_drs_open: false,
             sector_number: 1,
@@ -152,7 +158,9 @@ pub(crate) mod test_utils {
             tyre_compound: 2,
             is_current_lap_valid: true,
             is_spectating: false,
-            cars_total: 20,
+            car_index: 0,
+            cars_total: 0,
+            cars: Vec::new(),
         }
     }
 }

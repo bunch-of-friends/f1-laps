@@ -1,11 +1,6 @@
 use pipeline::types::*;
 
-pub fn build_context(
-    tick: &Tick,
-    _context: &Context,
-    _labels: &Labels,
-    _stats: &Stats,
-) -> Context {
+pub fn build_context(tick: &Tick, _context: &Context, _labels: &Labels) -> Context {
     Context {
         session_context: SessionContext {
             session: Session::from_tick(tick),

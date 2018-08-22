@@ -1,32 +1,32 @@
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
 use thread;
-
-use pipeline::types::Tick;
 use udp::packet::Packet;
 
-pub fn stream_packets(tx: mpsc::Sender<Tick>, packets: Vec<Packet>) {
-    let packets_len = packets.len();
-    println!("streaming stored packets, packets count: {}", packets_len);
+use pipeline::types::Tick;
 
-    let mut last_packet: Option<(Packet, Instant)> = None;
-    for packet in packets {
-        let tick = Tick::from_packet(&packet);
+pub fn stream<T>(tx: mpsc::Sender<Tick>, streamables: Vec<T>, shoud_simulate_time: bool)
+where
+    T: Streamable,
+{
+    let mut last_iter: Option<(Tick, Instant)> = None;
+    for s in streamables {
+        let tick = s.get_tick();
 
-         // this whole block is here temporarily for some tests, then it will either go or get some love
-        if last_packet.is_some() {
-            let lp = last_packet.unwrap();
+        // this whole block is here temporarily for some tests, then it will either go or get some love
+        if shoud_simulate_time && last_iter.is_some() {
+            let last_iter_unwp = last_iter.unwrap();
 
-            let packet_diff = packet.time - lp.0.time;
+            let time_diff = tick.session_time - last_iter_unwp.0.session_time;
 
-            let mut packet_diff_ns = 0;
-            if packet_diff > 0 as f32 {
-                packet_diff_ns = (packet_diff * 1000000000 as f32) as u32
+            let mut time_diff_ns = 0;
+            if time_diff > 0 as f32 {
+                time_diff_ns = (time_diff * 1000000000 as f32) as u32
             }
 
-            let packet_diff_duration = Duration::new(0, packet_diff_ns);
+            let packet_diff_duration = Duration::new(0, time_diff_ns);
 
-            let since_last_send_duration = lp.1.elapsed();
+            let since_last_send_duration = last_iter_unwp.1.elapsed();
 
             let mut sleep_needed = packet_diff_duration;
             if packet_diff_duration > since_last_send_duration {
@@ -44,12 +44,23 @@ pub fn stream_packets(tx: mpsc::Sender<Tick>, packets: Vec<Packet>) {
             }
         }
 
-        tx.send(tick).ok();
-        last_packet = Some((packet, Instant::now()));
+        tx.send(tick.clone()).ok();
+        last_iter = Some((tick, Instant::now()));
     }
+}
 
-    println!(
-        "streaming stored packets finished, number of packets: {}",
-        packets_len
-    );
+pub trait Streamable {
+    fn get_tick(&self) -> Tick;
+}
+
+impl Streamable for Packet {
+    fn get_tick(&self) -> Tick {
+        Tick::from_packet(&self)
+    }
+}
+
+impl Streamable for Tick {
+    fn get_tick(&self) -> Tick {
+        self.clone()
+    }
 }

@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Tick {
     pub session_time: f32,
     pub session_distance: f32,
@@ -13,7 +13,8 @@ pub struct Tick {
     pub steer: f32,
     pub brake: f32,
     pub gear: u8,
-    pub engine_rate: f32,
+    pub rev_lights_percent: u8,
+    pub tyres_wear: [u8; 4],
     pub car_position: u8,
     pub is_drs_open: bool,
     pub sector_number: u8,
@@ -30,7 +31,28 @@ pub struct Tick {
     pub tyre_compound: u8,
     pub is_current_lap_valid: bool,
     pub is_spectating: bool,
+    pub car_index: u8,
     pub cars_total: u8,
+    pub cars: Vec<Car>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Car {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+    pub last_lap_time: f32,
+    pub current_lap_time: f32,
+    pub best_lap_time: f32,
+    pub driver_id: u8,
+    pub team_id: u8,
+    pub position: u8,
+    pub tyre_compound: u8,
+    pub sector_number: u8,
+    pub sector1_time: f32,
+    pub sector2_time: f32,
+    pub is_current_lap_valid: bool,
+    pub penalties: u8,
 }
 
 #[derive(Debug)]
@@ -42,10 +64,11 @@ pub struct Labels {
     pub is_teleported: bool,
     pub current_lap: Lap,
     pub current_sector: Sector,
+    pub tyre_compound: u8,
 }
 
 #[derive(Debug)]
-pub struct Stats {
+pub struct Events {
     pub started_session: Option<Session>,
     pub finished_sector: Option<Sector>,
     pub finished_lap: Option<Lap>,
@@ -64,7 +87,7 @@ pub struct Lap {
     pub lap_number: u8,
     pub sector_times: [f32; 3],
     pub lap_time: f32,
-    pub is_finished: bool,
+    pub is_finished: bool
 }
 
 #[derive(Debug)]
@@ -102,5 +125,5 @@ pub struct HistoryContext {}
 pub struct Output {
     pub tick: Tick,
     pub labels: Labels,
-    pub stats: Stats,
+    pub events: Events,
 }

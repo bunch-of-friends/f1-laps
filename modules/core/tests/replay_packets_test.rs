@@ -26,16 +26,16 @@ fn replay_packets_test() {
             println!("teleported");
         }
 
-        if let Some(ref sector) = output.stats.finished_sector {
+        if let Some(ref sector) = output.events.finished_sector {
             println!("{:?}", sector);
         }
 
-        if let Some(ref lap) = output.stats.finished_lap {
+        if let Some(ref lap) = output.events.finished_lap {
             println!("{:?}", lap);
         }
     };
 
-    let h = f1_laps_core::replay_packets(closure);
+    let h = f1_laps_core::replay_packets(false, closure);
 
     assert!(!h.0.join().is_err());
     assert!(!h.1.join().is_err());
