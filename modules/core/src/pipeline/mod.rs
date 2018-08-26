@@ -10,7 +10,7 @@ use storage;
 
 pub struct Pipeline {
     context: Context,
-    current_lap_ticks: Vec<Tick>,
+    current_lap_telemetry: Vec<CarTelemetry>,
     should_store_laps: bool,
     should_wait_for_fs: bool,
 }
@@ -19,7 +19,7 @@ impl Pipeline {
     pub fn new() -> Pipeline {
         Pipeline {
             context: Context::empty(),
-            current_lap_ticks: Vec::new(),
+            current_lap_telemetry: Vec::new(),
             should_store_laps: true,
             should_wait_for_fs: false,
         }
@@ -41,14 +41,14 @@ impl Pipeline {
             tick,
             &labels,
             &events,
-            &mut self.current_lap_ticks,
+            &mut self.current_lap_telemetry,
         );
 
         if self.should_store_laps {
-            self.try_store_lap(finished_lap_ticks, &labels, &events);
+            self.try_store_lap(finished_lap_ticks, &events);
         }
 
-        let new_context = routines::context::build_context(&tick, &self.context, &labels);
+        let new_context = routines::context::build_context(&tick, &self.context);
 
         self.context = new_context;
 
@@ -59,18 +59,13 @@ impl Pipeline {
         }
     }
 
-    fn try_store_lap(
-        &self,
-        finished_lap_ticks: Option<Vec<Tick>>,
-        labels: &Labels,
-        events: &Events,
-    ) {
+    fn try_store_lap(&self, finished_lap_ticks: Option<Vec<CarTelemetry>>, events: &Events) {
         if let Some(ticks) = finished_lap_ticks {
             if let Some(ref finished_lap) = events.finished_lap {
                 let metadata = LapMetadata::new(
                     &self.context.session_context.session,
                     finished_lap,
-                    labels.tyre_compound,
+                    self.context.session_context.car_status.tyre_compound,
                 );
 
                 let t = thread::spawn(move || {

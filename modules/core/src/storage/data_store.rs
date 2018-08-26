@@ -1,5 +1,5 @@
 use lap_metadata::LapMetadata;
-use pipeline::types::Tick;
+use pipeline::types::CarTelemetry;
 use record_tracking::record_tracker::RecordTracker;
 use record_tracking::RecordSet;
 use storage::file_system;
@@ -39,11 +39,11 @@ impl DataStore {
         return self.record_set.clone().unwrap();
     }
 
-    pub fn get_lap_data(&self, identifier: &str) -> Option<Vec<Tick>> {
+    pub fn get_lap_data(&self, identifier: &str) -> Option<Vec<CarTelemetry>> {
         return file_system::get_lap_data(identifier, &self.path_helper.as_ref().unwrap());
     }
 
-    pub fn store_lap(&mut self, ticks: Vec<Tick>, metadata: &LapMetadata) {
+    pub fn store_lap(&mut self, ticks: Vec<CarTelemetry>, metadata: &LapMetadata) {
         self.store_lap_metadata(metadata);
         file_system::store_lap_ticks(&ticks, metadata, &self.path_helper.as_ref().unwrap());
     }

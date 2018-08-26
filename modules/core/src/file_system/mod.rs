@@ -6,7 +6,7 @@ use std::path::Path;
 
 use self::path_helper::PathHelper;
 use lap_metadata::LapMetadata;
-use pipeline::types::Tick;
+use pipeline::types::CarTelemetry;
 use record_tracking::RecordSet;
 
 pub fn initialise(storage_folder_path: &str) -> (Vec<LapMetadata>, RecordSet, PathHelper) {
@@ -16,7 +16,11 @@ pub fn initialise(storage_folder_path: &str) -> (Vec<LapMetadata>, RecordSet, Pa
     build_data_store(&path_helper)
 }
 
-pub fn store_lap_ticks(ticks: &Vec<Tick>, metadata: &LapMetadata, path_helper: &PathHelper) {
+pub fn store_lap_ticks(
+    ticks: &Vec<CarTelemetry>,
+    metadata: &LapMetadata,
+    path_helper: &PathHelper,
+) {
     let path = path_helper.get_laps_data_file_path(&metadata.identifier);
     let file = File::create(&path).unwrap();
     bincode::serialize_into(file, ticks).unwrap();
@@ -34,13 +38,13 @@ pub fn store_records(records: &RecordSet, path_helper: &PathHelper) {
     bincode::serialize_into(file, records).expect("failed to serialise records file");
 }
 
-pub fn get_lap_data(identifier: &str, path_helper: &PathHelper) -> Option<Vec<Tick>> {
+pub fn get_lap_data(identifier: &str, path_helper: &PathHelper) -> Option<Vec<CarTelemetry>> {
     let path = path_helper.get_laps_data_file_path(identifier);
 
     println!("loading file >> {}", path);
 
     let file = File::open(path).expect("failed to open file");
-    bincode::deserialize_from::<File, Vec<Tick>>(file).ok()
+    bincode::deserialize_from::<File, Vec<CarTelemetry>>(file).ok()
 }
 
 fn ensure_storage_files_created(path_helper: &PathHelper) {

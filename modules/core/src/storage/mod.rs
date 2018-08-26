@@ -4,7 +4,7 @@ use self::data_store::DataStore;
 use file_system;
 use file_system::path_helper;
 use lap_metadata::LapMetadata;
-use pipeline::types::Tick;
+use pipeline::types::CarTelemetry;
 use record_tracking::record_tracker::RecordTracker;
 use record_tracking::RecordSet;
 use std::sync::Mutex;
@@ -29,11 +29,11 @@ pub fn get_all_records() -> RecordSet {
     DATA_STORE.lock().unwrap().get_all_records()
 }
 
-pub fn get_lap_data(identifier: &str) -> Option<Vec<Tick>> {
+pub fn get_lap_data(identifier: &str) -> Option<Vec<CarTelemetry>> {
     DATA_STORE.lock().unwrap().get_lap_data(&identifier)
 }
 
-pub fn store_lap(ticks: Vec<Tick>, metadata: &LapMetadata) {
+pub fn store_lap(ticks: Vec<CarTelemetry>, metadata: &LapMetadata) {
     DATA_STORE.lock().unwrap().store_lap(ticks, metadata)
 }
 

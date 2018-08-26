@@ -1,4 +1,4 @@
-use pipeline::types::{Lap, Sector, Session};
+use pipeline::types::*;
 
 #[derive(Debug)]
 pub struct Context {
@@ -8,17 +8,11 @@ pub struct Context {
 
 #[derive(Debug)]
 pub struct SessionContext {
-    pub session: Session,
+    pub session: SessionInfo,
     pub lap: Lap,
     pub sector: Sector,
-    pub position: Position,
-}
-
-#[derive(Debug)]
-pub struct Position {
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
+    pub car_motion: CarMotion,
+    pub car_status: CarStatus,
 }
 
 #[derive(Debug)]
