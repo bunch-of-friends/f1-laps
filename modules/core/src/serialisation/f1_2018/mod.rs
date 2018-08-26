@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 // http://forums.codemasters.com/discussion/136948/f1-2018-udp-specification
 
 /* 
@@ -13,6 +15,7 @@ ID | Packet Name      | bytes |
 7  | Status           | 1061  |
 */
 
+use pipeline::types::*;
 use serialisation::ReceivePacket;
 
 mod event;
@@ -25,6 +28,7 @@ mod setups;
 mod status;
 mod telemetry;
 
+#[derive(Clone)]
 pub struct Serialiser {}
 
 impl ReceivePacket for Serialiser {

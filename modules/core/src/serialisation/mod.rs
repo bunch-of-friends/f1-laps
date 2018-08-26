@@ -2,7 +2,7 @@ pub mod f1_2018;
 
 use pipeline::types::Tick;
 
-pub trait ReceivePacket: Send + Sync {
+pub trait ReceivePacket: Send + Sync + Clone {
     fn new() -> Self;
     fn get_buffer_size(&self) -> usize;
     fn converto_to_tick(&self, datagram: &[u8], size: usize) -> Option<Tick>;

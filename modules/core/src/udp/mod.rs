@@ -12,10 +12,11 @@ where
 {
     let socket = bind_to_address(format!("0.0.0.0:{}", port));
 
-    let mut buffer = Vec::with_capacity(serialiser.get_buffer_size());
     loop {
+        let mut buffer = Vec::with_capacity(serialiser.get_buffer_size());
         if let Some((amt, _src)) = socket.recv_from(&mut buffer).ok() {
             let tx = tx.clone();
+            let serialiser = serialiser.clone();
             thread::spawn(move || {
                 if let Some(tick) = serialiser.converto_to_tick(&buffer, amt) {
                     tx.send(tick).ok();
