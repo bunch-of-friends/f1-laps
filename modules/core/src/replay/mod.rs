@@ -1,7 +1,6 @@
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
 use thread;
-use udp::packet::Packet;
 
 use pipeline::types::Tick;
 
@@ -51,12 +50,6 @@ where
 
 pub trait Streamable {
     fn get_tick(&self) -> Tick;
-}
-
-impl Streamable for Packet {
-    fn get_tick(&self) -> Tick {
-        Tick::from_packet(&self)
-    }
 }
 
 impl Streamable for Tick {

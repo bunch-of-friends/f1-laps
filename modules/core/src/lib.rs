@@ -5,14 +5,15 @@ extern crate lazy_static;
 extern crate bincode;
 extern crate chrono;
 
-pub mod file_system;
-pub mod lap_metadata;
-pub mod pipeline;
+mod file_system;
+mod lap_metadata;
+mod pipeline;
 pub mod prelude;
-pub mod record_tracking;
-pub mod replay;
-pub mod storage;
-pub mod udp;
+mod record_tracking;
+mod replay;
+mod serialisation;
+mod storage;
+mod udp;
 
 use lap_metadata::LapMetadata;
 use pipeline::types::*;
@@ -35,7 +36,7 @@ where
     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
     let t = thread::spawn(move || {
-        udp::start_listening(port, tx);
+        udp::start_listening(port, serialisation::get_serialiser(), tx);
     });
 
     let mut pipeline = Pipeline::new();
@@ -50,39 +51,39 @@ where
     (t, r)
 }
 
-pub fn replay_packets<F>(
-    shoud_simulate_time: bool,
-    f: F,
-) -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)
-where
-    F: Fn(Output) + Send + Sync + 'static,
-{
-    let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
+// pub fn replay_packets<F>(
+//     shoud_simulate_time: bool,
+//     f: F,
+// ) -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)
+// where
+//     F: Fn(Output) + Send + Sync + 'static,
+// {
+//     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
-    let t = thread::spawn(move || {
-        let packets = storage::get_all_packets();
-        replay::stream(tx, packets, shoud_simulate_time);
-    });
+//     let t = thread::spawn(move || {
+//         let packets = storage::get_all_packets();
+//         replay::stream(tx, packets, shoud_simulate_time);
+//     });
 
-    let mut pipeline = Pipeline::new();
-    pipeline.set_should_wait_for_fs(false);
-    pipeline.set_should_store_laps(false);
+//     let mut pipeline = Pipeline::new();
+//     pipeline.set_should_wait_for_fs(false);
+//     pipeline.set_should_store_laps(false);
 
-    let r = thread::spawn(move || loop {
-        match rx.try_recv() {
-            Ok(tick) => {
-                let output = pipeline.process(&tick);
-                f(output);
-            }
-            Err(TryRecvError::Disconnected) => {
-                break;
-            }
-            Err(TryRecvError::Empty) => {}
-        }
-    });
+//     let r = thread::spawn(move || loop {
+//         match rx.try_recv() {
+//             Ok(tick) => {
+//                 let output = pipeline.process(&tick);
+//                 f(output);
+//             }
+//             Err(TryRecvError::Disconnected) => {
+//                 break;
+//             }
+//             Err(TryRecvError::Empty) => {}
+//         }
+//     });
 
-    (t, r)
-}
+//     (t, r)
+// }
 
 pub fn replay_lap<F>(
     identifier: String,

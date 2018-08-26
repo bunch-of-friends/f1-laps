@@ -8,7 +8,6 @@ use pipeline::types::Tick;
 use record_tracking::record_tracker::RecordTracker;
 use record_tracking::RecordSet;
 use std::sync::Mutex;
-use udp::packet::Packet;
 
 lazy_static! {
     static ref DATA_STORE: Mutex<DataStore> = Mutex::new(DataStore::new());
@@ -28,10 +27,6 @@ pub fn get_all_laps_metadata() -> Vec<LapMetadata> {
 
 pub fn get_all_records() -> RecordSet {
     DATA_STORE.lock().unwrap().get_all_records()
-}
-
-pub fn get_all_packets() -> Vec<Packet> {
-    DATA_STORE.lock().unwrap().get_all_packets()
 }
 
 pub fn get_lap_data(identifier: &str) -> Option<Vec<Tick>> {

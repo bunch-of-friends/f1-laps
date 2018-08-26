@@ -1,26 +1,25 @@
-pub mod packet;
-
 use pipeline::types::Tick;
+use serialisation::ReceivePacket;
 
-use bincode;
 use std::net::UdpSocket;
 use std::string::String;
 use std::sync::mpsc;
 use std::thread;
 
-use self::packet::Packet;
-
-pub fn start_listening(port: i32, tx: mpsc::Sender<Tick>) {
+pub fn start_listening<T>(port: i32, serialiser: T, tx: mpsc::Sender<Tick>)
+where
+    T: ReceivePacket + 'static,
+{
     let socket = bind_to_address(format!("0.0.0.0:{}", port));
 
-    let mut buf = [0; 1341]; // max size of F1 2018 packet
+    let mut buffer = Vec::with_capacity(serialiser.get_buffer_size());
     loop {
-        if let Some((amt, _src)) = socket.recv_from(&mut buf).ok() {
+        if let Some((amt, _src)) = socket.recv_from(&mut buffer).ok() {
             let tx = tx.clone();
             thread::spawn(move || {
-                let packet = receive_packet(&mut buf[..amt]);
-                let tick = Tick::from_packet(&packet);
-                tx.send(tick).ok();
+                if let Some(tick) = serialiser.converto_to_tick(&buffer, amt) {
+                    tx.send(tick).ok();
+                }
             });
         }
     }
@@ -34,8 +33,4 @@ fn bind_to_address(address: String) -> UdpSocket {
         }
         Err(e) => panic!("couldn't bind to: {}; e: {}", address, e),
     };
-}
-
-fn receive_packet(content: &[u8]) -> Packet {
-    bincode::deserialize::<Packet>(&content[..]).expect("failed to deserialise packet")
 }

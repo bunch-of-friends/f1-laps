@@ -4,7 +4,6 @@ use record_tracking::record_tracker::RecordTracker;
 use record_tracking::RecordSet;
 use storage::file_system;
 use storage::path_helper::PathHelper;
-use udp::packet::Packet;
 
 pub struct DataStore {
     pub laps_metadata: Option<Vec<LapMetadata>>,
@@ -42,10 +41,6 @@ impl DataStore {
 
     pub fn get_lap_data(&self, identifier: &str) -> Option<Vec<Tick>> {
         return file_system::get_lap_data(identifier, &self.path_helper.as_ref().unwrap());
-    }
-
-    pub fn get_all_packets(&self) -> Vec<Packet> {
-        return file_system::get_all_packets(&self.path_helper.as_ref().unwrap());
     }
 
     pub fn store_lap(&mut self, ticks: Vec<Tick>, metadata: &LapMetadata) {
