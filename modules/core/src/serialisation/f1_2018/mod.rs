@@ -38,7 +38,7 @@ impl ReceivePacket for Serialiser {
     }
 
     fn converto_to_tick(&self, datagram: &[u8], size: usize) -> Option<Tick> {
-        panic!("not implemented");
+        None
 
         // bincode::deserialize::<Packet>(&content[..]).expect("failed to deserialise packet")
     }
