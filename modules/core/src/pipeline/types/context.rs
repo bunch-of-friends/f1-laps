@@ -8,6 +8,7 @@ pub struct Context {
 
 #[derive(Debug)]
 pub struct SessionContext {
+    pub header: Header,
     pub session: SessionInfo,
     pub lap: Lap,
     pub sector: Sector,

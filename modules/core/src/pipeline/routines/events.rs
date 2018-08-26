@@ -12,9 +12,10 @@ pub fn build_events(tick: &Tick, context: &Context, labels: &Labels) -> Events {
     }
 }
 
-fn get_started_session(tick: &Tick, labels: &Labels) -> Option<Session> {
-    if labels.is_new_session & tick.session_info.is_some() {
-        Session::from_tick(tick)
+fn get_started_session(tick: &Tick, labels: &Labels) -> Option<SessionInfo> {
+    if labels.is_new_session {
+        assert!(tick.session_info.is_some());
+        tick.session_info
     } else {
         None
     }

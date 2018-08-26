@@ -18,7 +18,7 @@ pub fn build_labels(tick: &Tick, context: &Context) -> Labels {
 }
 
 fn is_new_session(tick: &Tick, context: &Context) -> bool {
-    tick.header.session_uid != context.session_context.session.uid
+    tick.header.session_uid != context.session_context.header.session_uid
 }
 
 fn is_new_lap(is_new_session: bool, tick: &Tick, context: &Context) -> bool {
