@@ -13,7 +13,7 @@ use self::packet::Packet;
 pub fn start_listening(port: i32, tx: mpsc::Sender<Tick>) {
     let socket = bind_to_address(format!("0.0.0.0:{}", port));
 
-    let mut buf = [0; 1289]; //fixed sized for the f1 2017 game
+    let mut buf = [0; 1341]; // max size of F1 2018 packet
     loop {
         if let Some((amt, _src)) = socket.recv_from(&mut buf).ok() {
             let tx = tx.clone();
