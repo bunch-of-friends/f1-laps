@@ -88,7 +88,7 @@ impl PacketLapData {
             last_lap_time: data.m_lastLapTime,
             sector1_time: data.m_sector1Time,
             sector2_time: data.m_sector2Time,
-            current_sector_number: data.m_sector,
+            current_sector_number: data.m_sector + 1,
             current_lap_number: data.m_currentLapNum,
             current_lap_time: data.m_currentLapTime,
             current_lap_distance: data.m_lapDistance,
@@ -117,7 +117,7 @@ impl PacketSessionData {
             is_game_paused: self.m_gamePaused == 1,
             is_spectating: self.m_isSpectating == 1,
             is_online_game: self.m_networkGame == 1,
-            safety_car_status: self.m_safetyCarStatus
+            safety_car_status: self.m_safetyCarStatus,
         }
     }
 }

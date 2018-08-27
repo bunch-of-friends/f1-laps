@@ -95,6 +95,6 @@ fn build_finished_sector(lap_data: &LapData, finished_lap: &Option<Lap>) -> Opti
                 None
             }
         }
-        _ => None,
+        _ => panic!{"unecpected sector number"},
     }
 }

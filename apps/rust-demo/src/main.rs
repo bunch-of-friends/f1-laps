@@ -24,21 +24,21 @@ fn main() {
             println!("{:?}", lap);
         }
 
-        if let Some(ref session_data) = output.session_data {
-            println!("{:?}", session_data);
-        }
+        // if let Some(ref session_data) = output.session_data {
+        //     println!("{:?}", session_data);
+        // }
 
-        if let Some(ref car_telemetry) = output.car_telemetry {
-            println!("{:?}", car_telemetry);
-        }
+        // if let Some(ref car_telemetry) = output.car_telemetry {
+        //     println!("{:?}", car_telemetry);
+        // }
 
-        if let Some(ref car_status) = output.car_status {
-            println!("{:?}", car_status);
-        }
+        // if let Some(ref car_status) = output.car_status {
+        //     println!("{:?}", car_status);
+        // }
 
-        if let Some(ref car_motion) = output.car_motion {
-            println!("{:?}", car_motion);
-        }
+        // if let Some(ref car_motion) = output.car_motion {
+        //     println!("{:?}", car_motion);
+        // }
     };
 
     let h = f1_laps_core::start_listening(20777, closure);
