@@ -1,16 +1,17 @@
-mod conversion;
+pub(crate) mod input;
+pub(crate) mod output;
 mod routines;
-pub mod types;
 
 use std::thread;
 
-use self::types::*;
+use self::input::*;
+use self::output::*;
 use lap_metadata::LapMetadata;
 use storage;
 
 pub struct Pipeline {
     context: Context,
-    current_lap_telemetry: Vec<CarTelemetry>,
+    // current_lap_telemetry: Vec<CarTelemetry>,
     should_store_laps: bool,
     should_wait_for_fs: bool,
 }
@@ -19,7 +20,7 @@ impl Pipeline {
     pub fn new() -> Pipeline {
         Pipeline {
             context: Context::empty(),
-            current_lap_telemetry: Vec::new(),
+            // current_lap_telemetry: Vec::new(),
             should_store_laps: true,
             should_wait_for_fs: false,
         }
@@ -33,20 +34,20 @@ impl Pipeline {
         self.should_wait_for_fs = should_wait_for_fs;
     }
 
-    pub fn process(&mut self, tick: &Tick) -> Output {
-        let labels = routines::labels::build_labels(tick, &self.context);
-        let events = routines::events::build_events(tick, &self.context, &labels);
+    pub fn process(&mut self, tick: Tick) -> Output {
+        let labels = routines::labels::build_labels(&tick, &self.context);
+        let events = routines::events::build_events(&tick, &self.context, &labels);
 
-        let finished_lap_ticks = routines::lap_ticks::update_lap_ticks(
-            tick,
-            &labels,
-            &events,
-            &mut self.current_lap_telemetry,
-        );
+        // let finished_lap_ticks = routines::lap_ticks::update_lap_ticks(
+        //     tick,
+        //     &labels,
+        //     &events,
+        //     &mut self.current_lap_telemetry,
+        // );
 
-        if self.should_store_laps {
-            self.try_store_lap(finished_lap_ticks, &events);
-        }
+        // if self.should_store_laps {
+        //     self.try_store_lap(finished_lap_ticks, &events);
+        // }
 
         let new_context = routines::context::build_context(&tick, &self.context);
 
@@ -55,28 +56,31 @@ impl Pipeline {
         Output {
             labels: labels,
             events: events,
-            tick: tick.clone(),
+            session_data: tick.session_data,
+            car_status: tick.car_status,
+            car_telemetry: tick.car_telemetry,
+            car_motion: tick.car_motion,
         }
     }
 
-    fn try_store_lap(&self, finished_lap_ticks: Option<Vec<CarTelemetry>>, events: &Events) {
-        if let Some(ticks) = finished_lap_ticks {
-            if let Some(ref finished_lap) = events.finished_lap {
-                let metadata = LapMetadata::new(
-                    &self.context.session_context.session,
-                    finished_lap,
-                    self.context.session_context.car_status.tyre_compound,
-                );
+    // fn try_store_lap(&self, finished_lap_ticks: Option<Vec<CarTelemetry>>, events: &Events) {
+    //     if let Some(ticks) = finished_lap_ticks {
+    //         if let Some(ref finished_lap) = events.finished_lap {
+    //             let metadata = LapMetadata::new(
+    //                 &self.context.session_context.session,
+    //                 finished_lap,
+    //                 self.context.session_context.car_status.tyre_compound,
+    //             );
 
-                let t = thread::spawn(move || {
-                    storage::store_lap(ticks, &metadata);
-                });
+    //             let t = thread::spawn(move || {
+    //                 storage::store_lap(ticks, &metadata);
+    //             });
 
-                if self.should_wait_for_fs {
-                    let j = t.join();
-                    assert!(!j.is_err());
-                }
-            }
-        }
-    }
+    //             if self.should_wait_for_fs {
+    //                 let j = t.join();
+    //                 assert!(!j.is_err());
+    //             }
+    //         }
+    //     }
+    // }
 }

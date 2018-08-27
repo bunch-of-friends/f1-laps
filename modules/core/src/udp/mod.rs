@@ -1,4 +1,4 @@
-use pipeline::types::Tick;
+use pipeline::input::Tick;
 use serialisation::ReceivePacket;
 
 use std::net::UdpSocket;

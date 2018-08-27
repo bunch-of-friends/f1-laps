@@ -1,4 +1,5 @@
-use pipeline::types::*;
+use pipeline::input::*;
+use pipeline::output::*;
 
 pub fn update_lap_ticks(
     tick: &Tick,

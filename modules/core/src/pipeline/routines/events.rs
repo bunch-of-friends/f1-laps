@@ -1,4 +1,5 @@
-use pipeline::types::*;
+use pipeline::input::*;
+use pipeline::output::*;
 
 pub fn build_events(tick: &Tick, context: &Context, labels: &Labels) -> Events {
     let started_session = get_started_session(tick, labels);
@@ -12,10 +13,13 @@ pub fn build_events(tick: &Tick, context: &Context, labels: &Labels) -> Events {
     }
 }
 
-fn get_started_session(tick: &Tick, labels: &Labels) -> Option<SessionInfo> {
+fn get_started_session(tick: &Tick, labels: &Labels) -> Option<SessionIdentifier> {
     if labels.is_new_session {
-        assert!(tick.session_info.is_some());
-        tick.session_info
+        assert!(tick.session_data.is_some());
+        Some(SessionIdentifier::from_session_data(
+            tick.session_data.as_ref().unwrap(),
+            &tick.header,
+        ))
     } else {
         None
     }
@@ -39,9 +43,12 @@ fn get_finished_sector(tick: &Tick, labels: &Labels, finished_lap: &Option<Lap>)
 
 fn build_finished_lap(lap_data: &LapData, context: &Context) -> Option<Lap> {
     assert!(lap_data.last_lap_time > 0 as f32);
+    assert!(context.session_context.lap.is_some());
 
-    let sector_1 = context.session_context.lap.sector_times[0];
-    let sector_2 = context.session_context.lap.sector_times[1];
+    let finished_lap = context.session_context.lap.as_ref().unwrap();
+
+    let sector_1 = finished_lap.sector_times[0];
+    let sector_2 = finished_lap.sector_times[1];
 
     if sector_1 == 0 as f32 || sector_2 == 0 as f32 {
         return None;
@@ -55,7 +62,7 @@ fn build_finished_lap(lap_data: &LapData, context: &Context) -> Option<Lap> {
         sector_2,
         sector_3,
         finished_lap_time,
-        context.session_context.lap.lap_number,
+        finished_lap.lap_number,
     ))
 }
 

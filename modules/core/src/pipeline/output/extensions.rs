@@ -1,38 +1,13 @@
-use pipeline::types::*;
+use pipeline::input::*;
+use pipeline::output::*;
 
-impl Tick {
-    pub fn new(header: Header) -> Tick {
-        Tick {
-            header: header,
-            session_info: None,
-            lap_data: None,
-            car_motion: None,
-            car_telemetry: None,
-            car_status: None,
-        }
-    }
-}
-
-impl Session {
-    pub fn from_tick(tick: &Tick) -> Option<Session> {
-        if let Some(ref s) = tick.session_info {
-            Some(Session {
-                track_id: s.track_id,
-                session_type: s.session_type,
-                era: s.era,
-                uid: tick.header.session_uid,
-            })
-        } else {
-            None
-        }
-    }
-
-    pub fn empty() -> Session {
-        Session {
-            track_id: 0,
-            session_type: 0,
-            era: 0,
-            uid: 0,
+impl SessionIdentifier {
+    pub fn from_session_data(s: &SessionData, header: &Header) -> SessionIdentifier {
+        SessionIdentifier {
+            track_id: s.track_id,
+            session_type: s.session_type,
+            era: s.era,
+            uid: header.session_uid,
         }
     }
 }
@@ -48,15 +23,6 @@ impl Lap {
             })
         } else {
             None
-        }
-    }
-
-    pub fn empty() -> Lap {
-        Lap {
-            lap_number: 0,
-            sector_times: [0 as f32; 3],
-            lap_time: 0 as f32,
-            is_finished: false,
         }
     }
 
@@ -86,14 +52,6 @@ impl Sector {
         }
     }
 
-    pub fn empty() -> Sector {
-        Sector {
-            sector_number: 0,
-            sector_time: 0 as f32,
-            is_finished: false,
-        }
-    }
-
     pub fn finished(t: f32, n: u8) -> Sector {
         Sector {
             sector_number: n,
@@ -103,20 +61,15 @@ impl Sector {
     }
 }
 
-impl CarStatus {
-    pub fn empty() -> CarStatus {
-        CarStatus { tyre_compound: 0 }
-    }
-}
-
 impl SessionContext {
     pub fn empty() -> SessionContext {
         SessionContext {
-            session: Session::empty(),
-            lap: Lap::empty(),
-            sector: Sector::empty(),
-            car_position: CarPosition::empty(),
-            car_status: CarStatus::empty(),
+            header: None,
+            session: None,
+            lap: None,
+            sector: None,
+            car_motion: None,
+            car_status: None,
         }
     }
 }

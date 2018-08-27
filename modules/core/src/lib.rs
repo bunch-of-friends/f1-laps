@@ -16,7 +16,8 @@ mod storage;
 mod udp;
 
 use lap_metadata::LapMetadata;
-use pipeline::types::*;
+use pipeline::input::Tick;
+use pipeline::output::Output;
 use pipeline::Pipeline;
 use record_tracking::RecordSet;
 use std::sync::mpsc::{self, TryRecvError};
@@ -43,7 +44,7 @@ where
 
     let r = thread::spawn(move || loop {
         if let Some(tick) = rx.recv().ok() {
-            let output = pipeline.process(&tick);
+            let output = pipeline.process(tick);
             f(output);
         }
     });

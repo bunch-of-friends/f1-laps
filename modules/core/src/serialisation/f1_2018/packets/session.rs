@@ -1,9 +1,5 @@
-use serialisation::f1_2018::packets::PacketHeader;
-
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct PacketSessionData {
-    pub m_header: PacketHeader, // Header
-
     pub m_weather: u8, // Weather - 0 = clear, 1 = light cloud, 2 = overcast
     // 3 = light rain, 4 = heavy rain, 5 = storm
     pub m_trackTemperature: i8, // Track temp. in degrees celsius

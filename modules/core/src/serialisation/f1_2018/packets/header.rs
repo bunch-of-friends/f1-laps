@@ -1,5 +1,3 @@
-use pipeline::types::Header;
-
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct PacketHeader {
     pub m_packetFormat: u16,    // 2018

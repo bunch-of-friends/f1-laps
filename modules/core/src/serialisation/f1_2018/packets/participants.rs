@@ -1,9 +1,5 @@
-use serialisation::f1_2018::packets::PacketHeader;
-
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct PacketParticipantsData {
-    pub m_header: PacketHeader, // Header
-
     pub m_numCars: u8, // Number of cars in the data
     pub m_participants: [ParticipantData; 20],
 }

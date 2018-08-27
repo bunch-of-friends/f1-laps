@@ -1,14 +1,10 @@
-use serialisation::f1_2018::packets::PacketHeader;
-
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct PacketLapData {
-    pub m_header: PacketHeader, // Header
-
-    pub m_lapData: [LapData; 20], // Lap data for all cars on track
+    pub m_lapData: [LapDataItem; 20], // Lap data for all cars on track
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
-pub struct LapData {
+pub struct LapDataItem {
     pub m_lastLapTime: f32,    // Last lap time in seconds
     pub m_currentLapTime: f32, // Current time around the lap in seconds
     pub m_bestLapTime: f32,    // Best lap time of the session in seconds

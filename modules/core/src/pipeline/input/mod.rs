@@ -1,7 +1,9 @@
+mod extensions;
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Tick {
     pub header: Header,
-    pub session_info: Option<SessionInfo>,
+    pub session_data: Option<SessionData>,
     pub lap_data: Option<LapData>,
     pub car_motion: Option<CarMotion>,
     pub car_telemetry: Option<CarTelemetry>,
@@ -13,6 +15,24 @@ pub struct Header {
     pub session_uid: u64,
     pub session_time: f32,
     pub player_index: u8,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SessionData {
+    pub weather: u8,
+    pub era: u8,
+    pub session_type: u8,
+    pub track_id: i8,
+    pub track_temperature: i8,
+    pub air_temperature: i8,
+    pub race_laps: u8,
+    pub track_lenght: u16,
+    pub session_time_left: u16,
+    pub session_duration: u16,
+    pub is_game_paused: bool,
+    pub is_spectating: bool,
+    pub is_online_game: bool,
+    pub safety_car_status: u8
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -40,32 +60,6 @@ pub struct CarMotion {
     pub g_force_lateral: f32,
     pub g_force_longitudinal: f32,
     pub g_force_vertical: f32,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct SessionInfo {
-    pub weather: u8,
-    pub era: u8,
-    pub session_type: u8,
-    pub track_id: i8,
-    pub track_temperature: i8,
-    pub air_temperature: i8,
-    pub race_laps: u8,
-    pub track_lenght: u16,
-    pub session_time_left: f32,
-    pub session_duration: f32,
-    pub is_game_paused: bool,
-    pub is_spectating: bool,
-    pub is_online_game: bool,
-    pub safety_car_status: u8,
-    pub marshal_zones_count: u8,
-    pub marshal_zones: [MarshalZone; 21],
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct MarshalZone {
-    pub zone_start: f32,
-    pub flag: i8,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

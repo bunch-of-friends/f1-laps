@@ -1,6 +1,6 @@
 pub mod f1_2018;
 
-use pipeline::types::Tick;
+use pipeline::input::Tick;
 
 pub trait ReceivePacket: Send + Sync + Clone {
     fn new() -> Self;

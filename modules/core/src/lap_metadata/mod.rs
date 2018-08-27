@@ -1,6 +1,6 @@
 use chrono::Utc;
 
-use pipeline::types::*;
+use pipeline::output::*;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LapMetadata {
@@ -17,7 +17,7 @@ pub struct LapMetadata {
 }
 
 impl LapMetadata {
-    pub fn new(session: &Session, lap: &Lap, tyre_compound: u8) -> LapMetadata {
+    pub fn new(session: &SessionIdentifier, lap: &Lap, tyre_compound: u8) -> LapMetadata {
         assert!(lap.is_finished);
         assert!(lap.lap_time > 0 as f32);
         assert!(

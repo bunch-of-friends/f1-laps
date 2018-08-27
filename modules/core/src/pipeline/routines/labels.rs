@@ -1,4 +1,5 @@
-use pipeline::types::*;
+use pipeline::input::*;
+use pipeline::output::*;
 
 pub fn build_labels(tick: &Tick, context: &Context) -> Labels {
     let is_new_session = is_new_session(&tick, context);
@@ -18,7 +19,11 @@ pub fn build_labels(tick: &Tick, context: &Context) -> Labels {
 }
 
 fn is_new_session(tick: &Tick, context: &Context) -> bool {
-    tick.header.session_uid != context.session_context.header.session_uid
+    if let Some(ref header) = context.session_context.header {
+        tick.header.session_uid != header.session_uid
+    } else {
+        true
+    }
 }
 
 fn is_new_lap(is_new_session: bool, tick: &Tick, context: &Context) -> bool {
@@ -27,10 +32,14 @@ fn is_new_lap(is_new_session: bool, tick: &Tick, context: &Context) -> bool {
     }
 
     if let Some(ref lap_data) = tick.lap_data {
-        lap_data.current_lap_number != context.session_context.lap.lap_number
-    } else {
-        false
+        if let Some(ref current_lap) = context.session_context.lap {
+            return lap_data.current_lap_number != current_lap.lap_number;
+        } else {
+            return true;
+        }
     }
+
+    false
 }
 
 fn is_new_sector(is_new_lap: bool, tick: &Tick, context: &Context) -> bool {
@@ -39,10 +48,12 @@ fn is_new_sector(is_new_lap: bool, tick: &Tick, context: &Context) -> bool {
     }
 
     if let Some(ref lap_data) = tick.lap_data {
-        lap_data.current_sector_number != context.session_context.sector.sector_number
-    } else {
-        false
+        if let Some(ref current_sector) = context.session_context.sector {
+            return lap_data.current_sector_number != current_sector.sector_number;
+        }
     }
+
+    false
 }
 
 fn is_flashback(is_new_session: bool, is_new_lap: bool, tick: &Tick, context: &Context) -> bool {
@@ -51,10 +62,12 @@ fn is_flashback(is_new_session: bool, is_new_lap: bool, tick: &Tick, context: &C
     }
 
     if let Some(ref lap_data) = tick.lap_data {
-        context.session_context.lap.lap_time > lap_data.current_lap_time
-    } else {
-        false
+        if let Some(ref current_lap) = context.session_context.lap {
+            return lap_data.current_lap_time < current_lap.lap_time;
+        }
     }
+
+    false
 }
 
 fn is_teleported(is_new_session: bool, tick: &Tick, context: &Context) -> bool {
@@ -63,16 +76,18 @@ fn is_teleported(is_new_session: bool, tick: &Tick, context: &Context) -> bool {
     }
 
     if let Some(ref motion) = tick.car_motion {
-        let x_diff = (motion.x - context.session_context.car_motion.x).abs();
-        let y_diff = (motion.y - context.session_context.car_motion.y).abs();
-        let z_diff = (motion.z - context.session_context.car_motion.z).abs();
+        if let Some(ref current_motion) = context.session_context.car_motion {
+            let x_diff = (motion.x - current_motion.x).abs();
+            let y_diff = (motion.y - current_motion.y).abs();
+            let z_diff = (motion.z - current_motion.z).abs();
 
-        let max = 10 as f32;
+            let max = 10 as f32;
 
-        x_diff > max || y_diff > max || z_diff > max
-    } else {
-        false
+            return x_diff > max || y_diff > max || z_diff > max;
+        }
     }
+
+    false
 }
 
 // #[cfg(test)]

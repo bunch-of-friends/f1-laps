@@ -1,9 +1,5 @@
-use serialisation::f1_2018::packets::PacketHeader;
-
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct PacketCarSetupData {
-    pub m_header: PacketHeader, // Header
-
     pub m_carSetups: [CarSetupData; 20],
 }
 
