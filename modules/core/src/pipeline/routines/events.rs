@@ -43,8 +43,13 @@ fn get_finished_sector(tick: &Tick, labels: &Labels, finished_lap: &Option<Lap>)
 }
 
 fn build_finished_lap(lap_data: &LapData, context: &Context) -> Option<Lap> {
-    assert!(lap_data.last_lap_time > 0 as f32);
-    assert!(context.session_context.lap.is_some());
+    if lap_data.last_lap_time > 0 as f32 {
+        return None;
+    }
+
+    if context.session_context.lap.is_none() {
+        return None;
+    }
 
     let finished_lap = context.session_context.lap.as_ref().unwrap();
 

@@ -1,5 +1,9 @@
+use serialisation::f1_2018::packets::PacketHeader;
+
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct PacketMotionData {
+    pub m_header: PacketHeader,
+
     pub m_carMotionData: [CarMotionData; 20], // Data for all cars on track
 
     // Extra player car ONLY data

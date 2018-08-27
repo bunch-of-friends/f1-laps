@@ -80,35 +80,35 @@ impl Serialiser {
     }
 
     fn serialise_motion(&self, datagram: &[u8]) -> Option<packets::PacketMotionData> {
-        bincode::deserialize::<packets::PacketMotionData>(&datagram[HEADER_SIZE..]).ok()
+        bincode::deserialize::<packets::PacketMotionData>(&datagram[..]).ok()
     }
 
     fn serialise_session(&self, datagram: &[u8]) -> Option<packets::PacketSessionData> {
-        bincode::deserialize::<packets::PacketSessionData>(&datagram[HEADER_SIZE..]).ok()
+        bincode::deserialize::<packets::PacketSessionData>(&datagram[..]).ok()
     }
 
     fn serialise_lap_data(&self, datagram: &[u8]) -> Option<packets::PacketLapData> {
-        bincode::deserialize::<packets::PacketLapData>(&datagram[HEADER_SIZE..]).ok()
+        bincode::deserialize::<packets::PacketLapData>(&datagram[..]).ok()
     }
 
     fn serialise_events(&self, datagram: &[u8]) -> Option<packets::PacketEventData> {
-        bincode::deserialize::<packets::PacketEventData>(&datagram[HEADER_SIZE..]).ok()
+        bincode::deserialize::<packets::PacketEventData>(&datagram[..]).ok()
     }
 
     fn serialise_participants(&self, datagram: &[u8]) -> Option<packets::PacketParticipantsData> {
-        bincode::deserialize::<packets::PacketParticipantsData>(&datagram[HEADER_SIZE..]).ok()
+        bincode::deserialize::<packets::PacketParticipantsData>(&datagram[..]).ok()
     }
 
     fn serialise_setups(&self, datagram: &[u8]) -> Option<packets::PacketCarSetupData> {
-        bincode::deserialize::<packets::PacketCarSetupData>(&datagram[HEADER_SIZE..]).ok()
+        bincode::deserialize::<packets::PacketCarSetupData>(&datagram[..]).ok()
     }
 
     fn serialise_telemetry(&self, datagram: &[u8]) -> Option<packets::PacketCarTelemetryData> {
-        bincode::deserialize::<packets::PacketCarTelemetryData>(&datagram[HEADER_SIZE..]).ok()
+        bincode::deserialize::<packets::PacketCarTelemetryData>(datagram).ok()
     }
 
     fn serialise_status(&self, datagram: &[u8]) -> Option<packets::PacketCarStatusData> {
-        bincode::deserialize::<packets::PacketCarStatusData>(&datagram[HEADER_SIZE..]).ok()
+        bincode::deserialize::<packets::PacketCarStatusData>(&datagram[..]).ok()
     }
 }
 
