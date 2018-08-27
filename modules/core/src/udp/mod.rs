@@ -11,9 +11,14 @@ where
     T: ReceivePacket + 'static,
 {
     let socket = bind_to_address(format!("0.0.0.0:{}", port));
+    let buffer_size = serialiser.get_buffer_size();
 
     loop {
-        let mut buffer = Vec::with_capacity(serialiser.get_buffer_size());
+        let mut buffer = Vec::with_capacity(buffer_size);
+        for _ in 0..buffer_size {
+            buffer.push(0);
+        }
+
         if let Some((amt, _src)) = socket.recv_from(&mut buffer).ok() {
             let tx = tx.clone();
             let serialiser = serialiser.clone();
