@@ -15,14 +15,15 @@ pub fn build_events(tick: &Tick, context: &Context, labels: &Labels) -> Events {
 
 fn get_started_session(tick: &Tick, labels: &Labels) -> Option<SessionIdentifier> {
     if labels.is_new_session {
-        assert!(tick.session_data.is_some());
-        Some(SessionIdentifier::from_session_data(
-            tick.session_data.as_ref().unwrap(),
-            &tick.header,
-        ))
-    } else {
-        None
+        if let Some(ref session_data) = tick.session_data {
+            return Some(SessionIdentifier::from_session_data(
+                session_data,
+                &tick.header,
+            ));
+        }
     }
+
+    None
 }
 
 fn get_finished_lap(tick: &Tick, context: &Context, labels: &Labels) -> Option<Lap> {
