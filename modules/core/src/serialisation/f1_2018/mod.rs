@@ -33,46 +33,38 @@ impl Serialiser {
     fn append_body(&self, tick: &mut Tick, header: packets::PacketHeader, datagram: &[u8]) {
         match header.m_packetId {
             0 => {
-                println!("motion received");
                 if let Some(motion) = self.serialise_motion(datagram) {
                     tick.car_motion = Some(motion.to_model(&header));
                 }
             }
             1 => {
-                println!("session received");
                 if let Some(session) = self.serialise_session(datagram) {
                     tick.session_data = Some(session.to_model());
                 }
             }
             2 => {
-                println!("lap data received");
                 if let Some(lap_data) = self.serialise_lap_data(datagram) {
                     tick.lap_data = Some(lap_data.to_model(&header));
                 }
             }
             3 => {
-                println!("events received");
                 let events = self.serialise_events(datagram);
                 // nothing for now
             }
             4 => {
-                println!("participants received");
                 let participants = self.serialise_participants(datagram);
                 // nothing for now
             }
             5 => {
-                println!("setups received");
                 let setups = self.serialise_setups(datagram);
                 // nothing for now
             }
             6 => {
-                println!("telemetry received");
                 if let Some(telemetry) = self.serialise_telemetry(datagram) {
                     tick.car_telemetry = Some(telemetry.to_model(&header));
                 }
             }
             7 => {
-                println!("status received");
                 if let Some(status) = self.serialise_status(datagram) {
                     tick.car_status = Some(status.to_model(&header));
                 }
