@@ -140,49 +140,49 @@ fn get_next_tick(mut cx: FunctionContext) -> JsResult<JsObject> {
 
     append_as_js(
         &mut cx,
-        "session_identifier",
+        "sessionIdentifier",
         collector.get_session_identifier().as_ref(),
         &object,
     )?;
 
     append_as_js(
         &mut cx,
-        "finished_lap",
+        "finishedLap",
         collector.get_finished_lap().as_ref(),
         &object,
     )?;
 
     append_as_js(
         &mut cx,
-        "finished_sector",
+        "finishedSector",
         collector.get_finished_sector().as_ref(),
         &object,
     )?;
 
     append_as_js(
         &mut cx,
-        "session_data",
+        "sessionData",
         collector.get_session_data().as_ref(),
         &object,
     )?;
 
     append_as_js(
         &mut cx,
-        "car_status",
+        "carStatus",
         collector.get_car_status().as_ref(),
         &object,
     )?;
 
     append_as_js(
         &mut cx,
-        "car_telemetry",
+        "carTelemetry",
         collector.get_car_telemetry().as_ref(),
         &object,
     )?;
 
     append_as_js(
         &mut cx,
-        "car_motion",
+        "carMotion",
         collector.get_car_motion().as_ref(),
         &object,
     )?;

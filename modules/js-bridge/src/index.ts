@@ -7,22 +7,31 @@ import { NewSession, LapTick, LapFinished, SectorFinished, LapMetadata } from '.
 export * from './types';
 export * from '@bunch-of-friends/observable';
 
-let newSessionSubject = createSubject<NewSession>();
-let newSessionObservable = createObservable<NewSession>(newSessionSubject);
-let liveDataSubject = createSubject<LapTick>();
-let liveDataObservable = createObservable<LapTick>(liveDataSubject);
-let lapFinishedSubject = createSubject<LapFinished>();
-let lapFinishedObservable = createObservable<LapFinished>(lapFinishedSubject);
-let sectorFinishedSubject = createSubject<SectorFinished>();
-let sectorFinishedObservable = createObservable<SectorFinished>(sectorFinishedSubject);
+let sessionIdentifierSubject = createSubject<any>();
+let sessionIdentifierObservable = createObservable<any>(sessionIdentifierSubject);
+let lapFinishedSubject = createSubject<any>();
+let lapFinishedObservable = createObservable<any>(lapFinishedSubject);
+let sectorFinishedSubject = createSubject<any>();
+let sectorFinishedObservable = createObservable<any>(sectorFinishedSubject);
+let sessionDataSubject = createSubject<any>();
+let sessionDataObservable = createObservable<any>(sessionDataSubject);
+let carStatusSubject = createSubject<any>();
+let carStatusObservable = createObservable<any>(sessionDataSubject);
+let carTelemetrySubject = createSubject<any>();
+let carTelemetryObservable = createObservable<any>(sessionDataSubject);
+let carMotionSubject = createSubject<any>();
+let carMotionObservable = createObservable<any>(sessionDataSubject);
 
 let initialised = false;
 
 export {
-    newSessionObservable as newSession,
-    liveDataObservable as liveData,
+    sessionIdentifierObservable as newSession,
     lapFinishedObservable as lapFinished,
-    sectorFinishedObservable as sectorFinished
+    sectorFinishedObservable as sectorFinished,
+    sessionDataObservable as sessionData,
+    carStatusObservable as carStatus,
+    carTelemetryObservable as carTelemetry,
+    carMotionObservable as carMotion
 };
 
 export function initialise(config = { updateInterval: 50, storagePath: './storage' }) {
@@ -50,20 +59,32 @@ function checkInitialised() {
 function getNextTick() {
     const tick = core.getNextTick();
 
-    if (tick.liveData) {
-        liveDataSubject.notifyObservers(tick.liveData);
+    if (tick.sessionIdentifier) {
+        sessionIdentifierSubject.notifyObservers(tick.sessionIdentifier);
     }
 
-    if (tick.sessionStarted) {
-        newSessionSubject.notifyObservers(tick.sessionStarted);
+    if (tick.finishedLap) {
+        lapFinishedSubject.notifyObservers(tick.finishedLap);
     }
 
-    if (tick.sectorFinished) {
+    if (tick.finishedSector) {
         sectorFinishedSubject.notifyObservers(tick.sectorFinished);
     }
 
-    if (tick.lapFinished) {
-        lapFinishedSubject.notifyObservers(tick.lapFinished);
+    if (tick.sessionData) {
+        sessionDataSubject.notifyObservers(tick.sessionData);
+    }
+
+    if (tick.carStatus) {
+        carStatusSubject.notifyObservers(tick.carStatus);
+    }
+
+    if (tick.carTelemetry) {
+        carTelemetrySubject.notifyObservers(tick.carTelemetry);
+    }
+
+    if (tick.carMotion) {
+        carMotionSubject.notifyObservers(tick.carMotion);
     }
 }
 
@@ -73,26 +94,26 @@ export function startListening(port = 20777) {
     core.startListening(port);
 }
 
-export function replayAllLaps() {
-    checkInitialised();
+// export function replayAllLaps() {
+//     checkInitialised();
 
-    core.replayAllLaps();
-}
+//     core.replayAllLaps();
+// }
 
-export function getLapData(identifier: string): Array<LapTick> {
-    checkInitialised();
+// export function getLapData(identifier: string): Array<LapTick> {
+//     checkInitialised();
 
-    return core.getLapData(identifier);
-}
+//     return core.getLapData(identifier);
+// }
 
-export function getAllLapsMetadata(): Array<LapMetadata> {
-    checkInitialised();
+// export function getAllLapsMetadata(): Array<LapMetadata> {
+//     checkInitialised();
 
-    return core.getAllLapsMetadata();
-}
+//     return core.getAllLapsMetadata();
+// }
 
-export function replayLap(identifier: string) {
-    checkInitialised();
+// export function replayLap(identifier: string) {
+//     checkInitialised();
 
-    core.replayLap(identifier);
-}
+//     core.replayLap(identifier);
+// }
