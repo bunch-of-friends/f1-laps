@@ -2,25 +2,25 @@ const core = require('../native');
 const stayAwake = require('stay-awake');
 
 import { createSubject, createObservable } from '@bunch-of-friends/observable';
-import { NewSession, LapTick, LapFinished, SectorFinished, LapMetadata } from './types';
+import { SessionIdentifier, SessionData, LapFinished, SectorFinished, CarStatus, CarTelemetry, CarMotion } from './types';
 
 export * from './types';
 export * from '@bunch-of-friends/observable';
 
-let sessionIdentifierSubject = createSubject<any>();
-let sessionIdentifierObservable = createObservable<any>(sessionIdentifierSubject);
-let lapFinishedSubject = createSubject<any>();
-let lapFinishedObservable = createObservable<any>(lapFinishedSubject);
-let sectorFinishedSubject = createSubject<any>();
-let sectorFinishedObservable = createObservable<any>(sectorFinishedSubject);
-let sessionDataSubject = createSubject<any>();
-let sessionDataObservable = createObservable<any>(sessionDataSubject);
-let carStatusSubject = createSubject<any>();
-let carStatusObservable = createObservable<any>(sessionDataSubject);
-let carTelemetrySubject = createSubject<any>();
-let carTelemetryObservable = createObservable<any>(sessionDataSubject);
-let carMotionSubject = createSubject<any>();
-let carMotionObservable = createObservable<any>(sessionDataSubject);
+let sessionIdentifierSubject = createSubject<SessionIdentifier>();
+let sessionIdentifierObservable = createObservable<SessionIdentifier>(sessionIdentifierSubject);
+let lapFinishedSubject = createSubject<LapFinished>();
+let lapFinishedObservable = createObservable<LapFinished>(lapFinishedSubject);
+let sectorFinishedSubject = createSubject<SectorFinished>();
+let sectorFinishedObservable = createObservable<SectorFinished>(sectorFinishedSubject);
+let sessionDataSubject = createSubject<SessionData>();
+let sessionDataObservable = createObservable<SessionData>(sessionDataSubject);
+let carStatusSubject = createSubject<CarStatus>();
+let carStatusObservable = createObservable<CarStatus>(carStatusSubject);
+let carTelemetrySubject = createSubject<CarTelemetry>();
+let carTelemetryObservable = createObservable<CarTelemetry>(carTelemetrySubject);
+let carMotionSubject = createSubject<CarMotion>();
+let carMotionObservable = createObservable<CarMotion>(carMotionSubject);
 
 let initialised = false;
 
