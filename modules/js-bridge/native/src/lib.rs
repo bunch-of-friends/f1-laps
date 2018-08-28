@@ -138,49 +138,49 @@ fn get_next_tick(mut cx: FunctionContext) -> JsResult<JsObject> {
 
     let object = cx.empty_object();
 
-    to_js(
+    append_as_js(
         &mut cx,
         "session_identifier",
         collector.get_session_identifier().as_ref(),
         &object,
     )?;
 
-    to_js(
+    append_as_js(
         &mut cx,
         "finished_lap",
         collector.get_finished_lap().as_ref(),
         &object,
     )?;
 
-    to_js(
+    append_as_js(
         &mut cx,
         "finished_sector",
         collector.get_finished_sector().as_ref(),
         &object,
     )?;
 
-    to_js(
+    append_as_js(
         &mut cx,
         "session_data",
         collector.get_session_data().as_ref(),
         &object,
     )?;
 
-    to_js(
+    append_as_js(
         &mut cx,
         "car_status",
         collector.get_car_status().as_ref(),
         &object,
     )?;
 
-    to_js(
+    append_as_js(
         &mut cx,
         "car_telemetry",
         collector.get_car_telemetry().as_ref(),
         &object,
     )?;
 
-    to_js(
+    append_as_js(
         &mut cx,
         "car_motion",
         collector.get_car_motion().as_ref(),
@@ -190,7 +190,7 @@ fn get_next_tick(mut cx: FunctionContext) -> JsResult<JsObject> {
     Ok(object)
 }
 
-fn to_js<'j, C, V>(
+fn append_as_js<'j, C, V>(
     cx: &mut C,
     key: &str,
     option: Option<&V>,
