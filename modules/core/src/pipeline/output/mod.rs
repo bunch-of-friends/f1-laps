@@ -47,7 +47,7 @@ pub struct Events {
     pub finished_lap: Option<Lap>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SessionIdentifier {
     pub track_id: i8,
     pub session_type: u8,
@@ -55,7 +55,7 @@ pub struct SessionIdentifier {
     pub uid: u64,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Lap {
     pub lap_number: u8,
     pub sector_times: [f32; 3],
@@ -63,7 +63,7 @@ pub struct Lap {
     pub is_finished: bool,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Sector {
     pub sector_number: u8,
     pub sector_time: f32,
