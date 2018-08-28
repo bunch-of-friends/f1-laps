@@ -54,7 +54,7 @@ fn start_listening(mut cx: FunctionContext) -> JsResult<JsUndefined> {
 }
 
 fn replay_all_laps(_cx: FunctionContext) -> JsResult<JsUndefined> {
-    f1_laps_core::replay_packets(on_received);
+    f1_laps_core::replay_packets(true, on_received);
 
     Ok(JsUndefined::new())
 }
@@ -63,15 +63,15 @@ fn on_received(output: Output) {
     let mut collector = COLLECTOR.lock().unwrap();
     collector.tick = Some(output.tick);
 
-    if let Some(session) = output.stats.started_session {
+    if let Some(session) = output.events.started_session {
         collector.session = Some(session);
     }
 
-    if let Some(lap) = output.stats.finished_lap {
+    if let Some(lap) = output.events.finished_lap {
         collector.lap = Some(lap);
     }
 
-    if let Some(sector) = output.stats.finished_sector {
+    if let Some(sector) = output.events.finished_sector {
         collector.sector = Some(sector);
     }
 }
@@ -249,7 +249,7 @@ fn build_live_data_js_object<'a>(
     // oh::set_num_prop(cx, &obj, "gforceLat", d.gforce_lat as f64)?;
     // oh::set_num_prop(cx, &obj, "gforceLon", d.gforce_lon as f64)?;
     // oh::set_num_prop(cx, &obj, "gforceVert", d.gforce_vert as f64)?;
-    oh::set_num_prop(cx, &obj, "engineRate", d.engine_rate as f64)?;
+    // oh::set_num_prop(cx, &obj, "engineRate", d.engine_rate as f64)?;
     // oh::set_num_prop(cx, &obj, "revLightsPercent", d.rev_lights_percent as f64)?;
     // oh::set_num_prop(cx, &obj, "maxRpm", d.max_rpm as f64)?;
     // oh::set_num_prop(cx, &obj, "idleRpm", d.idle_rpm as f64)?;
