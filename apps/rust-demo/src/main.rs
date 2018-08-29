@@ -7,7 +7,7 @@ fn main() {
 
     f1_laps_core::initialise("../../_data-storage".to_string());
 
-    let closure = |output: Output| {
+    let on_received = |output: Output| {
         if output.labels.is_flashback {
             println!("flashback");
         }
@@ -41,7 +41,8 @@ fn main() {
         // }
     };
 
-    let h = f1_laps_core::start_listening(20777, closure);
+    let h = f1_laps_core::start_listening(20777, on_received);
+    // let h = f1_laps_core::replay_packets(on_received);
 
     assert!(!h.0.join().is_err());
     assert!(!h.1.join().is_err());
