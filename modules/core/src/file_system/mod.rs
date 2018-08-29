@@ -1,14 +1,12 @@
 pub mod path_helper;
 
 use bincode;
-use std::fs::{create_dir, read_dir, File};
+use std::fs::{create_dir, File};
 use std::path::Path;
 
 use self::path_helper::PathHelper;
 use lap_metadata::LapMetadata;
-use pipeline::types::Tick;
 use record_tracking::RecordSet;
-use udp::packet::Packet;
 
 pub fn initialise(storage_folder_path: &str) -> (Vec<LapMetadata>, RecordSet, PathHelper) {
     let path_helper = PathHelper::new(storage_folder_path);
@@ -17,11 +15,15 @@ pub fn initialise(storage_folder_path: &str) -> (Vec<LapMetadata>, RecordSet, Pa
     build_data_store(&path_helper)
 }
 
-pub fn store_lap_ticks(ticks: &Vec<Tick>, metadata: &LapMetadata, path_helper: &PathHelper) {
-    let path = path_helper.get_laps_data_file_path(&metadata.identifier);
-    let file = File::create(&path).unwrap();
-    bincode::serialize_into(file, ticks).unwrap();
-}
+// pub fn store_lap_ticks(
+//     ticks: &Vec<CarTelemetry>,
+//     metadata: &LapMetadata,
+//     path_helper: &PathHelper,
+// ) {
+//     let path = path_helper.get_laps_data_file_path(&metadata.identifier);
+//     let file = File::create(&path).unwrap();
+//     bincode::serialize_into(file, ticks).unwrap();
+// }
 
 pub fn store_laps_metadata(metadata: &Vec<LapMetadata>, path_helper: &PathHelper) {
     let path = path_helper.get_laps_metadata_file_path();
@@ -35,47 +37,14 @@ pub fn store_records(records: &RecordSet, path_helper: &PathHelper) {
     bincode::serialize_into(file, records).expect("failed to serialise records file");
 }
 
-pub fn get_lap_data(identifier: &str, path_helper: &PathHelper) -> Option<Vec<Tick>> {
-    let path = path_helper.get_laps_data_file_path(identifier);
+// pub fn get_lap_data(identifier: &str, path_helper: &PathHelper) -> Option<Vec<CarTelemetry>> {
+//     let path = path_helper.get_laps_data_file_path(identifier);
 
-    println!("loading file >> {}", path);
+//     println!("loading file >> {}", path);
 
-    let file = File::open(path).expect("failed to open file");
-    bincode::deserialize_from::<File, Vec<Tick>>(file).ok()
-}
-
-pub fn get_all_packets(path_helper: &PathHelper) -> Vec<Packet> {
-    let laps_data_folder = &path_helper.get_packets_data_folder_path();
-    let paths = read_dir(laps_data_folder).unwrap();
-
-    let mut file_names: Vec<String> = Vec::new();
-
-    for path in paths {
-        let path = path.unwrap().path();
-        let file_name = path.file_name().unwrap().to_str().unwrap();
-
-        if file_name.ends_with(".bin") {
-            file_names.push(file_name.to_owned());
-        }
-    }
-
-    file_names.sort();
-
-    let mut packets = Vec::<Packet>::new();
-    for file_name in file_names {
-        let full_path = path_helper.get_packet_file_path(&file_name);
-        println!("loading file >> {}", full_path);
-
-        let file = File::open(full_path).expect("failed to open file");
-        let data = bincode::deserialize_from::<File, Vec<Packet>>(file).ok();
-
-        if data.is_some() {
-            packets.extend(data.unwrap());
-        }
-    }
-
-    packets
-}
+//     let file = File::open(path).expect("failed to open file");
+//     bincode::deserialize_from::<File, Vec<CarTelemetry>>(file).ok()
+// }
 
 fn ensure_storage_files_created(path_helper: &PathHelper) {
     ensure_folder_created(path_helper.get_storage_folder_path().as_str());

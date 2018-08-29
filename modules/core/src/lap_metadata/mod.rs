@@ -1,14 +1,13 @@
 use chrono::Utc;
 
-use pipeline::types::*;
+use pipeline::output::*;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LapMetadata {
     pub identifier: String,
     pub recorded_date: String,
-    pub track_id: u8,
-    pub team_id: u8,
-    pub era: u16,
+    pub track_id: i8,
+    pub era: u8,
     pub tyre_compound: u8,
     pub session_type: u8,
     pub lap_number: u8,
@@ -18,7 +17,7 @@ pub struct LapMetadata {
 }
 
 impl LapMetadata {
-    pub fn new(session: &Session, lap: &Lap, tyre_compound: u8) -> LapMetadata {
+    pub fn new(session: &SessionIdentifier, lap: &Lap, tyre_compound: u8) -> LapMetadata {
         assert!(lap.is_finished);
         assert!(lap.lap_time > 0 as f32);
         assert!(
@@ -39,7 +38,6 @@ impl LapMetadata {
             identifier: identifier,
             recorded_date: date.to_rfc3339(),
             track_id: session.track_id,
-            team_id: session.team_id,
             era: session.era,
             tyre_compound: tyre_compound,
             session_type: session.session_type,

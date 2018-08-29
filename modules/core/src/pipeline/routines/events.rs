@@ -1,4 +1,5 @@
-use pipeline::types::*;
+use pipeline::input::*;
+use pipeline::output::*;
 
 pub fn build_events(tick: &Tick, context: &Context, labels: &Labels) -> Events {
     let started_session = get_started_session(tick, labels);
@@ -12,41 +13,54 @@ pub fn build_events(tick: &Tick, context: &Context, labels: &Labels) -> Events {
     }
 }
 
-fn get_started_session(tick: &Tick, labels: &Labels) -> Option<Session> {
+fn get_started_session(tick: &Tick, labels: &Labels) -> Option<SessionIdentifier> {
     if labels.is_new_session {
-        Some(Session::from_tick(tick))
-    } else {
-        None
+        if let Some(ref session_data) = tick.session_data {
+            return Some(SessionIdentifier::from_session_data(
+                session_data,
+                &tick.header,
+            ));
+        }
     }
+
+    None
 }
 
 fn get_finished_lap(tick: &Tick, context: &Context, labels: &Labels) -> Option<Lap> {
-    if labels.is_new_lap && !labels.is_teleported {
-        build_finished_lap(tick, context)
+    if labels.is_new_lap && tick.lap_data.is_some() && !labels.is_teleported {
+        build_finished_lap(tick.lap_data.as_ref().unwrap(), context)
     } else {
         None
     }
 }
 
 fn get_finished_sector(tick: &Tick, labels: &Labels, finished_lap: &Option<Lap>) -> Option<Sector> {
-    if labels.is_new_sector && !labels.is_teleported {
-        build_finished_sector(tick, finished_lap)
+    if labels.is_new_sector && tick.lap_data.is_some() && !labels.is_teleported {
+        build_finished_sector(tick.lap_data.as_ref().unwrap(), finished_lap)
     } else {
         None
     }
 }
 
-fn build_finished_lap(tick: &Tick, context: &Context) -> Option<Lap> {
-    assert!(tick.last_lap_time > 0 as f32);
+fn build_finished_lap(lap_data: &LapData, context: &Context) -> Option<Lap> {
+    if lap_data.last_lap_time > 0 as f32 {
+        return None;
+    }
 
-    let sector_1 = context.session_context.lap.sector_times[0];
-    let sector_2 = context.session_context.lap.sector_times[1];
+    if context.session_context.lap.is_none() {
+        return None;
+    }
+
+    let finished_lap = context.session_context.lap.as_ref().unwrap();
+
+    let sector_1 = finished_lap.sector_times[0];
+    let sector_2 = finished_lap.sector_times[1];
 
     if sector_1 == 0 as f32 || sector_2 == 0 as f32 {
         return None;
     }
 
-    let finished_lap_time = tick.last_lap_time;
+    let finished_lap_time = lap_data.last_lap_time;
     let sector_3 = finished_lap_time - sector_1 - sector_2;
 
     Some(Lap::finished(
@@ -54,12 +68,12 @@ fn build_finished_lap(tick: &Tick, context: &Context) -> Option<Lap> {
         sector_2,
         sector_3,
         finished_lap_time,
-        context.session_context.lap.lap_number,
+        finished_lap.lap_number,
     ))
 }
 
-fn build_finished_sector(tick: &Tick, finished_lap: &Option<Lap>) -> Option<Sector> {
-    match tick.sector_number {
+fn build_finished_sector(lap_data: &LapData, finished_lap: &Option<Lap>) -> Option<Sector> {
+    match lap_data.current_sector_number {
         1 => {
             if let Some(lap) = finished_lap {
                 Some(Sector::finished(lap.sector_times[2], 3))
@@ -68,19 +82,19 @@ fn build_finished_sector(tick: &Tick, finished_lap: &Option<Lap>) -> Option<Sect
             }
         }
         2 => {
-            if tick.sector1_time > 0 as f32 {
-                Some(Sector::finished(tick.sector1_time, 1))
+            if lap_data.sector1_time > 0 as f32 {
+                Some(Sector::finished(lap_data.sector1_time, 1))
             } else {
                 None
             }
         }
         3 => {
-            if tick.sector2_time > 0 as f32 {
-                Some(Sector::finished(tick.sector2_time, 2))
+            if lap_data.sector2_time > 0 as f32 {
+                Some(Sector::finished(lap_data.sector2_time, 2))
             } else {
                 None
             }
         }
-        _ => panic!("unexpected sector_number: {}", tick.sector_number),
+        _ => panic!{"unecpected sector number"},
     }
 }

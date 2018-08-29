@@ -5,12 +5,15 @@ console.log('node test is running');
 core.initialise({ updateInterval: 50, storagePath: '../../_data-storage' });
 
 core.newSession.register(data => console.log('newSession >> ', data));
-core.liveData.register(data => console.log('liveData >> ', data.currentGear));
 core.lapFinished.register(data => console.log('lapFinished >> ', data));
 core.sectorFinished.register(data => console.log('sectorFinished >> ', data));
+core.sessionData.register(data => console.log('sessionData >> ', data));
+core.carStatus.register(data => console.log('carStatus >> ', data));
+core.carTelemetry.register(data => console.log('carTelemetry >> ', data));
+core.carMotion.register(data => console.log('carMotion >> ', data));
 
-// core.startListening(20777);
-core.replayAllLaps();
+core.startListening(20777);
+// core.replayAllLaps();
 
 // let metadata = core.getAllLapsMetadata();
 // console.log("metadata >>", metadata);
