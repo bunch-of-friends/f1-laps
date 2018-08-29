@@ -9,6 +9,7 @@ serde_derive = "1.0.71"
 bincode = "1.0.1"
 chrono = "0.4.5"
 lazy_static = "1.0.1"
+schedule_recv = "0.1.0"
 
 [lib]
 name = "f1_laps_core"

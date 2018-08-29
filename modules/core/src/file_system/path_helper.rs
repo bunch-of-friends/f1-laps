@@ -1,7 +1,8 @@
+use chrono::Utc;
+
 use std::clone::Clone;
 
-const PACKETS_DATA_DIR: &'static str = "packets";
-const LAPS_DATA_DIR: &'static str = "laps";
+const PACKETS_DIR: &'static str = "packets";
 const LAPS_METADATA_FILE: &'static str = "laps.bin";
 const RECORDS_FILE: &'static str = "records.bin";
 
@@ -24,12 +25,8 @@ impl PathHelper {
         self.root_folder.clone()
     }
 
-    pub fn get_packets_data_folder_path(&self) -> String {
-        self.get_full_path(PACKETS_DATA_DIR)
-    }
-
-    pub fn get_laps_data_folder_path(&self) -> String {
-        self.get_full_path(LAPS_DATA_DIR)
+    pub fn get_packets_folder_path(&self) -> String {
+        self.get_full_path(PACKETS_DIR)
     }
 
     pub fn get_laps_metadata_file_path(&self) -> String {
@@ -40,12 +37,12 @@ impl PathHelper {
         self.get_full_path(RECORDS_FILE)
     }
 
-    pub fn get_laps_data_file_path(&self, identifier: &str) -> String {
-        format!("{}/{}", self.get_laps_data_folder_path(), identifier)
-    }
-
-    pub fn get_packet_file_path(&self, identifier: &str) -> String {
-        format!("{}/{}", self.get_packets_data_folder_path(), identifier)
+    pub fn get_packets_file_name(&self) -> String {
+        format!(
+            "{}/{}.bin",
+            self.get_packets_folder_path(),
+            Utc::now().date().format("%Y-%m-%d-%H-%M-%S-%f")
+        )
     }
 }
 

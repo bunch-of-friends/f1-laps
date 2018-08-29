@@ -48,15 +48,15 @@ impl Serialiser {
                 }
             }
             3 => {
-                let events = self.serialise_events(datagram);
+                let _events = self.serialise_events(datagram);
                 // nothing for now
             }
             4 => {
-                let participants = self.serialise_participants(datagram);
+                let _participants = self.serialise_participants(datagram);
                 // nothing for now
             }
             5 => {
-                let setups = self.serialise_setups(datagram);
+                let _setups = self.serialise_setups(datagram);
                 // nothing for now
             }
             6 => {

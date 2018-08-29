@@ -4,8 +4,8 @@ use self::data_store::DataStore;
 use file_system;
 use file_system::path_helper;
 use lap_metadata::LapMetadata;
-use record_tracking::record_tracker::RecordTracker;
-use record_tracking::RecordSet;
+// use record_tracking::record_tracker::RecordTracker;
+// use record_tracking::RecordSet;
 use std::sync::Mutex;
 
 lazy_static! {
@@ -17,29 +17,29 @@ pub fn initialise(storage_folder_path: &str) {
     DATA_STORE
         .lock()
         .unwrap()
-        .initialise(fs_init_result.0, fs_init_result.1, fs_init_result.2)
+        .initialise(fs_init_result.0, fs_init_result.1)
 }
 
 pub fn get_all_laps_metadata() -> Vec<LapMetadata> {
     DATA_STORE.lock().unwrap().get_all_laps_metadata()
 }
 
-pub fn get_all_records() -> RecordSet {
-    DATA_STORE.lock().unwrap().get_all_records()
-}
+// pub fn get_all_records() -> RecordSet {
+//     DATA_STORE.lock().unwrap().get_all_records()
+// }
 
 // pub fn get_lap_data(identifier: &str) -> Option<Vec<CarTelemetry>> {
 //     DATA_STORE.lock().unwrap().get_lap_data(&identifier)
 // }
 
-// pub fn store_lap(ticks: Vec<CarTelemetry>, metadata: &LapMetadata) {
-//     DATA_STORE.lock().unwrap().store_lap(ticks, metadata)
+pub fn store_packets(packets: Vec<Vec<u8>>) {
+    DATA_STORE.lock().unwrap().store_packets(packets)
+}
+
+// pub fn get_record_tracker(track_id: u8, era: u16) -> RecordTracker {
+//     DATA_STORE.lock().unwrap().get_record_tracker(track_id, era)
 // }
 
-pub fn get_record_tracker(track_id: u8, era: u16) -> RecordTracker {
-    DATA_STORE.lock().unwrap().get_record_tracker(track_id, era)
-}
-
-pub fn store_records(record_tracker: &RecordTracker) {
-    DATA_STORE.lock().unwrap().store_records(record_tracker)
-}
+// pub fn store_records(record_tracker: &RecordTracker) {
+//     DATA_STORE.lock().unwrap().store_records(record_tracker)
+// }

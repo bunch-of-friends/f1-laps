@@ -4,6 +4,7 @@ extern crate serde_derive;
 extern crate lazy_static;
 extern crate bincode;
 extern crate chrono;
+extern crate schedule_recv;
 
 mod file_system;
 mod lap_metadata;
@@ -19,8 +20,8 @@ use lap_metadata::LapMetadata;
 use pipeline::input::Tick;
 use pipeline::output::Output;
 use pipeline::Pipeline;
-use record_tracking::RecordSet;
-use std::sync::mpsc::{self, TryRecvError};
+// use record_tracking::RecordSet;
+use std::sync::mpsc;
 use std::thread;
 
 pub fn initialise(storage_folder_path: String) {
@@ -119,9 +120,9 @@ pub fn get_all_laps_metadata() -> Vec<LapMetadata> {
     return storage::get_all_laps_metadata();
 }
 
-pub fn get_all_records() -> RecordSet {
-    return storage::get_all_records();
-}
+// pub fn get_all_records() -> RecordSet {
+//     return storage::get_all_records();
+// }
 
 // #[cfg(test)]
 // pub(crate) mod test_utils {
