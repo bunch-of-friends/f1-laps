@@ -217,7 +217,8 @@ export interface SessionIdentifier {
     track_id: number;
     session_type: number;
     era: number;
-    uid: number;
+    session_uid: number;
+    session_time: number;
 }
 
 export interface SectorFinished {
