@@ -24,8 +24,8 @@ fn main() {
             println!("{:?}", lap);
         }
 
-        if let Some(ref session_data) = output.session_data {
-            println!("L{} {}/3", session_data.current_lap_number, session_data.current_sector_number);
+        if let Some(ref lap_data) = output.lap_data {
+            println!("L{} {}/3", lap_data.current_lap_number, lap_data.current_sector_number);
         }
 
         // if let Some(ref car_telemetry) = output.car_telemetry {
