@@ -1,6 +1,6 @@
 mod extensions;
 
-pub use pipeline::input::{CarMotion, CarStatus, CarTelemetry, Header, SessionData};
+pub use pipeline::input::{CarMotion, CarStatus, CarTelemetry, Header, LapData, SessionData};
 
 #[derive(Debug)]
 pub struct Context {
@@ -26,6 +26,7 @@ pub struct Output {
     pub labels: Labels,
     pub events: Events,
     pub session_data: Option<SessionData>,
+    pub lap_data: Option<LapData>,
     pub car_status: Option<CarStatus>,
     pub car_telemetry: Option<CarTelemetry>,
     pub car_motion: Option<CarMotion>,

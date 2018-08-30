@@ -24,9 +24,9 @@ fn main() {
             println!("{:?}", lap);
         }
 
-        // if let Some(ref session_data) = output.session_data {
-        //     println!("{:?}", session_data);
-        // }
+        if let Some(ref session_data) = output.session_data {
+            println!("L{} {}/3", session_data.current_lap_number, session_data.current_sector_number);
+        }
 
         // if let Some(ref car_telemetry) = output.car_telemetry {
         //     println!("{:?}", car_telemetry);
@@ -41,7 +41,7 @@ fn main() {
         // }
     };
 
-    let h = f1_laps_core::start_listening(20777, on_received);
+    let h = f1_laps_core::start_listening(20777, true, on_received);
     // let h = f1_laps_core::replay_packets(on_received);
 
     assert!(!h.0.join().is_err());

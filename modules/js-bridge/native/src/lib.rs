@@ -21,6 +21,7 @@ pub struct Collector {
     finished_lap: Option<Lap>,
     finished_sector: Option<Sector>,
     session_data: Option<SessionData>,
+    lap_data: Option<LapData>,
     car_status: Option<CarStatus>,
     car_telemetry: Option<CarTelemetry>,
     car_motion: Option<CarMotion>,
@@ -33,6 +34,7 @@ impl Collector {
             finished_lap: None,
             finished_sector: None,
             session_data: None,
+            lap_data: None,
             car_status: None,
             car_telemetry: None,
             car_motion: None,
@@ -54,6 +56,10 @@ impl Collector {
 
         if output.session_data.is_some() {
             self.session_data = output.session_data.clone();
+        }
+
+        if output.lap_data.is_some() {
+            self.lap_data = output.lap_data.clone();
         }
 
         if output.car_status.is_some() {
@@ -90,6 +96,12 @@ impl Collector {
     pub fn get_session_data(&mut self) -> Option<SessionData> {
         let res = self.session_data.clone();
         self.session_data = None;
+        res
+    }
+
+    pub fn get_lap_data(&mut self) -> Option<LapData> {
+        let res = self.lap_data.clone();
+        self.lap_data = None;
         res
     }
 
@@ -172,6 +184,13 @@ fn get_next_tick(mut cx: FunctionContext) -> JsResult<JsObject> {
         &mut cx,
         "sessionData",
         collector.get_session_data().as_ref(),
+        &object,
+    )?;
+
+    append_as_js(
+        &mut cx,
+        "lapData",
+        collector.get_lap_data().as_ref(),
         &object,
     )?;
 

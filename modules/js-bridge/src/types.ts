@@ -10,6 +10,7 @@ export interface Tick {
     finishedLap: Lap;
     finishedSector: Sector;
     sessionData: SessionData;
+    lapData: LapData;
     carStatus: CarStatus;
     carTelemetry: CarTelemetry;
     carMotion: CarMotion;
@@ -44,13 +45,29 @@ export interface SessionData {
     track_temperature: number;
     air_temperature: number;
     race_laps: number;
-    track_lenght: number;
+    track_length: number;
     session_time_left: number;
     session_duration: number;
     is_game_paused: boolean;
     is_spectating: boolean;
     is_online_game: boolean;
     safety_car_status: SafetyCarStatus;
+}
+
+export interface LapData {
+    car_position: number;
+    last_lap_time: number;
+    sector1_time: number;
+    sector2_time: number;
+    current_sector_number: number;
+    current_lap_number: number;
+    current_lap_time: number;
+    current_lap_distance: number;
+    pit_status: number;
+    is_lap_valid: boolean;
+    penalties: number;
+    driver_status: DriverStatus;
+    result_status: ResultStatus;
 }
 
 export interface CarStatus {
@@ -190,6 +207,31 @@ export enum Era {
     Classic = 1
 }
 
+
+export enum SafetyCarStatus {
+    NoSC = 0,
+    Full = 1,
+    VSC = 2
+}
+
+export enum DriverStatus {
+    InGarage = 0,
+    FlyingLap = 1,
+    InLap = 2,
+    OutLap = 3,
+    OnTrack = 4
+}
+
+export enum ResultStatus {
+    Invalid = 0,
+    Inactive = 1,
+    Active = 2,
+    Finished = 3,
+    Disqualified = 4,
+    NotClasified = 5,
+    Retired = 6
+}
+
 export enum Track {
     Unknown = -1,
     Melbourne = 0,
@@ -217,12 +259,6 @@ export enum Track {
     SilverstoneShort = 22,
     TexasShort = 23,
     SuzukaShort = 24
-}
-
-export enum SafetyCarStatus {
-    NoSC = 0,
-    Full = 1,
-    VSC = 2
 }
 
 export enum Team {
