@@ -35,7 +35,7 @@ impl PathHelper {
         format!(
             "{}/{}.bin",
             self.get_packets_folder_path(),
-            Utc::now().date().format("%Y-%m-%d-%H-%M-%S-%f")
+            Utc::now().format("%Y-%m-%d-%H-%M-%S")
         )
     }
 }

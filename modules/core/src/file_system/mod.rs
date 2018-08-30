@@ -4,22 +4,24 @@ use bincode;
 use std::fs::{create_dir, read_dir, File};
 use std::path::Path;
 
+use udp::Packet;
+
 use self::path_helper::PathHelper;
 
-pub fn initialise(storage_folder_path: &str) -> PathHelper {
+pub(crate) fn initialise(storage_folder_path: &str) -> PathHelper {
     let path_helper = PathHelper::new(storage_folder_path);
     ensure_storage_files_created(&path_helper);
 
     build_data_store(&path_helper)
 }
 
-pub fn store_packets(packets: Vec<Vec<u8>>, path_helper: &PathHelper) {
+pub(crate) fn store_packets(packets: Vec<Packet>, path_helper: &PathHelper) {
     let path = path_helper.get_packets_file_name();
     let file = File::create(&path).unwrap();
     bincode::serialize_into(file, &packets).unwrap();
 }
 
-pub fn get_all_packets(path_helper: &PathHelper) -> Vec<Vec<u8>> {
+pub(crate) fn get_all_packets(path_helper: &PathHelper) -> Vec<Packet> {
     let packets_dir = path_helper.get_packets_folder_path();
     let paths = read_dir(packets_dir).unwrap();
 
@@ -36,13 +38,13 @@ pub fn get_all_packets(path_helper: &PathHelper) -> Vec<Vec<u8>> {
 
     file_names.sort();
 
-    let mut packets = Vec::<Vec<u8>>::new();
+    let mut packets = Vec::<Packet>::new();
     for file_name in file_names {
         let full_path = path_helper.get_packet_file_path(&file_name);
         println!("loading file >> {}", full_path);
 
         let file = File::open(full_path).expect("failed to open file");
-        let data = bincode::deserialize_from::<File, Vec<Vec<u8>>>(file).ok();
+        let data = bincode::deserialize_from::<File, Vec<Packet>>(file).ok();
 
         if data.is_some() {
             packets.extend(data.unwrap());
