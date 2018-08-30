@@ -25,7 +25,7 @@ pub fn start_listening<T>(
     let packets: Arc<Mutex<Vec<Packet>>> = Arc::new(Mutex::new(Vec::new()));
 
     if should_store_packets {
-        let store_packets_tick = schedule_recv::periodic(Duration::from_secs(10));
+        let store_packets_tick = schedule_recv::periodic(Duration::from_secs(120));
         let packets_mutext_store = packets.clone();
         thread::spawn(move || loop {
             store_packets_tick.recv().unwrap();

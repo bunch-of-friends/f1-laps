@@ -122,8 +122,17 @@ fn initialise(mut cx: FunctionContext) -> JsResult<JsUndefined> {
 
 fn start_listening(mut cx: FunctionContext) -> JsResult<JsUndefined> {
     let port = cx.argument::<JsNumber>(0)?.value() as i32;
+    let should_store_packets = cx.argument::<JsBoolean>(1)?.value();
 
-    f1_laps_core::start_listening(port, on_output_received);
+    f1_laps_core::start_listening(port, should_store_packets, on_output_received);
+
+    Ok(JsUndefined::new())
+}
+
+fn replay_packets(mut cx: FunctionContext) -> JsResult<JsUndefined> {
+    let should_simulate_time = cx.argument::<JsBoolean>(0)?.value();
+
+    f1_laps_core::replay_packets(should_simulate_time, on_output_received);
 
     Ok(JsUndefined::new())
 }
@@ -211,6 +220,7 @@ where
 register_module!(mut cx, {
     cx.export_function("initialise", initialise)?;
     cx.export_function("startListening", start_listening)?;
+    cx.export_function("replayPackets", replay_packets)?;
     cx.export_function("getNextTick", get_next_tick)?;
     Ok(())
 });

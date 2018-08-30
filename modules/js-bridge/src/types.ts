@@ -1,3 +1,20 @@
+export interface Core {
+    initialise(storageFolderPath: string): void;
+    startListening(port: number, shouldStorePackets: boolean): void;
+    replayPackets(shouldSimulateTime: boolean): void;
+    getNextTick(): Tick;
+}
+
+export interface Tick {
+    sessionIdentifier: SessionIdentifier;
+    finishedLap: Lap;
+    finishedSector: Sector;
+    sessionData: SessionData;
+    carStatus: CarStatus;
+    carTelemetry: CarTelemetry;
+    carMotion: CarMotion;
+}
+
 // export enum DRS {
 //     Off = 0,
 //     On
@@ -221,13 +238,13 @@ export interface SessionIdentifier {
     session_time: number;
 }
 
-export interface SectorFinished {
+export interface Sector {
     sector_number: number;
     sector_time: number;
     is_finished: boolean;
 }
 
-export interface LapFinished {
+export interface Lap {
     lap_number: number;
     lap_time: number;
     sector_times: Array<number>;
