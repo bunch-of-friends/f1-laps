@@ -2,7 +2,7 @@ const core = require('../native') as Core;
 const stayAwake = require('stay-awake');
 
 import { createSubject, createObservable } from '@bunch-of-friends/observable';
-import { SessionIdentifier, SessionData, Lap, Sector, CarStatus, CarTelemetry, CarMotion, Core } from './types';
+import { SessionIdentifier, SessionData, Lap, Sector, CarStatus, CarTelemetry, CarMotion, Core, LapData } from './types';
 
 export * from './types';
 export * from '@bunch-of-friends/observable';
@@ -15,6 +15,8 @@ let sectorFinishedSubject = createSubject<Sector>();
 let sectorFinishedObservable = createObservable<Sector>(sectorFinishedSubject);
 let sessionDataSubject = createSubject<SessionData>();
 let sessionDataObservable = createObservable<SessionData>(sessionDataSubject);
+let lapDataSubject = createSubject<LapData>();
+let lapDataObservable = createObservable<LapData>(lapDataSubject);
 let carStatusSubject = createSubject<CarStatus>();
 let carStatusObservable = createObservable<CarStatus>(carStatusSubject);
 let carTelemetrySubject = createSubject<CarTelemetry>();
@@ -29,6 +31,7 @@ export {
     lapFinishedObservable as lapFinished,
     sectorFinishedObservable as sectorFinished,
     sessionDataObservable as sessionData,
+    lapDataObservable as lapData,
     carStatusObservable as carStatus,
     carTelemetryObservable as carTelemetry,
     carMotionObservable as carMotion
@@ -73,6 +76,10 @@ function getNextTick() {
 
     if (tick.sessionData) {
         sessionDataSubject.notifyObservers(tick.sessionData);
+    }
+
+    if (tick.lapData) {
+        lapDataSubject.notifyObservers(tick.lapData);
     }
 
     if (tick.carStatus) {
