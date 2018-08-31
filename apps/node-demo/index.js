@@ -12,8 +12,8 @@ core.carStatus.register(data => console.log('carStatus >> ', data));
 core.carTelemetry.register(data => console.log('carTelemetry >> ', data));
 core.carMotion.register(data => console.log('carMotion >> ', data));
 
-core.startListening(20777);
-// core.replayAllLaps();
+// core.startListening(20777);
+core.replayPackets();
 
 // let metadata = core.getAllLapsMetadata();
 // console.log("metadata >>", metadata);

@@ -1,6 +1,6 @@
 mod extensions;
 
-pub use pipeline::input::{CarMotion, CarStatus, CarTelemetry, Header, SessionData};
+pub use pipeline::input::{CarMotion, CarStatus, CarTelemetry, Header, LapData, SessionData};
 
 #[derive(Debug)]
 pub struct Context {
@@ -26,6 +26,7 @@ pub struct Output {
     pub labels: Labels,
     pub events: Events,
     pub session_data: Option<SessionData>,
+    pub lap_data: Option<LapData>,
     pub car_status: Option<CarStatus>,
     pub car_telemetry: Option<CarTelemetry>,
     pub car_motion: Option<CarMotion>,
@@ -52,7 +53,8 @@ pub struct SessionIdentifier {
     pub track_id: i8,
     pub session_type: u8,
     pub era: u8,
-    pub uid: u64,
+    pub session_uid: u64,
+    pub session_time: f32,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

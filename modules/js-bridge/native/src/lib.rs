@@ -21,6 +21,7 @@ pub struct Collector {
     finished_lap: Option<Lap>,
     finished_sector: Option<Sector>,
     session_data: Option<SessionData>,
+    lap_data: Option<LapData>,
     car_status: Option<CarStatus>,
     car_telemetry: Option<CarTelemetry>,
     car_motion: Option<CarMotion>,
@@ -33,6 +34,7 @@ impl Collector {
             finished_lap: None,
             finished_sector: None,
             session_data: None,
+            lap_data: None,
             car_status: None,
             car_telemetry: None,
             car_motion: None,
@@ -54,6 +56,10 @@ impl Collector {
 
         if output.session_data.is_some() {
             self.session_data = output.session_data.clone();
+        }
+
+        if output.lap_data.is_some() {
+            self.lap_data = output.lap_data.clone();
         }
 
         if output.car_status.is_some() {
@@ -93,6 +99,12 @@ impl Collector {
         res
     }
 
+    pub fn get_lap_data(&mut self) -> Option<LapData> {
+        let res = self.lap_data.clone();
+        self.lap_data = None;
+        res
+    }
+
     pub fn get_car_status(&mut self) -> Option<CarStatus> {
         let res = self.car_status.clone();
         self.car_status = None;
@@ -122,8 +134,17 @@ fn initialise(mut cx: FunctionContext) -> JsResult<JsUndefined> {
 
 fn start_listening(mut cx: FunctionContext) -> JsResult<JsUndefined> {
     let port = cx.argument::<JsNumber>(0)?.value() as i32;
+    let should_store_packets = cx.argument::<JsBoolean>(1)?.value();
 
-    f1_laps_core::start_listening(port, on_output_received);
+    f1_laps_core::start_listening(port, should_store_packets, on_output_received);
+
+    Ok(JsUndefined::new())
+}
+
+fn replay_packets(mut cx: FunctionContext) -> JsResult<JsUndefined> {
+    let should_simulate_time = cx.argument::<JsBoolean>(0)?.value();
+
+    f1_laps_core::replay_packets(should_simulate_time, on_output_received);
 
     Ok(JsUndefined::new())
 }
@@ -163,6 +184,13 @@ fn get_next_tick(mut cx: FunctionContext) -> JsResult<JsObject> {
         &mut cx,
         "sessionData",
         collector.get_session_data().as_ref(),
+        &object,
+    )?;
+
+    append_as_js(
+        &mut cx,
+        "lapData",
+        collector.get_lap_data().as_ref(),
         &object,
     )?;
 
@@ -211,6 +239,7 @@ where
 register_module!(mut cx, {
     cx.export_function("initialise", initialise)?;
     cx.export_function("startListening", start_listening)?;
+    cx.export_function("replayPackets", replay_packets)?;
     cx.export_function("getNextTick", get_next_tick)?;
     Ok(())
 });

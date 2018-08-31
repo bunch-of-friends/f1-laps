@@ -7,7 +7,8 @@ impl SessionIdentifier {
             track_id: s.track_id,
             session_type: s.session_type,
             era: s.era,
-            uid: header.session_uid,
+            session_uid: header.session_uid,
+            session_time: header.session_time,
         }
     }
 }

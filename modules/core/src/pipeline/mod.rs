@@ -2,36 +2,18 @@ pub(crate) mod input;
 pub(crate) mod output;
 mod routines;
 
-use std::thread;
-
 use self::input::*;
 use self::output::*;
-use lap_metadata::LapMetadata;
-use storage;
 
 pub struct Pipeline {
     context: Context,
-    // current_lap_telemetry: Vec<CarTelemetry>,
-    should_store_laps: bool,
-    should_wait_for_fs: bool,
 }
 
 impl Pipeline {
     pub fn new() -> Pipeline {
         Pipeline {
             context: Context::empty(),
-            // current_lap_telemetry: Vec::new(),
-            should_store_laps: true,
-            should_wait_for_fs: false,
         }
-    }
-
-    pub fn set_should_store_laps(&mut self, should_store_laps: bool) {
-        self.should_store_laps = should_store_laps;
-    }
-
-    pub fn set_should_wait_for_fs(&mut self, should_wait_for_fs: bool) {
-        self.should_wait_for_fs = should_wait_for_fs;
     }
 
     pub fn process(&mut self, tick: Tick) -> Output {
@@ -57,6 +39,7 @@ impl Pipeline {
             labels: labels,
             events: events,
             session_data: tick.session_data,
+            lap_data: tick.lap_data,
             car_status: tick.car_status,
             car_telemetry: tick.car_telemetry,
             car_motion: tick.car_motion,

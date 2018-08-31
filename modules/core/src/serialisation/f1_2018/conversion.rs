@@ -94,7 +94,7 @@ impl PacketLapData {
             current_lap_distance: data.m_lapDistance,
             pit_status: data.m_pitStatus,
             is_lap_valid: data.m_currentLapInvalid != 0,
-            penaltis: data.m_penalties,
+            penalties: data.m_penalties,
             driver_status: data.m_driverStatus,
             result_status: data.m_resultStatus,
         }
@@ -111,7 +111,7 @@ impl PacketSessionData {
             track_temperature: self.m_trackTemperature,
             air_temperature: self.m_airTemperature,
             race_laps: self.m_totalLaps,
-            track_lenght: self.m_trackLength,
+            track_length: self.m_trackLength,
             session_time_left: self.m_sessionTimeLeft,
             session_duration: self.m_sessionDuration,
             is_game_paused: self.m_gamePaused == 1,
