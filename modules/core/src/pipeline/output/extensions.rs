@@ -14,16 +14,16 @@ impl SessionIdentifier {
 }
 
 impl Lap {
-    pub fn from_tick(tick: &Tick) -> Option<Lap> {
-        if let Some(ref lap_data) = tick.lap_data {
-            Some(Lap {
-                lap_number: lap_data.current_lap_number,
-                sector_times: [lap_data.sector1_time, lap_data.sector2_time, 0 as f32],
-                lap_time: lap_data.current_lap_time,
-                is_finished: false,
-            })
-        } else {
-            None
+    pub fn from_tick(tick: &Tick) -> Lap {
+        Lap {
+            lap_number: tick.lap_data.current_lap_number,
+            sector_times: [
+                tick.lap_data.sector1_time,
+                tick.lap_data.sector2_time,
+                0 as f32,
+            ],
+            lap_time: tick.lap_data.current_lap_time,
+            is_finished: false,
         }
     }
 
@@ -41,15 +41,11 @@ impl Lap {
 }
 
 impl Sector {
-    pub fn from_tick(tick: &Tick) -> Option<Sector> {
-        if let Some(ref lap_data) = tick.lap_data {
-            Some(Sector {
-                sector_number: lap_data.current_sector_number,
-                sector_time: 0 as f32,
-                is_finished: false,
-            })
-        } else {
-            None
+    pub fn from_tick(tick: &Tick) -> Sector {
+        Sector {
+            sector_number: tick.lap_data.current_sector_number,
+            sector_time: 0 as f32,
+            is_finished: false,
         }
     }
 

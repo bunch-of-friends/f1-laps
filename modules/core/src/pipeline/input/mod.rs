@@ -4,9 +4,9 @@ mod extensions;
 pub struct Tick {
     pub header: Header,
     pub session_data: Option<SessionData>,
-    pub lap_data: Option<LapData>,
-    pub car_motion: Option<CarMotion>,
-    pub car_telemetry: Option<CarTelemetry>,
+    pub lap_data: LapData,
+    pub car_motion: CarMotion,
+    pub car_telemetry: CarTelemetry,
     pub car_status: Option<CarStatus>,
 }
 
@@ -15,6 +15,7 @@ pub struct Header {
     pub session_uid: u64,
     pub session_time: f32,
     pub player_index: u8,
+    pub frame_id: u32,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -32,7 +33,7 @@ pub struct SessionData {
     pub is_game_paused: bool,
     pub is_spectating: bool,
     pub is_online_game: bool,
-    pub safety_car_status: u8
+    pub safety_car_status: u8,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

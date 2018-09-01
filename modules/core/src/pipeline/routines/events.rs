@@ -27,16 +27,16 @@ fn get_started_session(tick: &Tick, labels: &Labels) -> Option<SessionIdentifier
 }
 
 fn get_finished_lap(tick: &Tick, context: &Context, labels: &Labels) -> Option<Lap> {
-    if labels.is_new_lap && tick.lap_data.is_some() && !labels.is_teleported {
-        build_finished_lap(tick.lap_data.as_ref().unwrap(), context)
+    if !labels.is_teleported {
+        build_finished_lap(&tick.lap_data, context)
     } else {
         None
     }
 }
 
 fn get_finished_sector(tick: &Tick, labels: &Labels, finished_lap: &Option<Lap>) -> Option<Sector> {
-    if labels.is_new_sector && tick.lap_data.is_some() && !labels.is_teleported {
-        build_finished_sector(tick.lap_data.as_ref().unwrap(), finished_lap)
+    if !labels.is_teleported {
+        build_finished_sector(&tick.lap_data, finished_lap)
     } else {
         None
     }

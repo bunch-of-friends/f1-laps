@@ -1,26 +1,16 @@
 use pipeline::input::Tick;
-use serialisation::ReceivePacket;
-use storage;
-
 use schedule_recv;
-
+use serialisation::{self, ReceivePacket};
 use std::net::UdpSocket;
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::Duration;
-
+use storage;
 use udp::Packet;
 
-pub fn start_listening<T>(
-    port: i32,
-    should_store_packets: bool,
-    serialiser: T,
-    tx: mpsc::Sender<Tick>,
-) where
-    T: ReceivePacket + 'static,
-{
+pub fn start_listening(port: i32, should_store_packets: bool, tx: mpsc::Sender<Tick>) {
     let socket = bind_to_address(format!("0.0.0.0:{}", port));
-    let buffer_size = serialiser.get_buffer_size();
+    let buffer_size = serialisation::get_buffer_size();
 
     let packets: Arc<Mutex<Vec<Packet>>> = Arc::new(Mutex::new(Vec::new()));
 
@@ -50,8 +40,8 @@ pub fn start_listening<T>(
 
         if let Some((amt, _src)) = socket.recv_from(&mut buffer).ok() {
             let tx = tx.clone();
-            let serialiser = serialiser.clone();
             let packets_mutex_receive = packets.clone();
+            let mut serialiser = serialisation::get_serialiser();
             thread::spawn(move || {
                 if let Some(tick) = serialiser.converto_to_tick(&buffer, amt) {
                     tx.send(tick).ok();
@@ -68,10 +58,7 @@ pub fn start_listening<T>(
 
 fn bind_to_address(address: String) -> UdpSocket {
     return match UdpSocket::bind(&address) {
-        Ok(socket) => {
-            println!("listening on: {} ", address);
-            socket
-        }
+        Ok(socket) => socket,
         Err(e) => panic!("couldn't bind to: {}; e: {}", address, e),
     };
 }
