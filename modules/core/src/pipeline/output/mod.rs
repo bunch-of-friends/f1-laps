@@ -11,9 +11,9 @@ pub struct Context {
 #[derive(Debug)]
 pub struct SessionContext {
     pub header: Option<Header>,
-    pub session: Option<SessionIdentifier>,
-    pub lap: Option<Lap>,
-    pub sector: Option<Sector>,
+    pub current_session: Option<SessionIdentifier>,
+    pub current_lap: Option<Lap>,
+    pub current_sector: Option<Sector>,
     pub car_motion: Option<CarMotion>,
     pub car_status: Option<CarStatus>,
 }
@@ -62,12 +62,12 @@ pub struct Lap {
     pub lap_number: u8,
     pub sector_times: [f32; 3],
     pub lap_time: f32,
-    pub is_finished: bool,
+    pub is_complete: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Sector {
     pub sector_number: u8,
     pub sector_time: f32,
-    pub is_finished: bool,
+    pub is_complete: bool,
 }

@@ -23,7 +23,7 @@ impl Lap {
                 0 as f32,
             ],
             lap_time: tick.lap_data.current_lap_time,
-            is_finished: false,
+            is_complete: false,
         }
     }
 
@@ -35,7 +35,7 @@ impl Lap {
             lap_number: lap_n,
             sector_times: [s1_t, s2_t, s3_t],
             lap_time: lap_t,
-            is_finished: true,
+            is_complete: true,
         }
     }
 }
@@ -45,15 +45,15 @@ impl Sector {
         Sector {
             sector_number: tick.lap_data.current_sector_number,
             sector_time: 0 as f32,
-            is_finished: false,
+            is_complete: false,
         }
     }
 
-    pub fn finished(t: f32, n: u8) -> Sector {
+    pub fn finished(t: f32, n: u8, is_complete: bool) -> Sector {
         Sector {
             sector_number: n,
             sector_time: t,
-            is_finished: true,
+            is_complete: is_complete,
         }
     }
 }
@@ -62,9 +62,9 @@ impl SessionContext {
     pub fn empty() -> SessionContext {
         SessionContext {
             header: None,
-            session: None,
-            lap: None,
-            sector: None,
+            current_session: None,
+            current_lap: None,
+            current_sector: None,
             car_motion: None,
             car_status: None,
         }

@@ -28,13 +28,13 @@ export interface Lap {
     lap_number: number;
     lap_time: number;
     sector_times: Array<number>;
-    is_finished: boolean;
+    is_complete: boolean;
 }
 
 export interface Sector {
     sector_number: number;
     sector_time: number;
-    is_finished: boolean;
+    is_complete: boolean;
 }
 
 export interface SessionData {

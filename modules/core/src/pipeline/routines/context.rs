@@ -5,9 +5,9 @@ pub fn build_context(tick: &Tick, context: &Context) -> Context {
     Context {
         session_context: SessionContext {
             header: Some(tick.header.clone()),
-            session: build_session(tick, context),
-            lap: Some(Lap::from_tick(tick)),
-            sector: Some(Sector::from_tick(tick)),
+            current_session: build_session(tick, context),
+            current_lap: Some(Lap::from_tick(tick)),
+            current_sector: Some(Sector::from_tick(tick)),
             car_motion: Some(tick.car_motion.clone()),
             car_status: build_car_status(tick, context),
         },
@@ -22,7 +22,7 @@ fn build_session(tick: &Tick, context: &Context) -> Option<SessionIdentifier> {
             &tick.header,
         ))
     } else {
-        context.session_context.session.clone()
+        context.session_context.current_session.clone()
     }
 }
 

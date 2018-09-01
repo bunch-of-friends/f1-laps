@@ -31,7 +31,7 @@ fn is_new_lap(is_new_session: bool, tick: &Tick, context: &Context) -> bool {
         return true;
     }
 
-    if let Some(ref current_lap) = context.session_context.lap {
+    if let Some(ref current_lap) = context.session_context.current_lap {
         tick.lap_data.current_lap_number != current_lap.lap_number
     } else {
         true
@@ -43,7 +43,7 @@ fn is_new_sector(is_new_lap: bool, tick: &Tick, context: &Context) -> bool {
         return true;
     }
 
-    if let Some(ref current_sector) = context.session_context.sector {
+    if let Some(ref current_sector) = context.session_context.current_sector {
         tick.lap_data.current_sector_number != current_sector.sector_number
     } else {
         false
@@ -55,7 +55,7 @@ fn is_flashback(is_new_session: bool, is_new_lap: bool, tick: &Tick, context: &C
         return false;
     }
 
-    if let Some(ref current_lap) = context.session_context.lap {
+    if let Some(ref current_lap) = context.session_context.current_lap {
         tick.lap_data.current_lap_time < current_lap.lap_time
     } else {
         false
