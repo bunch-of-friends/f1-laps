@@ -16,10 +16,10 @@ fn main() {
 
 fn start(args: Vec<String>) -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>) {
     if args.len() > 1 && (args[1] == "replay" || args[1] == "r") {
-        println!("replaying mode");
+        println!("replay mode");
         f1_laps_core::replay_packets(true, on_received)
     } else {
-        println!("listening mode");
+        println!("udp mode");
         f1_laps_core::start_listening(20777, true, on_received)
     }
 }

@@ -5,6 +5,7 @@ use std::sync::Mutex;
 use self::data_store::DataStore;
 use file_system;
 use file_system::path_helper;
+use std::sync::mpsc;
 use udp::Packet;
 
 lazy_static! {
@@ -20,6 +21,6 @@ pub(crate) fn store_packets(packets: Vec<Packet>) {
     DATA_STORE.lock().unwrap().store_packets(packets)
 }
 
-pub(crate) fn get_all_packets() -> Vec<Packet> {
-    DATA_STORE.lock().unwrap().get_all_packets()
+pub(crate) fn get_all_packets(tx: &mpsc::Sender<Vec<Packet>>) {
+    DATA_STORE.lock().unwrap().get_all_packets(tx)
 }
