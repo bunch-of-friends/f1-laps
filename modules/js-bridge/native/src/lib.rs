@@ -58,21 +58,15 @@ impl Collector {
             self.session_data = output.session_data.clone();
         }
 
-        if output.lap_data.is_some() {
-            self.lap_data = output.lap_data.clone();
-        }
+        self.lap_data = Some(output.lap_data.clone());
 
         if output.car_status.is_some() {
             self.car_status = output.car_status.clone();
         }
 
-        if output.car_telemetry.is_some() {
-            self.car_telemetry = output.car_telemetry.clone();
-        }
+        self.car_telemetry = Some(output.car_telemetry.clone());
 
-        if output.car_motion.is_some() {
-            self.car_motion = output.car_motion.clone();
-        }
+        self.car_motion = Some(output.car_motion.clone());
     }
 
     pub fn get_session_identifier(&mut self) -> Option<SessionIdentifier> {
