@@ -4,6 +4,7 @@ use bincode;
 use std::fs::{create_dir, read_dir, File};
 use std::path::Path;
 
+use std::sync::mpsc;
 use udp::Packet;
 
 use self::path_helper::PathHelper;
@@ -21,7 +22,7 @@ pub(crate) fn store_packets(packets: Vec<Packet>, path_helper: &PathHelper) {
     bincode::serialize_into(file, &packets).unwrap();
 }
 
-pub(crate) fn get_all_packets(path_helper: &PathHelper) -> Vec<Packet> {
+pub(crate) fn get_all_packets(path_helper: &PathHelper, tx: &mpsc::Sender<Vec<Packet>>) {
     let packets_dir = path_helper.get_packets_folder_path();
     let paths = read_dir(packets_dir).unwrap();
 
@@ -38,20 +39,16 @@ pub(crate) fn get_all_packets(path_helper: &PathHelper) -> Vec<Packet> {
 
     file_names.sort();
 
-    let mut packets = Vec::<Packet>::new();
     for file_name in file_names {
         let full_path = path_helper.get_packet_file_path(&file_name);
-        println!("loading file >> {}", full_path);
 
         let file = File::open(full_path).expect("failed to open file");
         let data = bincode::deserialize_from::<File, Vec<Packet>>(file).ok();
 
         if data.is_some() {
-            packets.extend(data.unwrap());
+            tx.send(data.unwrap()).ok();
         }
     }
-
-    packets
 }
 
 fn ensure_storage_files_created(path_helper: &PathHelper) {
