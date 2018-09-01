@@ -18,8 +18,9 @@ pub fn replay_packets(should_simulate_time: bool, tx: mpsc::Sender<Tick>) {
     });
 
     let mut last_packet_time = Utc::now();
+    let mut serialiser = serialisation::get_serialiser();
+
     thread::spawn(move || loop {
-        let mut serialiser = serialisation::get_serialiser();
         match packet_rx.try_recv() {
             Ok(packets) => {
                 for packet in &packets {

@@ -93,6 +93,14 @@ impl Serialiser {
             false
         }
     }
+
+    fn is_current_frame_complete(&self) -> bool {
+        if let Some(ref current_frame) = self.current_frame {
+            current_frame.is_complete()
+        } else {
+            false
+        }
+    }
 }
 
 impl ReceivePacket for Serialiser {
@@ -108,10 +116,10 @@ impl ReceivePacket for Serialiser {
         let mut result: Option<Tick> = None;
 
         if !self.is_current_frame(&header) {
-            if self.current_frame.is_some() {
+            if self.is_current_frame_complete() {
                 let previous_frame = self.current_frame.clone().unwrap();
                 self.current_frame = Some(Frame::new(&header));
-                result = Some(previous_frame.to_tick())
+                result = previous_frame.to_tick();
             } else {
                 self.current_frame = Some(Frame::new(&header));
             }
@@ -180,18 +188,20 @@ impl Frame {
         }
     }
 
-    pub fn to_tick(&self) -> Tick {
-        assert!(self.lap_data.is_some());
-        assert!(self.car_motion.is_some());
-        assert!(self.car_telemetry.is_some());
+    pub fn is_complete(&self) -> bool {
+        self.lap_data.is_some() && self.car_motion.is_some() || self.car_telemetry.is_some()
+    }
 
-        Tick::new(
+    pub fn to_tick(&self) -> Option<Tick> {
+        assert!(self.is_complete());
+
+        Some(Tick::new(
             self.header.clone(),
             self.session_data.clone(),
             self.lap_data.clone().unwrap(),
             self.car_motion.clone().unwrap(),
             self.car_telemetry.clone().unwrap(),
             self.car_status.clone(),
-        )
+        ))
     }
 }
