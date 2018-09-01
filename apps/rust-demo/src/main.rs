@@ -51,9 +51,9 @@ fn on_received(output: Output) {
         println!("teleported");
     }
 
-    // if let Some(ref sector) = output.events.finished_sector {
-    //     println!("SECTOR FINISHED >>> {:?}", sector);
-    // }
+    if let Some(ref sector) = output.events.finished_sector {
+        println!("SECTOR FINISHED >>> {:?}", sector);
+    }
 
     if let Some(ref lap) = output.events.finished_lap {
         println!("LAP FINISHED >>> {:?}", lap);
