@@ -30,7 +30,7 @@ fn start(args: &Vec<String>) -> Option<(std::thread::JoinHandle<()>, std::thread
             Some(f1_laps_core::replay_packets(b_value, on_received))
         }
         "udp" | "u" => {
-            println!("running in replay mode");
+            println!("running in udp mode");
             Some(f1_laps_core::start_listening(20777, b_value, on_received))
         }
         _ => {
@@ -51,9 +51,9 @@ fn on_received(output: Output) {
         println!("teleported");
     }
 
-    if let Some(ref sector) = output.events.finished_sector {
-        println!("SECTOR FINISHED >>> {:?}", sector);
-    }
+    // if let Some(ref sector) = output.events.finished_sector {
+    //     println!("SECTOR FINISHED >>> {:?}", sector);
+    // }
 
     if let Some(ref lap) = output.events.finished_lap {
         println!("LAP FINISHED >>> {:?}", lap);
