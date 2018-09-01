@@ -2,7 +2,7 @@ const core = require('../native') as Core;
 const stayAwake = require('stay-awake');
 
 import { createSubject, createObservable } from '@bunch-of-friends/observable';
-import { SessionIdentifier, SessionData, Lap, Sector, CarStatus, Telemetry, Core } from './types';
+import { SessionIdentifier, SessionData, Lap, Sector, CarStatus, CarTelemetry, CarMotion, Core, LapData } from './types';
 
 export * from './types';
 export * from '@bunch-of-friends/observable';
@@ -15,10 +15,14 @@ let sectorFinishedSubject = createSubject<Sector>();
 let sectorFinishedObservable = createObservable<Sector>(sectorFinishedSubject);
 let sessionDataSubject = createSubject<SessionData>();
 let sessionDataObservable = createObservable<SessionData>(sessionDataSubject);
-let telemetryDataSubject = createSubject<Telemetry>();
-let telemetryDataObservable = createObservable<Telemetry>(telemetryDataSubject);
+let lapDataSubject = createSubject<LapData>();
+let lapDataObservable = createObservable<LapData>(lapDataSubject);
 let carStatusSubject = createSubject<CarStatus>();
 let carStatusObservable = createObservable<CarStatus>(carStatusSubject);
+let carTelemetrySubject = createSubject<CarTelemetry>();
+let carTelemetryObservable = createObservable<CarTelemetry>(carTelemetrySubject);
+let carMotionSubject = createSubject<CarMotion>();
+let carMotionObservable = createObservable<CarMotion>(carMotionSubject);
 
 let initialised = false;
 
@@ -27,8 +31,10 @@ export {
     lapFinishedObservable as lapFinished,
     sectorFinishedObservable as sectorFinished,
     sessionDataObservable as sessionData,
-    telemetryDataObservable as telemetry,
-    carStatusObservable as carStatus
+    lapDataObservable as lapData,
+    carStatusObservable as carStatus,
+    carTelemetryObservable as carTelemetry,
+    carMotionObservable as carMotion
 };
 
 export function initialise(config = { updateInterval: 50, storagePath: './storage' }) {
@@ -72,16 +78,20 @@ function getNextTick() {
         sessionDataSubject.notifyObservers(tick.sessionData);
     }
 
-    if (tick.carTelemetry && tick.lapData && tick.carMotion) {
-        telemetryDataSubject.notifyObservers({
-            carTelemetry: tick.carTelemetry,
-            lapData: tick.lapData,
-            carMotion: tick.carMotion
-        });
+    if (tick.lapData) {
+        lapDataSubject.notifyObservers(tick.lapData);
     }
 
     if (tick.carStatus) {
         carStatusSubject.notifyObservers(tick.carStatus);
+    }
+
+    if (tick.carTelemetry) {
+        carTelemetrySubject.notifyObservers(tick.carTelemetry);
+    }
+
+    if (tick.carMotion) {
+        carMotionSubject.notifyObservers(tick.carMotion);
     }
 }
 

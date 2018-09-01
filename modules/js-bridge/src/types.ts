@@ -16,12 +16,6 @@ export interface Tick {
     carMotion: CarMotion;
 }
 
-export interface Telemetry {
-    carTelemetry: CarTelemetry;
-    lapData: LapData;
-    carMotion: CarMotion;
-}
-
 export interface SessionIdentifier {
     track_id: Track;
     session_type: SessionType;
