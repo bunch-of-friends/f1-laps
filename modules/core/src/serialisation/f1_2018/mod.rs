@@ -112,6 +112,7 @@ impl ReceivePacket for Serialiser {
 
     fn converto_to_tick(&mut self, datagram: &[u8], _size: usize) -> Option<Tick> {
         let header = serialise_header(datagram)?;
+        // println!("{} {}", header.m_frameIdentifier, header.m_packetId);
 
         let mut result: Option<Tick> = None;
 
@@ -120,7 +121,7 @@ impl ReceivePacket for Serialiser {
                 let previous_frame = self.current_frame.clone().unwrap();
                 self.current_frame = Some(Frame::new(&header));
                 result = previous_frame.to_tick();
-            } else {
+            } else if self.current_frame.is_none() {
                 self.current_frame = Some(Frame::new(&header));
             }
         }
@@ -189,11 +190,13 @@ impl Frame {
     }
 
     pub fn is_complete(&self) -> bool {
-        self.lap_data.is_some() && self.car_motion.is_some() || self.car_telemetry.is_some()
+        self.lap_data.is_some() && self.car_motion.is_some() && self.car_telemetry.is_some()
     }
 
     pub fn to_tick(&self) -> Option<Tick> {
-        assert!(self.is_complete());
+        assert!(
+            self.lap_data.is_some() && self.car_motion.is_some() && self.car_telemetry.is_some()
+        );
 
         Some(Tick::new(
             self.header.clone(),
