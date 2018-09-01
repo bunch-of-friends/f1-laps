@@ -13,12 +13,11 @@ mod serialisation;
 mod storage;
 mod udp;
 
-use std::sync::mpsc::{self, TryRecvError};
-use std::thread;
-
 use pipeline::input::Tick;
 use pipeline::output::Output;
 use pipeline::Pipeline;
+use std::sync::mpsc::{self, TryRecvError};
+use std::thread;
 
 pub fn initialise(storage_folder_path: String) {
     storage::initialise(&storage_folder_path);
@@ -35,12 +34,7 @@ where
     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
     let t = thread::spawn(move || {
-        udp::start_listening(
-            port,
-            should_store_packets,
-            serialisation::get_serialiser(),
-            tx,
-        );
+        udp::start_listening(port, should_store_packets, tx);
     });
 
     let mut pipeline = Pipeline::new();
@@ -67,7 +61,7 @@ where
     let mut pipeline = Pipeline::new();
 
     let t = thread::spawn(move || {
-        udp::replay_packets(should_simulate_time, serialisation::get_serialiser(), tx);
+        udp::replay_packets(should_simulate_time, tx);
     });
 
     let r = thread::spawn(move || loop {

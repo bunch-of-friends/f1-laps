@@ -5,14 +5,11 @@ use std::thread;
 use std::time::Duration;
 
 use pipeline::input::Tick;
-use serialisation::ReceivePacket;
+use serialisation::{self, ReceivePacket};
 use storage;
 use udp::Packet;
 
-pub fn replay_packets<T>(should_simulate_time: bool, serialiser: T, tx: mpsc::Sender<Tick>)
-where
-    T: ReceivePacket + 'static,
-{
+pub fn replay_packets(should_simulate_time: bool, tx: mpsc::Sender<Tick>) {
     let (packet_tx, packet_rx): (mpsc::Sender<Vec<Packet>>, mpsc::Receiver<Vec<Packet>>) =
         mpsc::channel();
 
@@ -22,6 +19,7 @@ where
 
     let mut last_packet_time = Utc::now();
     thread::spawn(move || loop {
+        let mut serialiser = serialisation::get_serialiser();
         match packet_rx.try_recv() {
             Ok(packets) => {
                 for packet in &packets {

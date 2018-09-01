@@ -26,10 +26,10 @@ pub struct Output {
     pub labels: Labels,
     pub events: Events,
     pub session_data: Option<SessionData>,
-    pub lap_data: Option<LapData>,
+    pub lap_data: LapData,
     pub car_status: Option<CarStatus>,
-    pub car_telemetry: Option<CarTelemetry>,
-    pub car_motion: Option<CarMotion>,
+    pub car_telemetry: CarTelemetry,
+    pub car_motion: CarMotion,
 }
 
 #[derive(Debug)]

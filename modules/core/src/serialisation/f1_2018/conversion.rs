@@ -7,6 +7,7 @@ impl PacketHeader {
             session_uid: self.m_sessionUID,
             session_time: self.m_sessionTime,
             player_index: self.m_playerCarIndex,
+            frame_id: self.m_frameIdentifier,
         }
     }
 }

@@ -31,15 +31,11 @@ fn is_new_lap(is_new_session: bool, tick: &Tick, context: &Context) -> bool {
         return true;
     }
 
-    if let Some(ref lap_data) = tick.lap_data {
-        if let Some(ref current_lap) = context.session_context.lap {
-            return lap_data.current_lap_number != current_lap.lap_number;
-        } else {
-            return true;
-        }
+    if let Some(ref current_lap) = context.session_context.lap {
+        tick.lap_data.current_lap_number != current_lap.lap_number
+    } else {
+        true
     }
-
-    false
 }
 
 fn is_new_sector(is_new_lap: bool, tick: &Tick, context: &Context) -> bool {
@@ -47,13 +43,11 @@ fn is_new_sector(is_new_lap: bool, tick: &Tick, context: &Context) -> bool {
         return true;
     }
 
-    if let Some(ref lap_data) = tick.lap_data {
-        if let Some(ref current_sector) = context.session_context.sector {
-            return lap_data.current_sector_number != current_sector.sector_number;
-        }
+    if let Some(ref current_sector) = context.session_context.sector {
+        tick.lap_data.current_sector_number != current_sector.sector_number
+    } else {
+        false
     }
-
-    false
 }
 
 fn is_flashback(is_new_session: bool, is_new_lap: bool, tick: &Tick, context: &Context) -> bool {
@@ -61,13 +55,11 @@ fn is_flashback(is_new_session: bool, is_new_lap: bool, tick: &Tick, context: &C
         return false;
     }
 
-    if let Some(ref lap_data) = tick.lap_data {
-        if let Some(ref current_lap) = context.session_context.lap {
-            return lap_data.current_lap_time < current_lap.lap_time;
-        }
+    if let Some(ref current_lap) = context.session_context.lap {
+        tick.lap_data.current_lap_time < current_lap.lap_time
+    } else {
+        false
     }
-
-    false
 }
 
 fn is_teleported(is_new_session: bool, tick: &Tick, context: &Context) -> bool {
@@ -75,19 +67,17 @@ fn is_teleported(is_new_session: bool, tick: &Tick, context: &Context) -> bool {
         return false;
     }
 
-    if let Some(ref motion) = tick.car_motion {
-        if let Some(ref current_motion) = context.session_context.car_motion {
-            let x_diff = (motion.x - current_motion.x).abs();
-            let y_diff = (motion.y - current_motion.y).abs();
-            let z_diff = (motion.z - current_motion.z).abs();
+    if let Some(ref current_motion) = context.session_context.car_motion {
+        let x_diff = (tick.car_motion.x - current_motion.x).abs();
+        let y_diff = (tick.car_motion.y - current_motion.y).abs();
+        let z_diff = (tick.car_motion.z - current_motion.z).abs();
 
-            let max = 10 as f32;
+        let max = 10 as f32;
 
-            return x_diff > max || y_diff > max || z_diff > max;
-        }
+        x_diff > max || y_diff > max || z_diff > max
+    } else {
+        false
     }
-
-    false
 }
 
 // #[cfg(test)]
