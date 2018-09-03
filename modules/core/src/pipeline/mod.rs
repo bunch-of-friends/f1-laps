@@ -39,10 +39,10 @@ impl Pipeline {
             labels: labels,
             events: events,
             session_data: tick.session_data,
-            lap_data: tick.lap_data,
-            car_status: tick.car_status,
-            car_telemetry: tick.car_telemetry,
-            car_motion: tick.car_motion,
+            lap_data: tick.lap_data.player,
+            car_status: extract_player_data(&tick.car_status),
+            car_telemetry: tick.car_telemetry.player,
+            car_motion: tick.car_motion.player,
         }
     }
 
@@ -66,4 +66,15 @@ impl Pipeline {
     //         }
     //     }
     // }
+}
+
+fn extract_player_data<T>(data_option: &Option<ParticipantsData<T>>) -> Option<T>
+where
+    T: Clone,
+{
+    if let Some(ref data) = data_option {
+        Some(data.player.clone())
+    } else {
+        None
+    }
 }

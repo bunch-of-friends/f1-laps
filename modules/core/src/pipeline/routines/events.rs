@@ -16,7 +16,7 @@ pub fn build_events(tick: &Tick, context: &Context, labels: &Labels) -> Events {
 fn get_started_session(tick: &Tick, labels: &Labels) -> Option<SessionIdentifier> {
     if labels.is_new_session {
         if let Some(ref session_data) = tick.session_data {
-            return Some(SessionIdentifier::from_session_data(
+            return Some(SessionIdentifier::from(
                 session_data,
                 &tick.header,
             ));
@@ -28,7 +28,7 @@ fn get_started_session(tick: &Tick, labels: &Labels) -> Option<SessionIdentifier
 
 fn get_finished_lap(tick: &Tick, context: &Context, labels: &Labels) -> Option<Lap> {
     if labels.is_new_lap && !labels.is_teleported {
-        build_finished_lap(&tick.lap_data, context)
+        build_finished_lap(&tick.lap_data.player, context)
     } else {
         None
     }
@@ -36,7 +36,7 @@ fn get_finished_lap(tick: &Tick, context: &Context, labels: &Labels) -> Option<L
 
 fn get_finished_sector(tick: &Tick, labels: &Labels, finished_lap: &Option<Lap>) -> Option<Sector> {
     if labels.is_new_sector && !labels.is_teleported {
-        build_finished_sector(&tick.lap_data, finished_lap)
+        build_finished_sector(&tick.lap_data.player, finished_lap)
     } else {
         None
     }
@@ -63,7 +63,7 @@ fn build_finished_lap(lap_data: &LapData, context: &Context) -> Option<Lap> {
     let finished_lap_time = lap_data.last_lap_time;
     let sector_3 = finished_lap_time - sector_1 - sector_2;
 
-    Some(Lap::finished(
+    Some(Lap::completed(
         sector_1,
         sector_2,
         sector_3,
@@ -73,25 +73,24 @@ fn build_finished_lap(lap_data: &LapData, context: &Context) -> Option<Lap> {
 }
 
 fn build_finished_sector(lap_data: &LapData, finished_lap: &Option<Lap>) -> Option<Sector> {
-    //TODO: add detection that sector is complete (e.g S3 not "finished" because of a lap restart etc.)
     match lap_data.current_sector_number {
         1 => {
             if let Some(lap) = finished_lap {
-                Some(Sector::finished(lap.sector_times[2], 3, true))
+                Some(Sector::completed(lap.sector_times[2], 3))
             } else {
                 None
             }
         }
         2 => {
             if lap_data.sector1_time > 0 as f32 {
-                Some(Sector::finished(lap_data.sector1_time, 1, true))
+                Some(Sector::completed(lap_data.sector1_time, 1))
             } else {
                 None
             }
         }
         3 => {
             if lap_data.sector2_time > 0 as f32 {
-                Some(Sector::finished(lap_data.sector2_time, 2, true))
+                Some(Sector::completed(lap_data.sector2_time, 2))
             } else {
                 None
             }

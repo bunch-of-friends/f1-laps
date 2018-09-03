@@ -2,11 +2,11 @@
 pub struct Tick {
     pub header: Header,
     pub session_data: Option<SessionData>,
-    pub lap_data: LapData,
-    pub car_motion: CarMotion,
-    pub car_telemetry: CarTelemetry,
-    pub car_status: Option<CarStatus>,
-    pub participants_info: Option<ParticipantsInfo>,
+    pub lap_data: ParticipantsData<LapData>,
+    pub car_motion: ParticipantsData<CarMotion>,
+    pub car_telemetry: ParticipantsData<CarTelemetry>,
+    pub car_status: Option<ParticipantsData<CarStatus>>,
+    pub participants_info: Option<ParticipantsData<ParticipantInfo>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -33,6 +33,15 @@ pub struct SessionData {
     pub is_spectating: bool,
     pub is_online_game: bool,
     pub safety_car_status: u8,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ParticipantsData<T>
+where
+    T: Clone,
+{
+    pub player: T,
+    pub others: Vec<T>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -110,13 +119,7 @@ pub struct CarTelemetry {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ParticipantsInfo {
-    pub total_cars: u8,
-    pub participants: Vec<ParticipantsInfoItem>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ParticipantsInfoItem {
+pub struct ParticipantInfo {
     pub is_ai: bool,
     pub driver_id: u8,
     pub team_id: u8,

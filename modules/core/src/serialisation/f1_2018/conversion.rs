@@ -1,5 +1,6 @@
 use pipeline::input::*;
 use serialisation::f1_2018::packets::*;
+use std::str;
 
 impl PacketHeader {
     pub fn to_model(&self) -> Header {
@@ -124,25 +125,52 @@ impl PacketSessionData {
 }
 
 impl PacketParticipantsData {
-    pub fn to_model(&self) -> ParticipantsInfo {
-        let items: Vec<ParticipantsInfoItem> = self
-            .m_participants
-            .iter()
-            .map(|p| {
-                ParticipantsInfoItem {
-                    is_ai: p.m_aiControlled == 1,
-                    driver_id: p.m_driverId,
-                    team_id: p.m_teamId,
-                    race_number: p.m_raceNumber,
-                    nationality_id: p.m_nationality,
-                    name: String::new(), //TODO: create string from  p.m_name
+    pub fn to_model(&self) -> ParticipantsData<ParticipantInfo> {
+        to_participants_data(&self.m_header, &self.m_participants, |p| {
+            let name_buffer: Vec<u8> = p
+                .m_name
+                .iter()
+                .flat_map(|a| a.iter())
+                .map(|x| x.clone())
+                .collect();
+            let name = match str::from_utf8(&name_buffer) {
+                Ok(v) => v,
+                Err(e) => {
+                    println!("Invalid UTF-8 sequence: {}", e);
+                    ""
                 }
-            })
-            .collect();
+            };
 
-        ParticipantsInfo {
-            total_cars: self.m_numCars,
-            participants: items,
-        }
+            ParticipantInfo {
+                is_ai: p.m_aiControlled == 1,
+                driver_id: p.m_driverId,
+                team_id: p.m_teamId,
+                race_number: p.m_raceNumber,
+                nationality_id: p.m_nationality,
+                name: name.to_string(),
+            }
+        })
+    }
+}
+
+fn to_participants_data<T, S>(
+    header: &PacketHeader,
+    source: &[S; 20],
+    f: impl Fn(&S) -> T,
+) -> ParticipantsData<T>
+where
+    T: Clone,
+{
+    let player = f(&source[header.m_playerCarIndex as usize]);
+    let others = source
+        .iter()
+        .enumerate()
+        .filter(|&(i, _)| i != header.m_playerCarIndex as usize)
+        .map(|(_, x)| f(x))
+        .collect();
+
+    ParticipantsData {
+        player: player,
+        others: others,
     }
 }
