@@ -122,3 +122,27 @@ impl PacketSessionData {
         }
     }
 }
+
+impl PacketParticipantsData {
+    pub fn to_model(&self) -> ParticipantsInfo {
+        let items: Vec<ParticipantsInfoItem> = self
+            .m_participants
+            .iter()
+            .map(|p| {
+                ParticipantsInfoItem {
+                    is_ai: p.m_aiControlled == 1,
+                    driver_id: p.m_driverId,
+                    team_id: p.m_teamId,
+                    race_number: p.m_raceNumber,
+                    nationality_id: p.m_nationality,
+                    name: String::new(), //TODO: create string from  p.m_name
+                }
+            })
+            .collect();
+
+        ParticipantsInfo {
+            total_cars: self.m_numCars,
+            participants: items,
+        }
+    }
+}

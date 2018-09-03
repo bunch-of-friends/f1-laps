@@ -1,5 +1,3 @@
-mod extensions;
-
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Tick {
     pub header: Header,
@@ -8,6 +6,7 @@ pub struct Tick {
     pub car_motion: CarMotion,
     pub car_telemetry: CarTelemetry,
     pub car_status: Option<CarStatus>,
+    pub participants_info: Option<ParticipantsInfo>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -108,4 +107,20 @@ pub struct CarTelemetry {
     pub tyres_inner_temperature: [u16; 4],
     pub engine_temperature: u16,
     pub tyres_pressure: [f32; 4],
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ParticipantsInfo {
+    pub total_cars: u8,
+    pub participants: Vec<ParticipantsInfoItem>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ParticipantsInfoItem {
+    pub is_ai: bool,
+    pub driver_id: u8,
+    pub team_id: u8,
+    pub race_number: u8,
+    pub nationality_id: u8,
+    pub name: String,
 }
