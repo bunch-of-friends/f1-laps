@@ -61,9 +61,9 @@ fn on_received(output: Output) {
 
     println!(
         "L{} {}/3 {}",
-        output.lap_data.current_lap_number,
-        output.lap_data.current_sector_number,
-        output.lap_data.current_lap_time
+        output.lap_data.player.current_lap_number,
+        output.lap_data.player.current_sector_number,
+        output.lap_data.player.current_lap_time
     );
 
     // if let Some(ref car_telemetry) = output.car_telemetry {
