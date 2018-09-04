@@ -127,6 +127,7 @@ impl PacketParticipantsInfo {
                 .m_name
                 .iter()
                 .flat_map(|a| a.iter())
+                .filter(|x| **x > 0 as u8)
                 .map(|x| x.clone())
                 .collect();
             let name = match str::from_utf8(&name_buffer) {

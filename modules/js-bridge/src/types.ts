@@ -14,7 +14,7 @@ export interface Tick {
     carStatus?: MultiCarData<CarStatus>;
     carTelemetry?: MultiCarData<CarTelemetry>;
     carMotion?: MultiCarData<CarMotion>;
-    particiants?: MultiCarData<ParticipantInfo>;
+    participants?: MultiCarData<ParticipantInfo>;
 }
 
 export interface MultiCarData<T> {

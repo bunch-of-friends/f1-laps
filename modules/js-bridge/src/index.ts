@@ -97,8 +97,8 @@ function getNextTick() {
         carMotionSubject.notifyObservers(tick.carMotion);
     }
 
-    if (tick.particiants) {
-        participantsInfoSubject.notifyObservers(tick.particiants);
+    if (tick.participants) {
+        participantsInfoSubject.notifyObservers(tick.participants);
     }
 }
 
