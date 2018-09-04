@@ -35,8 +35,8 @@ fn start(args: &Vec<String>) -> Option<(std::thread::JoinHandle<()>, std::thread
         }
         _ => {
             println!("no mode selected");
-            println!("---> run with argument 'replay' to replay stored packets, optionaly use argument 'false' to disable time simulation");
-            println!("---> run with argument 'udp' to listen for incoming udp packets, optionaly use argument 'false' to disable packet storing");
+            println!("---> run with argument 'replay' or 'r'  to replay stored packets, optionaly use argument 'false' to disable time simulation");
+            println!("---> run with argument 'udp' or 'u' to listen for incoming udp packets, optionaly use argument 'false' to disable packet storing");
             None
         }
     }
@@ -49,6 +49,10 @@ fn on_received(output: Output) {
 
     if output.labels.is_teleported {
         println!("teleported");
+    }
+
+    if let Some(ref participants_info) = output.participants_info {
+        println!("PARTICIPANTS >>> {:?}", participants_info);
     }
 
     if let Some(ref sector) = output.events.finished_sector {
