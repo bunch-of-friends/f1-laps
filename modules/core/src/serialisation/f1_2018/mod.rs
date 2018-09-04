@@ -113,7 +113,6 @@ impl ReceivePacket for Serialiser {
 
     fn converto_to_tick(&mut self, datagram: &[u8], _size: usize) -> Option<Tick> {
         let header = serialise_header(datagram)?;
-        // println!("{} {}", header.m_frameIdentifier, header.m_packetId);
 
         let mut result: Option<Tick> = None;
 

@@ -43,32 +43,36 @@ impl Collector {
         }
     }
 
-    pub fn update(&mut self, output: &Output) {
+    pub fn update(&mut self, output: Output) {
         if output.events.started_session.is_some() {
-            self.session_identifier = output.events.started_session.clone();
+            self.session_identifier = output.events.started_session;
         }
 
         if output.events.finished_lap.is_some() {
-            self.finished_lap = output.events.finished_lap.clone();
+            self.finished_lap = output.events.finished_lap;
         }
 
         if output.events.finished_sector.is_some() {
-            self.finished_sector = output.events.finished_sector.clone();
+            self.finished_sector = output.events.finished_sector;
         }
 
         if output.session_data.is_some() {
-            self.session_data = output.session_data.clone();
+            self.session_data = output.session_data;
         }
 
-        self.lap_data = Some(output.lap_data.clone());
+        self.lap_data = Some(output.lap_data);
 
         if output.car_status.is_some() {
-            self.car_status = output.car_status.clone();
+            self.car_status = output.car_status;
         }
 
-        self.car_telemetry = Some(output.car_telemetry.clone());
+        self.car_telemetry = Some(output.car_telemetry);
 
-        self.car_motion = Some(output.car_motion.clone());
+        self.car_motion = Some(output.car_motion);
+
+        if output.participants_info.is_some() {
+            self.participants_info = output.participants_info;
+        }
     }
 
     pub fn get_session_identifier(&mut self) -> Option<SessionIdentifier> {
@@ -153,7 +157,7 @@ fn replay_packets(mut cx: FunctionContext) -> JsResult<JsUndefined> {
 
 fn on_output_received(output: Output) {
     let mut collector = COLLECTOR.lock().unwrap();
-    collector.update(&output);
+    collector.update(output);
 }
 
 fn get_next_tick(mut cx: FunctionContext) -> JsResult<JsObject> {
