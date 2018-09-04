@@ -152,8 +152,8 @@ fn serialise_events(datagram: &[u8]) -> Option<packets::PacketEventData> {
     bincode::deserialize::<packets::PacketEventData>(&datagram[..]).ok()
 }
 
-fn serialise_participants(datagram: &[u8]) -> Option<packets::PacketParticipantsData> {
-    bincode::deserialize::<packets::PacketParticipantsData>(&datagram[..]).ok()
+fn serialise_participants(datagram: &[u8]) -> Option<packets::PacketParticipantsInfo> {
+    bincode::deserialize::<packets::PacketParticipantsInfo>(&datagram[..]).ok()
 }
 
 fn serialise_setups(datagram: &[u8]) -> Option<packets::PacketCarSetupData> {

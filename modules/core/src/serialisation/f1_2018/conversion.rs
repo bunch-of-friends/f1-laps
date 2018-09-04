@@ -14,92 +14,88 @@ impl PacketHeader {
 }
 
 impl PacketMotionData {
-    pub fn to_model(&self, header: &PacketHeader) -> CarMotion {
-        let ref data = self.m_carMotionData[header.m_playerCarIndex as usize];
-        CarMotion {
-            x: data.m_worldPositionX,
-            y: data.m_worldPositionY,
-            z: data.m_worldPositionZ,
-            g_force_lateral: data.m_gForceLateral,
-            g_force_longitudinal: data.m_gForceLongitudinal,
-            g_force_vertical: data.m_gForceVertical,
-        }
+    pub fn to_model(&self, header: &PacketHeader) -> ParticipantsData<CarMotion> {
+        to_participants_data(header, &self.m_carMotionData, |x| CarMotion {
+            x: x.m_worldPositionX,
+            y: x.m_worldPositionY,
+            z: x.m_worldPositionZ,
+            g_force_lateral: x.m_gForceLateral,
+            g_force_longitudinal: x.m_gForceLongitudinal,
+            g_force_vertical: x.m_gForceVertical,
+        })
     }
 }
 
 impl PacketCarStatusData {
-    pub fn to_model(&self, header: &PacketHeader) -> CarStatus {
-        let ref data = self.m_carStatusData[header.m_playerCarIndex as usize];
-        CarStatus {
-            traction_control: data.m_tractionControl,
-            antilock_brakes: data.m_antiLockBrakes,
-            fuel_mix: data.m_fuelMix,
-            front_brake_bias: data.m_frontBrakeBias,
-            pit_limiter_status: data.m_pitLimiterStatus,
-            fuel_in_tank: data.m_fuelInTank,
-            fuel_capacity: data.m_fuelCapacity,
-            max_rpm: data.m_maxRPM,
-            max_gears: data.m_maxGears,
-            is_drs_allowed: data.m_drsAllowed == 1,
-            tyres_wear: data.m_tyresWear,
-            tyre_compound: data.m_tyreCompound,
-            tyres_damage: data.m_tyresDamage,
-            front_left_wing_damage: data.m_frontLeftWingDamage,
-            front_right_wing_damage: data.m_frontRightWingDamage,
-            rear_wing_damage: data.m_rearWingDamage,
-            engine_damage: data.m_engineDamage,
-            gearbox_damage: data.m_gearBoxDamage,
-            exhaust_damage: data.m_exhaustDamage,
-            flags: data.m_vehicleFiaFlags,
-            ers_stored: data.m_ersStoreEnergy,
-            ers_mode: data.m_ersDeployMode,
-            ers_harvested_mghu: data.m_ersHarvestedThisLapMGUK,
-            ers_harvested_mghh: data.m_ersHarvestedThisLapMGUH,
-            ers_deployed: data.m_ersDeployedThisLap,
-        }
+    pub fn to_model(&self, header: &PacketHeader) -> ParticipantsData<CarStatus> {
+        to_participants_data(header, &self.m_carStatusData, |x| CarStatus {
+            traction_control: x.m_tractionControl,
+            antilock_brakes: x.m_antiLockBrakes,
+            fuel_mix: x.m_fuelMix,
+            front_brake_bias: x.m_frontBrakeBias,
+            pit_limiter_status: x.m_pitLimiterStatus,
+            fuel_in_tank: x.m_fuelInTank,
+            fuel_capacity: x.m_fuelCapacity,
+            max_rpm: x.m_maxRPM,
+            max_gears: x.m_maxGears,
+            is_drs_allowed: x.m_drsAllowed == 1,
+            tyres_wear: x.m_tyresWear,
+            tyre_compound: x.m_tyreCompound,
+            tyres_damage: x.m_tyresDamage,
+            front_left_wing_damage: x.m_frontLeftWingDamage,
+            front_right_wing_damage: x.m_frontRightWingDamage,
+            rear_wing_damage: x.m_rearWingDamage,
+            engine_damage: x.m_engineDamage,
+            gearbox_damage: x.m_gearBoxDamage,
+            exhaust_damage: x.m_exhaustDamage,
+            flags: x.m_vehicleFiaFlags,
+            ers_stored: x.m_ersStoreEnergy,
+            ers_mode: x.m_ersDeployMode,
+            ers_harvested_mghu: x.m_ersHarvestedThisLapMGUK,
+            ers_harvested_mghh: x.m_ersHarvestedThisLapMGUH,
+            ers_deployed: x.m_ersDeployedThisLap,
+        })
     }
 }
 
 impl PacketCarTelemetryData {
-    pub fn to_model(&self, header: &PacketHeader) -> CarTelemetry {
-        let ref data = self.m_carTelemetryData[header.m_playerCarIndex as usize];
-        CarTelemetry {
-            speed: data.m_speed,
-            throttle: data.m_throttle,
-            steer: data.m_steer,
-            brake: data.m_brake,
-            gear: data.m_gear,
-            clutch: data.m_clutch,
-            rev_lights_percent: data.m_revLightsPercent,
-            engine_rpm: data.m_engineRPM,
-            is_drs_open: data.m_drs == 1,
-            brakes_temperature: data.m_brakesTemperature,
-            tyres_surface_temperature: data.m_tyresSurfaceTemperature,
-            tyres_inner_temperature: data.m_tyresInnerTemperature,
-            engine_temperature: data.m_engineTemperature,
-            tyres_pressure: data.m_tyresPressure,
-        }
+    pub fn to_model(&self, header: &PacketHeader) -> ParticipantsData<CarTelemetry> {
+        to_participants_data(header, &self.m_carTelemetryData, |x| CarTelemetry {
+            speed: x.m_speed,
+            throttle: x.m_throttle,
+            steer: x.m_steer,
+            brake: x.m_brake,
+            gear: x.m_gear,
+            clutch: x.m_clutch,
+            rev_lights_percent: x.m_revLightsPercent,
+            engine_rpm: x.m_engineRPM,
+            is_drs_open: x.m_drs == 1,
+            brakes_temperature: x.m_brakesTemperature,
+            tyres_surface_temperature: x.m_tyresSurfaceTemperature,
+            tyres_inner_temperature: x.m_tyresInnerTemperature,
+            engine_temperature: x.m_engineTemperature,
+            tyres_pressure: x.m_tyresPressure,
+        })
     }
 }
 
 impl PacketLapData {
-    pub fn to_model(&self, header: &PacketHeader) -> LapData {
-        let ref data = self.m_lapData[header.m_playerCarIndex as usize];
-        LapData {
-            car_position: data.m_carPosition,
-            last_lap_time: data.m_lastLapTime,
-            sector1_time: data.m_sector1Time,
-            sector2_time: data.m_sector2Time,
-            current_sector_number: data.m_sector + 1,
-            current_lap_number: data.m_currentLapNum,
-            current_lap_time: data.m_currentLapTime,
-            current_lap_distance: data.m_lapDistance,
-            pit_status: data.m_pitStatus,
-            is_lap_valid: data.m_currentLapInvalid != 0,
-            penalties: data.m_penalties,
-            driver_status: data.m_driverStatus,
-            result_status: data.m_resultStatus,
-        }
+    pub fn to_model(&self, header: &PacketHeader) -> ParticipantsData<LapData> {
+        to_participants_data(header, &self.m_lapData, |x| LapData {
+            car_position: x.m_carPosition,
+            last_lap_time: x.m_lastLapTime,
+            sector1_time: x.m_sector1Time,
+            sector2_time: x.m_sector2Time,
+            current_sector_number: x.m_sector + 1,
+            current_lap_number: x.m_currentLapNum,
+            current_lap_time: x.m_currentLapTime,
+            current_lap_distance: x.m_lapDistance,
+            pit_status: x.m_pitStatus,
+            is_lap_valid: x.m_currentLapInvalid != 0,
+            penalties: x.m_penalties,
+            driver_status: x.m_driverStatus,
+            result_status: x.m_resultStatus,
+        })
     }
 }
 
@@ -124,10 +120,10 @@ impl PacketSessionData {
     }
 }
 
-impl PacketParticipantsData {
+impl PacketParticipantsInfo {
     pub fn to_model(&self) -> ParticipantsData<ParticipantInfo> {
-        to_participants_data(&self.m_header, &self.m_participants, |p| {
-            let name_buffer: Vec<u8> = p
+        to_participants_data(&self.m_header, &self.m_participants, |x| {
+            let name_buffer: Vec<u8> = x
                 .m_name
                 .iter()
                 .flat_map(|a| a.iter())
@@ -142,11 +138,11 @@ impl PacketParticipantsData {
             };
 
             ParticipantInfo {
-                is_ai: p.m_aiControlled == 1,
-                driver_id: p.m_driverId,
-                team_id: p.m_teamId,
-                race_number: p.m_raceNumber,
-                nationality_id: p.m_nationality,
+                is_ai: x.m_aiControlled == 1,
+                driver_id: x.m_driverId,
+                team_id: x.m_teamId,
+                race_number: x.m_raceNumber,
+                nationality_id: x.m_nationality,
                 name: name.to_string(),
             }
         })
