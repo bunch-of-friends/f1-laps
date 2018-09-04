@@ -39,6 +39,7 @@ export {
     carStatusObservable as carStatus,
     carTelemetryObservable as carTelemetry,
     carMotionObservable as carMotion,
+    carSetupObservable as carSetup,
     participantsInfoObservable as participantsInfo
 };
 
