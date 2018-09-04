@@ -6,14 +6,20 @@ export interface Core {
 }
 
 export interface Tick {
-    sessionIdentifier: SessionIdentifier;
-    finishedLap: Lap;
-    finishedSector: Sector;
-    sessionData: SessionData;
-    lapData: LapData;
-    carStatus: CarStatus;
-    carTelemetry: CarTelemetry;
-    carMotion: CarMotion;
+    sessionIdentifier?: SessionIdentifier;
+    finishedLap?: Lap;
+    finishedSector?: Sector;
+    sessionData?: SessionData;
+    lapData?: MultiCarData<LapData>;
+    carStatus?: MultiCarData<CarStatus>;
+    carTelemetry?: MultiCarData<CarTelemetry>;
+    carMotion?: MultiCarData<CarMotion>;
+    particiants?: MultiCarData<ParticipantInfo>;
+}
+
+export interface MultiCarData<T> {
+    player: T;
+    others?: Array<T>;
 }
 
 export interface SessionIdentifier {
@@ -122,6 +128,15 @@ export interface CarMotion {
     g_force_lateral: number;
     g_force_longitudinal: number;
     g_force_vertical: number;
+}
+
+export interface ParticipantInfo {
+    is_ai: boolean;
+    driver_id: number;
+    team_id: number;
+    race_number: number;
+    nationality_id: number;
+    name: String;
 }
 
 export enum Weather {

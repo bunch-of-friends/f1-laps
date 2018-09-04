@@ -35,18 +35,10 @@ pub struct Output {
     pub participants_info: Option<OptMultiCarData<ParticipantInfo>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OptMultiCarData<T> {
     pub player: T,
     pub others: Option<Vec<T>>,
-}
-
-#[derive(Debug)]
-pub struct OthersData {
-    lap_data: Vec<LapData>,
-    car_status: Option<CarStatus>,
-    car_telemetry: Vec<CarTelemetry>,
-    car_motion: Vec<CarMotion>,
 }
 
 #[derive(Debug)]
