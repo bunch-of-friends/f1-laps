@@ -172,11 +172,11 @@ fn serialise_status(datagram: &[u8]) -> Option<packets::PacketCarStatusData> {
 pub(crate) struct Frame {
     pub header: Header,
     pub session_data: Option<SessionData>,
-    pub lap_data: Option<ParticipantsData<LapData>>,
-    pub car_motion: Option<ParticipantsData<CarMotion>>,
-    pub car_telemetry: Option<ParticipantsData<CarTelemetry>>,
-    pub car_status: Option<ParticipantsData<CarStatus>>,
-    pub participants_info: Option<ParticipantsData<ParticipantInfo>>,
+    pub lap_data: Option<MultiCarData<LapData>>,
+    pub car_motion: Option<MultiCarData<CarMotion>>,
+    pub car_telemetry: Option<MultiCarData<CarTelemetry>>,
+    pub car_status: Option<MultiCarData<CarStatus>>,
+    pub participants_info: Option<MultiCarData<ParticipantInfo>>,
 }
 
 impl Frame {

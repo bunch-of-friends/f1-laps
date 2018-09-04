@@ -14,8 +14,8 @@ impl PacketHeader {
 }
 
 impl PacketMotionData {
-    pub fn to_model(&self, header: &PacketHeader) -> ParticipantsData<CarMotion> {
-        to_participants_data(header, &self.m_carMotionData, |x| CarMotion {
+    pub fn to_model(&self, header: &PacketHeader) -> MultiCarData<CarMotion> {
+        to_multi_car_data(header, &self.m_carMotionData, |x| CarMotion {
             x: x.m_worldPositionX,
             y: x.m_worldPositionY,
             z: x.m_worldPositionZ,
@@ -27,8 +27,8 @@ impl PacketMotionData {
 }
 
 impl PacketCarStatusData {
-    pub fn to_model(&self, header: &PacketHeader) -> ParticipantsData<CarStatus> {
-        to_participants_data(header, &self.m_carStatusData, |x| CarStatus {
+    pub fn to_model(&self, header: &PacketHeader) -> MultiCarData<CarStatus> {
+        to_multi_car_data(header, &self.m_carStatusData, |x| CarStatus {
             traction_control: x.m_tractionControl,
             antilock_brakes: x.m_antiLockBrakes,
             fuel_mix: x.m_fuelMix,
@@ -59,8 +59,8 @@ impl PacketCarStatusData {
 }
 
 impl PacketCarTelemetryData {
-    pub fn to_model(&self, header: &PacketHeader) -> ParticipantsData<CarTelemetry> {
-        to_participants_data(header, &self.m_carTelemetryData, |x| CarTelemetry {
+    pub fn to_model(&self, header: &PacketHeader) -> MultiCarData<CarTelemetry> {
+        to_multi_car_data(header, &self.m_carTelemetryData, |x| CarTelemetry {
             speed: x.m_speed,
             throttle: x.m_throttle,
             steer: x.m_steer,
@@ -80,8 +80,8 @@ impl PacketCarTelemetryData {
 }
 
 impl PacketLapData {
-    pub fn to_model(&self, header: &PacketHeader) -> ParticipantsData<LapData> {
-        to_participants_data(header, &self.m_lapData, |x| LapData {
+    pub fn to_model(&self, header: &PacketHeader) -> MultiCarData<LapData> {
+        to_multi_car_data(header, &self.m_lapData, |x| LapData {
             car_position: x.m_carPosition,
             last_lap_time: x.m_lastLapTime,
             sector1_time: x.m_sector1Time,
@@ -121,8 +121,8 @@ impl PacketSessionData {
 }
 
 impl PacketParticipantsInfo {
-    pub fn to_model(&self) -> ParticipantsData<ParticipantInfo> {
-        to_participants_data(&self.m_header, &self.m_participants, |x| {
+    pub fn to_model(&self) -> MultiCarData<ParticipantInfo> {
+        to_multi_car_data(&self.m_header, &self.m_participants, |x| {
             let name_buffer: Vec<u8> = x
                 .m_name
                 .iter()
@@ -149,11 +149,11 @@ impl PacketParticipantsInfo {
     }
 }
 
-fn to_participants_data<T, S>(
+fn to_multi_car_data<T, S>(
     header: &PacketHeader,
     source: &[S; 20],
     f: impl Fn(&S) -> T,
-) -> ParticipantsData<T>
+) -> MultiCarData<T>
 where
     T: Clone,
 {
@@ -165,7 +165,7 @@ where
         .map(|(_, x)| f(x))
         .collect();
 
-    ParticipantsData {
+    MultiCarData {
         player: player,
         others: others,
     }

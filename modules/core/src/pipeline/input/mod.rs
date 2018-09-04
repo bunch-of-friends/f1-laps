@@ -2,11 +2,11 @@
 pub struct Tick {
     pub header: Header,
     pub session_data: Option<SessionData>,
-    pub lap_data: ParticipantsData<LapData>,
-    pub car_motion: ParticipantsData<CarMotion>,
-    pub car_telemetry: ParticipantsData<CarTelemetry>,
-    pub car_status: Option<ParticipantsData<CarStatus>>,
-    pub participants_info: Option<ParticipantsData<ParticipantInfo>>,
+    pub lap_data: MultiCarData<LapData>,
+    pub car_motion: MultiCarData<CarMotion>,
+    pub car_telemetry: MultiCarData<CarTelemetry>,
+    pub car_status: Option<MultiCarData<CarStatus>>,
+    pub participants_info: Option<MultiCarData<ParticipantInfo>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -36,7 +36,7 @@ pub struct SessionData {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ParticipantsData<T>
+pub struct MultiCarData<T>
 where
     T: Clone,
 {
