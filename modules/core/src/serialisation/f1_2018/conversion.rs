@@ -14,8 +14,8 @@ impl PacketHeader {
 }
 
 impl PacketMotionData {
-    pub fn to_model(&self, header: &PacketHeader) -> MultiCarData<CarMotion> {
-        to_multi_car_data(header, &self.m_carMotionData, |x| CarMotion {
+    pub fn to_model(&self) -> MultiCarData<CarMotion> {
+        to_multi_car_data(&self.m_header, &self.m_carMotionData, |x| CarMotion {
             x: x.m_worldPositionX,
             y: x.m_worldPositionY,
             z: x.m_worldPositionZ,
@@ -27,8 +27,8 @@ impl PacketMotionData {
 }
 
 impl PacketCarStatusData {
-    pub fn to_model(&self, header: &PacketHeader) -> MultiCarData<CarStatus> {
-        to_multi_car_data(header, &self.m_carStatusData, |x| CarStatus {
+    pub fn to_model(&self) -> MultiCarData<CarStatus> {
+        to_multi_car_data(&self.m_header, &self.m_carStatusData, |x| CarStatus {
             traction_control: x.m_tractionControl,
             antilock_brakes: x.m_antiLockBrakes,
             fuel_mix: x.m_fuelMix,
@@ -59,8 +59,8 @@ impl PacketCarStatusData {
 }
 
 impl PacketCarTelemetryData {
-    pub fn to_model(&self, header: &PacketHeader) -> MultiCarData<CarTelemetry> {
-        to_multi_car_data(header, &self.m_carTelemetryData, |x| CarTelemetry {
+    pub fn to_model(&self) -> MultiCarData<CarTelemetry> {
+        to_multi_car_data(&self.m_header, &self.m_carTelemetryData, |x| CarTelemetry {
             speed: x.m_speed,
             throttle: x.m_throttle,
             steer: x.m_steer,
@@ -80,8 +80,8 @@ impl PacketCarTelemetryData {
 }
 
 impl PacketLapData {
-    pub fn to_model(&self, header: &PacketHeader) -> MultiCarData<LapData> {
-        to_multi_car_data(header, &self.m_lapData, |x| LapData {
+    pub fn to_model(&self) -> MultiCarData<LapData> {
+        to_multi_car_data(&self.m_header, &self.m_lapData, |x| LapData {
             car_position: x.m_carPosition,
             last_lap_time: x.m_lastLapTime,
             sector1_time: x.m_sector1Time,
@@ -146,6 +146,33 @@ impl PacketParticipantsInfo {
                 nationality_id: x.m_nationality,
                 name: name.to_string(),
             }
+        })
+    }
+}
+
+impl PacketCarSetupData {
+    pub fn to_model(&self) -> MultiCarData<CarSetup> {
+        to_multi_car_data(&self.m_header, &self.m_carSetups, |x| CarSetup {
+            front_wing: x.m_frontWing,
+            rear_wing: x.m_rearWing,
+            on_throttle: x.m_onThrottle,
+            off_throttle: x.m_offThrottle,
+            front_camber: x.m_frontCamber,
+            rear_camber: x.m_rearCamber,
+            front_toe: x.m_frontToe,
+            rear_toe: x.m_rearToe,
+            front_suspension: x.m_frontSuspension,
+            rear_suspension: x.m_rearSuspension,
+            front_anti_roll_bar: x.m_frontAntiRollBar,
+            rear_anti_roll_bar: x.m_rearAntiRollBar,
+            front_suspension_height: x.m_frontSuspensionHeight,
+            rear_suspension_height: x.m_rearSuspensionHeight,
+            brake_pressure: x.m_brakePressure,
+            brake_bias: x.m_brakeBias,
+            front_tyre_pressure: x.m_frontTyrePressure,
+            rear_tyre_pressure: x.m_rearTyrePressure,
+            ballast: x.m_ballast,
+            fuel_load: x.m_fuelLoad,
         })
     }
 }

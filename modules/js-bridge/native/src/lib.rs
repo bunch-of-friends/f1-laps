@@ -25,6 +25,7 @@ pub struct Collector {
     car_status: Option<OptMultiCarData<CarStatus>>,
     car_telemetry: Option<OptMultiCarData<CarTelemetry>>,
     car_motion: Option<OptMultiCarData<CarMotion>>,
+    car_setup: Option<OptMultiCarData<CarSetup>>,
     participants_info: Option<OptMultiCarData<ParticipantInfo>>,
 }
 
@@ -39,6 +40,7 @@ impl Collector {
             car_status: None,
             car_telemetry: None,
             car_motion: None,
+            car_setup: None,
             participants_info: None,
         }
     }
@@ -69,6 +71,10 @@ impl Collector {
         self.car_telemetry = Some(output.car_telemetry);
 
         self.car_motion = Some(output.car_motion);
+
+        if output.car_setup.is_some() {
+            self.car_setup = output.car_setup;
+        }
 
         if output.participants_info.is_some() {
             self.participants_info = output.participants_info;
@@ -120,6 +126,12 @@ impl Collector {
     pub fn get_car_motion(&mut self) -> Option<OptMultiCarData<CarMotion>> {
         let res = self.car_motion.clone();
         self.car_motion = None;
+        res
+    }
+
+    pub fn get_car_setup(&mut self) -> Option<OptMultiCarData<CarSetup>> {
+        let res = self.car_setup.clone();
+        self.car_setup = None;
         res
     }
 
@@ -218,6 +230,13 @@ fn get_next_tick(mut cx: FunctionContext) -> JsResult<JsObject> {
         &mut cx,
         "carMotion",
         collector.get_car_motion().as_ref(),
+        &object,
+    )?;
+
+    append_as_js(
+        &mut cx,
+        "carSetup",
+        collector.get_car_setup().as_ref(),
         &object,
     )?;
 

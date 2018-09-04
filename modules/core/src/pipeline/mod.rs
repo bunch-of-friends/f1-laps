@@ -29,21 +29,16 @@ impl Pipeline {
 }
 
 fn convert_to_output(tick: Tick, labels: Labels, events: Events) -> Output {
-    let lap_data = tick.lap_data;
-    let car_status = tick.car_status;
-    let car_telemetry = tick.car_telemetry;
-    let car_motion = tick.car_motion;
-    let participants_info = tick.participants_info;
-
     Output {
         labels: labels,
         events: events,
         session_data: tick.session_data,
-        lap_data: convert_to_opt_multi_car(lap_data),
-        car_status: convert_to_opt_multi_car_opt(car_status),
-        car_telemetry: convert_to_opt_multi_car(car_telemetry),
-        car_motion: convert_to_opt_multi_car(car_motion),
-        participants_info: convert_to_opt_multi_car_opt(participants_info),
+        lap_data: convert_to_opt_multi_car(tick.lap_data),
+        car_status: convert_to_opt_multi_car_opt(tick.car_status),
+        car_telemetry: convert_to_opt_multi_car(tick.car_telemetry),
+        car_motion: convert_to_opt_multi_car(tick.car_motion),
+        car_setup: convert_to_opt_multi_car_opt(tick.car_setup),
+        participants_info: convert_to_opt_multi_car_opt(tick.participants_info),
     }
 }
 

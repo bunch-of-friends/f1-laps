@@ -14,6 +14,7 @@ export interface Tick {
     carStatus?: MultiCarData<CarStatus>;
     carTelemetry?: MultiCarData<CarTelemetry>;
     carMotion?: MultiCarData<CarMotion>;
+    carSetup?: MultiCarData<CarSetup>;
     participants?: MultiCarData<ParticipantInfo>;
 }
 
@@ -130,6 +131,29 @@ export interface CarMotion {
     g_force_vertical: number;
 }
 
+export interface CarSetup {
+    front_wing: number;
+    rear_wing: number;
+    on_throttle: number;
+    off_throttle: number;
+    front_camber: number;
+    rear_camber: number;
+    front_toe: number;
+    rear_toe: number;
+    front_suspension: number;
+    rear_suspension: number;
+    front_anti_roll_bar: number;
+    rear_anti_roll_bar: number;
+    front_suspension_height: number;
+    rear_suspension_height: number;
+    brake_pressure: number;
+    brake_bias: number;
+    front_tyre_pressure: number;
+    rear_tyre_pressure: number;
+    ballast: number;
+    fuel_load: number;
+}
+
 export interface ParticipantInfo {
     is_ai: boolean;
     driver_id: number;
@@ -221,7 +245,6 @@ export enum Era {
     Modern = 0,
     Classic = 1
 }
-
 
 export enum SafetyCarStatus {
     NoSC = 0,

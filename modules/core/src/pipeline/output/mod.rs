@@ -1,7 +1,7 @@
 mod extensions;
 
 pub use pipeline::input::{
-    CarMotion, CarStatus, CarTelemetry, Header, LapData, ParticipantInfo, SessionData,
+    CarMotion, CarSetup, CarStatus, CarTelemetry, Header, LapData, ParticipantInfo, SessionData,
 };
 
 #[derive(Debug)]
@@ -32,6 +32,7 @@ pub struct Output {
     pub car_status: Option<OptMultiCarData<CarStatus>>,
     pub car_telemetry: OptMultiCarData<CarTelemetry>,
     pub car_motion: OptMultiCarData<CarMotion>,
+    pub car_setup: Option<OptMultiCarData<CarSetup>>,
     pub participants_info: Option<OptMultiCarData<ParticipantInfo>>,
 }
 

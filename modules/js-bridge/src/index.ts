@@ -2,7 +2,7 @@ const core = require('../native') as Core;
 const stayAwake = require('stay-awake');
 
 import { createSubject, createObservable } from '@bunch-of-friends/observable';
-import { MultiCarData, SessionIdentifier, SessionData, Lap, Sector, CarStatus, CarTelemetry, CarMotion, ParticipantInfo, Core, LapData } from './types';
+import { MultiCarData, SessionIdentifier, SessionData, Lap, Sector, CarStatus, CarTelemetry, CarMotion, CarSetup, ParticipantInfo, Core, LapData } from './types';
 
 export * from './types';
 export * from '@bunch-of-friends/observable';
@@ -23,6 +23,8 @@ let carTelemetrySubject = createSubject<MultiCarData<CarTelemetry>>();
 let carTelemetryObservable = createObservable<MultiCarData<CarTelemetry>>(carTelemetrySubject);
 let carMotionSubject = createSubject<MultiCarData<CarMotion>>();
 let carMotionObservable = createObservable<MultiCarData<CarMotion>>(carMotionSubject);
+let carSetupSubject = createSubject<MultiCarData<CarSetup>>();
+let carSetupObservable = createObservable<MultiCarData<CarSetup>>(carSetupSubject);
 let participantsInfoSubject = createSubject<MultiCarData<ParticipantInfo>>();
 let participantsInfoObservable = createObservable<MultiCarData<ParticipantInfo>>(participantsInfoSubject);
 
@@ -95,6 +97,10 @@ function getNextTick() {
 
     if (tick.carMotion) {
         carMotionSubject.notifyObservers(tick.carMotion);
+    }
+
+    if (tick.carSetup) {
+        carSetupSubject.notifyObservers(tick.carSetup);
     }
 
     if (tick.participants) {

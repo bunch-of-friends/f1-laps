@@ -41,7 +41,7 @@ impl Serialiser {
             match header.m_packetId {
                 0 => {
                     if let Some(motion) = serialise_motion(datagram) {
-                        frame.car_motion = Some(motion.to_model(&header));
+                        frame.car_motion = Some(motion.to_model());
                     }
                 }
                 1 => {
@@ -51,7 +51,7 @@ impl Serialiser {
                 }
                 2 => {
                     if let Some(lap_data) = serialise_lap_data(datagram) {
-                        frame.lap_data = Some(lap_data.to_model(&header));
+                        frame.lap_data = Some(lap_data.to_model());
                     }
                 }
                 3 => {
@@ -64,17 +64,18 @@ impl Serialiser {
                     }
                 }
                 5 => {
-                    let _setups = serialise_setups(datagram);
-                    // nothing for now
+                    if let Some(setups) = serialise_setups(datagram) {
+                        frame.car_setup = Some(setups.to_model());
+                    }
                 }
                 6 => {
                     if let Some(telemetry) = serialise_telemetry(datagram) {
-                        frame.car_telemetry = Some(telemetry.to_model(&header));
+                        frame.car_telemetry = Some(telemetry.to_model());
                     }
                 }
                 7 => {
                     if let Some(status) = serialise_status(datagram) {
-                        frame.car_status = Some(status.to_model(&header));
+                        frame.car_status = Some(status.to_model());
                     }
                 }
                 _ => {
@@ -175,6 +176,7 @@ pub(crate) struct Frame {
     pub car_motion: Option<MultiCarData<CarMotion>>,
     pub car_telemetry: Option<MultiCarData<CarTelemetry>>,
     pub car_status: Option<MultiCarData<CarStatus>>,
+    pub car_setup: Option<MultiCarData<CarSetup>>,
     pub participants_info: Option<MultiCarData<ParticipantInfo>>,
 }
 
@@ -187,6 +189,7 @@ impl Frame {
             car_motion: None,
             car_telemetry: None,
             car_status: None,
+            car_setup: None,
             participants_info: None,
         }
     }
@@ -207,6 +210,7 @@ impl Frame {
             car_motion: self.car_motion.clone().unwrap(),
             car_telemetry: self.car_telemetry.clone().unwrap(),
             car_status: self.car_status.clone(),
+            car_setup: self.car_setup.clone(),
             participants_info: self.participants_info.clone(),
         })
     }
