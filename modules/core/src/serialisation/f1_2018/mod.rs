@@ -14,16 +14,16 @@ static PACKET_MAX_SIZE: usize = 1341;
 // http://forums.codemasters.com/discussion/136948/f1-2018-udp-specification
 
 /* 
-ID | Packet Name      | bytes | present in each frame
+ID | Packet Name      | bytes | frequency
 -----------------------------------------------------
-0  | Motion           | 1341  | true
-1  | Session          | 147   | false
-2  | Lap Data         | 841   | true
-3  | Event            | 25    | false
-4  | Participants     | 1082  | false
-5  | Car setups       | 841   | false
-6  | Car telemetry    | 1085  | true
-7  | Status           | 1061  | false
+0  | Motion           | 1341  | every frame (menu settings, 20-60Hz)
+1  | Session          | 147   | 2Hz
+2  | Lap Data         | 841   | every frame (menu settings, 20-60Hz)
+3  | Event            | 25    | on event
+4  | Participants     | 1082  | every 5 seconds
+5  | Car setups       | 841   | 2Hz
+6  | Car telemetry    | 1085  | every frame (menu settings, 20-60Hz)
+7  | Status           | 1061  | 2Hz
 */
 
 pub(crate) fn get_buffer_size() -> usize {
@@ -41,7 +41,7 @@ impl Serialiser {
             match header.m_packetId {
                 0 => {
                     if let Some(motion) = serialise_motion(datagram) {
-                        frame.car_motion = Some(motion.to_model(&header));
+                        frame.car_motion = Some(motion.to_model());
                     }
                 }
                 1 => {
@@ -51,7 +51,7 @@ impl Serialiser {
                 }
                 2 => {
                     if let Some(lap_data) = serialise_lap_data(datagram) {
-                        frame.lap_data = Some(lap_data.to_model(&header));
+                        frame.lap_data = Some(lap_data.to_model());
                     }
                 }
                 3 => {
@@ -59,21 +59,23 @@ impl Serialiser {
                     // nothing for now
                 }
                 4 => {
-                    let _participants = serialise_participants(datagram);
-                    // nothing for now
+                    if let Some(participants) = serialise_participants(datagram) {
+                        frame.participants_info = Some(participants.to_model());
+                    }
                 }
                 5 => {
-                    let _setups = serialise_setups(datagram);
-                    // nothing for now
+                    if let Some(setups) = serialise_setups(datagram) {
+                        frame.car_setup = Some(setups.to_model());
+                    }
                 }
                 6 => {
                     if let Some(telemetry) = serialise_telemetry(datagram) {
-                        frame.car_telemetry = Some(telemetry.to_model(&header));
+                        frame.car_telemetry = Some(telemetry.to_model());
                     }
                 }
                 7 => {
                     if let Some(status) = serialise_status(datagram) {
-                        frame.car_status = Some(status.to_model(&header));
+                        frame.car_status = Some(status.to_model());
                     }
                 }
                 _ => {
@@ -112,7 +114,6 @@ impl ReceivePacket for Serialiser {
 
     fn converto_to_tick(&mut self, datagram: &[u8], _size: usize) -> Option<Tick> {
         let header = serialise_header(datagram)?;
-        // println!("{} {}", header.m_frameIdentifier, header.m_packetId);
 
         let mut result: Option<Tick> = None;
 
@@ -151,8 +152,8 @@ fn serialise_events(datagram: &[u8]) -> Option<packets::PacketEventData> {
     bincode::deserialize::<packets::PacketEventData>(&datagram[..]).ok()
 }
 
-fn serialise_participants(datagram: &[u8]) -> Option<packets::PacketParticipantsData> {
-    bincode::deserialize::<packets::PacketParticipantsData>(&datagram[..]).ok()
+fn serialise_participants(datagram: &[u8]) -> Option<packets::PacketParticipantsInfo> {
+    bincode::deserialize::<packets::PacketParticipantsInfo>(&datagram[..]).ok()
 }
 
 fn serialise_setups(datagram: &[u8]) -> Option<packets::PacketCarSetupData> {
@@ -171,10 +172,12 @@ fn serialise_status(datagram: &[u8]) -> Option<packets::PacketCarStatusData> {
 pub(crate) struct Frame {
     pub header: Header,
     pub session_data: Option<SessionData>,
-    pub lap_data: Option<LapData>,
-    pub car_motion: Option<CarMotion>,
-    pub car_telemetry: Option<CarTelemetry>,
-    pub car_status: Option<CarStatus>,
+    pub lap_data: Option<MultiCarData<LapData>>,
+    pub car_motion: Option<MultiCarData<CarMotion>>,
+    pub car_telemetry: Option<MultiCarData<CarTelemetry>>,
+    pub car_status: Option<MultiCarData<CarStatus>>,
+    pub car_setup: Option<MultiCarData<CarSetup>>,
+    pub participants_info: Option<MultiCarData<ParticipantInfo>>,
 }
 
 impl Frame {
@@ -186,6 +189,8 @@ impl Frame {
             car_motion: None,
             car_telemetry: None,
             car_status: None,
+            car_setup: None,
+            participants_info: None,
         }
     }
 
@@ -198,13 +203,15 @@ impl Frame {
             self.lap_data.is_some() && self.car_motion.is_some() && self.car_telemetry.is_some()
         );
 
-        Some(Tick::new(
-            self.header.clone(),
-            self.session_data.clone(),
-            self.lap_data.clone().unwrap(),
-            self.car_motion.clone().unwrap(),
-            self.car_telemetry.clone().unwrap(),
-            self.car_status.clone(),
-        ))
+        Some(Tick {
+            header: self.header.clone(),
+            session_data: self.session_data.clone(),
+            lap_data: self.lap_data.clone().unwrap(),
+            car_motion: self.car_motion.clone().unwrap(),
+            car_telemetry: self.car_telemetry.clone().unwrap(),
+            car_status: self.car_status.clone(),
+            car_setup: self.car_setup.clone(),
+            participants_info: self.participants_info.clone(),
+        })
     }
 }

@@ -21,10 +21,12 @@ pub struct Collector {
     finished_lap: Option<Lap>,
     finished_sector: Option<Sector>,
     session_data: Option<SessionData>,
-    lap_data: Option<LapData>,
-    car_status: Option<CarStatus>,
-    car_telemetry: Option<CarTelemetry>,
-    car_motion: Option<CarMotion>,
+    lap_data: Option<OptMultiCarData<LapData>>,
+    car_status: Option<OptMultiCarData<CarStatus>>,
+    car_telemetry: Option<OptMultiCarData<CarTelemetry>>,
+    car_motion: Option<OptMultiCarData<CarMotion>>,
+    car_setup: Option<OptMultiCarData<CarSetup>>,
+    participants_info: Option<OptMultiCarData<ParticipantInfo>>,
 }
 
 impl Collector {
@@ -38,35 +40,45 @@ impl Collector {
             car_status: None,
             car_telemetry: None,
             car_motion: None,
+            car_setup: None,
+            participants_info: None,
         }
     }
 
-    pub fn update(&mut self, output: &Output) {
+    pub fn update(&mut self, output: Output) {
         if output.events.started_session.is_some() {
-            self.session_identifier = output.events.started_session.clone();
+            self.session_identifier = output.events.started_session;
         }
 
         if output.events.finished_lap.is_some() {
-            self.finished_lap = output.events.finished_lap.clone();
+            self.finished_lap = output.events.finished_lap;
         }
 
         if output.events.finished_sector.is_some() {
-            self.finished_sector = output.events.finished_sector.clone();
+            self.finished_sector = output.events.finished_sector;
         }
 
         if output.session_data.is_some() {
-            self.session_data = output.session_data.clone();
+            self.session_data = output.session_data;
         }
 
-        self.lap_data = Some(output.lap_data.clone());
+        self.lap_data = Some(output.lap_data);
 
         if output.car_status.is_some() {
-            self.car_status = output.car_status.clone();
+            self.car_status = output.car_status;
         }
 
-        self.car_telemetry = Some(output.car_telemetry.clone());
+        self.car_telemetry = Some(output.car_telemetry);
 
-        self.car_motion = Some(output.car_motion.clone());
+        self.car_motion = Some(output.car_motion);
+
+        if output.car_setup.is_some() {
+            self.car_setup = output.car_setup;
+        }
+
+        if output.participants_info.is_some() {
+            self.participants_info = output.participants_info;
+        }
     }
 
     pub fn get_session_identifier(&mut self) -> Option<SessionIdentifier> {
@@ -93,27 +105,39 @@ impl Collector {
         res
     }
 
-    pub fn get_lap_data(&mut self) -> Option<LapData> {
+    pub fn get_lap_data(&mut self) -> Option<OptMultiCarData<LapData>> {
         let res = self.lap_data.clone();
         self.lap_data = None;
         res
     }
 
-    pub fn get_car_status(&mut self) -> Option<CarStatus> {
+    pub fn get_car_status(&mut self) -> Option<OptMultiCarData<CarStatus>> {
         let res = self.car_status.clone();
         self.car_status = None;
         res
     }
 
-    pub fn get_car_telemetry(&mut self) -> Option<CarTelemetry> {
+    pub fn get_car_telemetry(&mut self) -> Option<OptMultiCarData<CarTelemetry>> {
         let res = self.car_telemetry.clone();
         self.car_telemetry = None;
         res
     }
 
-    pub fn get_car_motion(&mut self) -> Option<CarMotion> {
+    pub fn get_car_motion(&mut self) -> Option<OptMultiCarData<CarMotion>> {
         let res = self.car_motion.clone();
         self.car_motion = None;
+        res
+    }
+
+    pub fn get_car_setup(&mut self) -> Option<OptMultiCarData<CarSetup>> {
+        let res = self.car_setup.clone();
+        self.car_setup = None;
+        res
+    }
+
+    pub fn get_participants_info(&mut self) -> Option<OptMultiCarData<ParticipantInfo>> {
+        let res = self.participants_info.clone();
+        self.participants_info = None;
         res
     }
 }
@@ -145,7 +169,7 @@ fn replay_packets(mut cx: FunctionContext) -> JsResult<JsUndefined> {
 
 fn on_output_received(output: Output) {
     let mut collector = COLLECTOR.lock().unwrap();
-    collector.update(&output);
+    collector.update(output);
 }
 
 fn get_next_tick(mut cx: FunctionContext) -> JsResult<JsObject> {
@@ -206,6 +230,20 @@ fn get_next_tick(mut cx: FunctionContext) -> JsResult<JsObject> {
         &mut cx,
         "carMotion",
         collector.get_car_motion().as_ref(),
+        &object,
+    )?;
+
+    append_as_js(
+        &mut cx,
+        "carSetup",
+        collector.get_car_setup().as_ref(),
+        &object,
+    )?;
+
+    append_as_js(
+        &mut cx,
+        "participants",
+        collector.get_participants_info().as_ref(),
         &object,
     )?;
 

@@ -1,13 +1,13 @@
-mod extensions;
-
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Tick {
     pub header: Header,
     pub session_data: Option<SessionData>,
-    pub lap_data: LapData,
-    pub car_motion: CarMotion,
-    pub car_telemetry: CarTelemetry,
-    pub car_status: Option<CarStatus>,
+    pub lap_data: MultiCarData<LapData>,
+    pub car_motion: MultiCarData<CarMotion>,
+    pub car_telemetry: MultiCarData<CarTelemetry>,
+    pub car_status: Option<MultiCarData<CarStatus>>,
+    pub car_setup: Option<MultiCarData<CarSetup>>,
+    pub participants_info: Option<MultiCarData<ParticipantInfo>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -34,6 +34,15 @@ pub struct SessionData {
     pub is_spectating: bool,
     pub is_online_game: bool,
     pub safety_car_status: u8,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct MultiCarData<T>
+where
+    T: Clone,
+{
+    pub player: T,
+    pub others: Vec<T>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -108,4 +117,38 @@ pub struct CarTelemetry {
     pub tyres_inner_temperature: [u16; 4],
     pub engine_temperature: u16,
     pub tyres_pressure: [f32; 4],
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ParticipantInfo {
+    pub is_ai: bool,
+    pub driver_id: u8,
+    pub team_id: u8,
+    pub race_number: u8,
+    pub nationality_id: u8,
+    pub name: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct CarSetup {
+    pub front_wing: u8,
+    pub rear_wing: u8,
+    pub on_throttle: u8,
+    pub off_throttle: u8,
+    pub front_camber: f32,
+    pub rear_camber: f32,
+    pub front_toe: f32,
+    pub rear_toe: f32,
+    pub front_suspension: u8,
+    pub rear_suspension: u8,
+    pub front_anti_roll_bar: u8,
+    pub rear_anti_roll_bar: u8,
+    pub front_suspension_height: u8,
+    pub rear_suspension_height: u8,
+    pub brake_pressure: u8,
+    pub brake_bias: u8,
+    pub front_tyre_pressure: f32,
+    pub rear_tyre_pressure: f32,
+    pub ballast: u8,
+    pub fuel_load: f32,
 }

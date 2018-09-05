@@ -32,7 +32,7 @@ fn is_new_lap(is_new_session: bool, tick: &Tick, context: &Context) -> bool {
     }
 
     if let Some(ref current_lap) = context.session_context.current_lap {
-        tick.lap_data.current_lap_number != current_lap.lap_number
+        tick.lap_data.player.current_lap_number != current_lap.lap_number
     } else {
         true
     }
@@ -44,7 +44,7 @@ fn is_new_sector(is_new_lap: bool, tick: &Tick, context: &Context) -> bool {
     }
 
     if let Some(ref current_sector) = context.session_context.current_sector {
-        tick.lap_data.current_sector_number != current_sector.sector_number
+        tick.lap_data.player.current_sector_number != current_sector.sector_number
     } else {
         false
     }
@@ -56,7 +56,7 @@ fn is_flashback(is_new_session: bool, is_new_lap: bool, tick: &Tick, context: &C
     }
 
     if let Some(ref current_lap) = context.session_context.current_lap {
-        tick.lap_data.current_lap_time < current_lap.lap_time
+        tick.lap_data.player.current_lap_time < current_lap.lap_time
     } else {
         false
     }
@@ -68,9 +68,9 @@ fn is_teleported(is_new_session: bool, tick: &Tick, context: &Context) -> bool {
     }
 
     if let Some(ref current_motion) = context.session_context.car_motion {
-        let x_diff = (tick.car_motion.x - current_motion.x).abs();
-        let y_diff = (tick.car_motion.y - current_motion.y).abs();
-        let z_diff = (tick.car_motion.z - current_motion.z).abs();
+        let x_diff = (tick.car_motion.player.x - current_motion.x).abs();
+        let y_diff = (tick.car_motion.player.y - current_motion.y).abs();
+        let z_diff = (tick.car_motion.player.z - current_motion.z).abs();
 
         let max = 10 as f32;
 

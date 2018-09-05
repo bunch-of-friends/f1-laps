@@ -2,7 +2,7 @@ const core = require('../native') as Core;
 const stayAwake = require('stay-awake');
 
 import { createSubject, createObservable } from '@bunch-of-friends/observable';
-import { SessionIdentifier, SessionData, Lap, Sector, CarStatus, CarTelemetry, CarMotion, Core, LapData } from './types';
+import { MultiCarData, SessionIdentifier, SessionData, Lap, Sector, CarStatus, CarTelemetry, CarMotion, CarSetup, ParticipantInfo, Core, LapData } from './types';
 
 export * from './types';
 export * from '@bunch-of-friends/observable';
@@ -15,14 +15,18 @@ let sectorFinishedSubject = createSubject<Sector>();
 let sectorFinishedObservable = createObservable<Sector>(sectorFinishedSubject);
 let sessionDataSubject = createSubject<SessionData>();
 let sessionDataObservable = createObservable<SessionData>(sessionDataSubject);
-let lapDataSubject = createSubject<LapData>();
-let lapDataObservable = createObservable<LapData>(lapDataSubject);
-let carStatusSubject = createSubject<CarStatus>();
-let carStatusObservable = createObservable<CarStatus>(carStatusSubject);
-let carTelemetrySubject = createSubject<CarTelemetry>();
-let carTelemetryObservable = createObservable<CarTelemetry>(carTelemetrySubject);
-let carMotionSubject = createSubject<CarMotion>();
-let carMotionObservable = createObservable<CarMotion>(carMotionSubject);
+let lapDataSubject = createSubject<MultiCarData<LapData>>();
+let lapDataObservable = createObservable<MultiCarData<LapData>>(lapDataSubject);
+let carStatusSubject = createSubject<MultiCarData<CarStatus>>();
+let carStatusObservable = createObservable<MultiCarData<CarStatus>>(carStatusSubject);
+let carTelemetrySubject = createSubject<MultiCarData<CarTelemetry>>();
+let carTelemetryObservable = createObservable<MultiCarData<CarTelemetry>>(carTelemetrySubject);
+let carMotionSubject = createSubject<MultiCarData<CarMotion>>();
+let carMotionObservable = createObservable<MultiCarData<CarMotion>>(carMotionSubject);
+let carSetupSubject = createSubject<MultiCarData<CarSetup>>();
+let carSetupObservable = createObservable<MultiCarData<CarSetup>>(carSetupSubject);
+let participantsInfoSubject = createSubject<MultiCarData<ParticipantInfo>>();
+let participantsInfoObservable = createObservable<MultiCarData<ParticipantInfo>>(participantsInfoSubject);
 
 let initialised = false;
 
@@ -34,7 +38,9 @@ export {
     lapDataObservable as lapData,
     carStatusObservable as carStatus,
     carTelemetryObservable as carTelemetry,
-    carMotionObservable as carMotion
+    carMotionObservable as carMotion,
+    carSetupObservable as carSetup,
+    participantsInfoObservable as participantsInfo
 };
 
 export function initialise(config = { updateInterval: 50, storagePath: './storage' }) {
@@ -92,6 +98,14 @@ function getNextTick() {
 
     if (tick.carMotion) {
         carMotionSubject.notifyObservers(tick.carMotion);
+    }
+
+    if (tick.carSetup) {
+        carSetupSubject.notifyObservers(tick.carSetup);
+    }
+
+    if (tick.participants) {
+        participantsInfoSubject.notifyObservers(tick.participants);
     }
 }
 
