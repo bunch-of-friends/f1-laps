@@ -6,15 +6,19 @@ use std::time::Duration;
 
 use pipeline::input::Tick;
 use serialisation::{self, ReceivePacket};
-use storage;
+use storage::Storage;
 use udp::Packet;
 
-pub fn replay_packets(should_simulate_time: bool, tx: mpsc::Sender<Tick>) {
+pub(crate) fn replay_packets(
+    storage: &'static Storage,
+    should_simulate_time: bool,
+    tx: mpsc::Sender<Tick>,
+) {
     let (packet_tx, packet_rx): (mpsc::Sender<Vec<Packet>>, mpsc::Receiver<Vec<Packet>>) =
         mpsc::channel();
 
     thread::spawn(move || {
-        storage::get_all_packets(&packet_tx);
+        storage.get_all_packets(&packet_tx);
     });
 
     let mut last_packet_time = Utc::now();

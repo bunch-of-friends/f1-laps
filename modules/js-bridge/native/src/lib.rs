@@ -17,6 +17,7 @@ lazy_static! {
 }
 
 pub struct Collector {
+    context: Option<&'static f1_laps_core::Context>,
     session_identifier: Option<SessionIdentifier>,
     finished_lap: Option<Lap>,
     finished_sector: Option<Sector>,
@@ -32,6 +33,7 @@ pub struct Collector {
 impl Collector {
     pub fn new() -> Collector {
         Collector {
+            context: None,
             session_identifier: None,
             finished_lap: None,
             finished_sector: None,
@@ -145,7 +147,11 @@ impl Collector {
 fn initialise(mut cx: FunctionContext) -> JsResult<JsUndefined> {
     let storage_folder_path = cx.argument::<JsString>(0)?.value();
 
-    f1_laps_core::initialise(storage_folder_path);
+    let mut collector = COLLECTOR.lock().unwrap();
+
+    let context = f1_laps_core::initialise(storage_folder_path);
+    collector.context = Some(Box::leak(context));
+
 
     Ok(JsUndefined::new())
 }
@@ -154,7 +160,15 @@ fn start_listening(mut cx: FunctionContext) -> JsResult<JsUndefined> {
     let port = cx.argument::<JsNumber>(0)?.value() as i32;
     let should_store_packets = cx.argument::<JsBoolean>(1)?.value();
 
-    f1_laps_core::start_listening(port, should_store_packets, on_output_received);
+    let collector = COLLECTOR.lock().unwrap();
+    let x = collector.context.unwrap();
+
+    f1_laps_core::start_listening(
+        x,
+        port,
+        should_store_packets,
+        on_output_received,
+    );
 
     Ok(JsUndefined::new())
 }
@@ -162,7 +176,13 @@ fn start_listening(mut cx: FunctionContext) -> JsResult<JsUndefined> {
 fn replay_packets(mut cx: FunctionContext) -> JsResult<JsUndefined> {
     let should_simulate_time = cx.argument::<JsBoolean>(0)?.value();
 
-    f1_laps_core::replay_packets(should_simulate_time, on_output_received);
+    let collector = COLLECTOR.lock().unwrap();
+
+    // f1_laps_core::replay_packets(
+    //     &collector.context.unwrap(),
+    //     should_simulate_time,
+    //     on_output_received,
+    // );
 
     Ok(JsUndefined::new())
 }

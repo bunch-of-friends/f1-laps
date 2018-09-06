@@ -5,10 +5,15 @@ use std::net::UdpSocket;
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::Duration;
-use storage;
+use storage::Storage;
 use udp::Packet;
 
-pub fn start_listening(port: i32, should_store_packets: bool, tx: mpsc::Sender<Tick>) {
+pub(crate) fn start_listening(
+    storage: &'static Storage,
+    port: i32,
+    should_store_packets: bool,
+    tx: mpsc::Sender<Tick>,
+) {
     let socket = bind_to_address(format!("0.0.0.0:{}", port));
     let buffer_size = serialisation::get_buffer_size();
 
@@ -26,7 +31,7 @@ pub fn start_listening(port: i32, should_store_packets: bool, tx: mpsc::Sender<T
                 packets_local.clear();
 
                 thread::spawn(move || {
-                    storage::store_packets(packets_to_store);
+                    storage.store_packets(packets_to_store);
                 });
             }
         });

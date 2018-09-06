@@ -1,8 +1,6 @@
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-#[macro_use]
-extern crate lazy_static;
 extern crate bincode;
 extern crate chrono;
 extern crate schedule_recv;
@@ -20,12 +18,24 @@ use pipeline::output::Output;
 use pipeline::Pipeline;
 use std::sync::mpsc::{self, TryRecvError};
 use std::thread;
+use storage::Storage;
 
-pub fn initialise(storage_folder_path: String) {
-    storage::initialise(&storage_folder_path);
+pub use pipeline::output::*;
+
+pub struct Context {
+    pub(crate) storage: Storage,
+}
+
+pub fn initialise(storage_folder_path: String) -> Box<Context> {
+    let context = Context {
+        storage: Storage::new(&storage_folder_path),
+    };
+
+    Box::new(context)
 }
 
 pub fn start_listening<F>(
+    context: &'static Context,
     port: i32,
     should_store_packets: bool,
     f: F,
@@ -36,7 +46,7 @@ where
     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
     let t = thread::spawn(move || {
-        udp::start_listening(port, should_store_packets, tx);
+        udp::start_listening(&context.storage, port, should_store_packets, tx);
     });
 
     let mut pipeline = Pipeline::new();
@@ -52,6 +62,7 @@ where
 }
 
 pub fn replay_packets<F>(
+    context: &'static Context,
     should_simulate_time: bool,
     f: F,
 ) -> (std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)
@@ -63,7 +74,7 @@ where
     let mut pipeline = Pipeline::new();
 
     let t = thread::spawn(move || {
-        udp::replay_packets(should_simulate_time, tx);
+        udp::replay_packets(&context.storage, should_simulate_time, tx);
     });
 
     let r = thread::spawn(move || loop {
