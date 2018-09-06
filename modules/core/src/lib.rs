@@ -6,7 +6,6 @@ extern crate chrono;
 extern crate schedule_recv;
 extern crate sled;
 
-mod file_system;
 mod pipeline;
 pub mod prelude;
 mod serialisation;
