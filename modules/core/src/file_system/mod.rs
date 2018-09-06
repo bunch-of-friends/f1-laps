@@ -11,7 +11,7 @@ use self::path_helper::PathHelper;
 
 pub(crate) fn initialise(storage_folder_path: &str) -> PathHelper {
     let path_helper = PathHelper::new(storage_folder_path);
-    ensure_storage_files_created(&path_helper);
+    ensure_storage_folders_created(&path_helper);
 
     build_data_store(&path_helper)
 }
@@ -51,9 +51,11 @@ pub(crate) fn get_all_packets(path_helper: &PathHelper, tx: &mpsc::Sender<Vec<Pa
     }
 }
 
-fn ensure_storage_files_created(path_helper: &PathHelper) {
+fn ensure_storage_folders_created(path_helper: &PathHelper) {
     ensure_folder_created(path_helper.get_storage_folder_path().as_str());
     ensure_folder_created(path_helper.get_packets_folder_path().as_str());
+    ensure_folder_created(path_helper.get_lap_headers_folder_path().as_str());
+    ensure_folder_created(path_helper.get_lap_data_folder_path().as_str());
 }
 
 fn ensure_folder_created(path: &str) {

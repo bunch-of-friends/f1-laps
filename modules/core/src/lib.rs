@@ -1,3 +1,4 @@
+extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
@@ -5,6 +6,7 @@ extern crate lazy_static;
 extern crate bincode;
 extern crate chrono;
 extern crate schedule_recv;
+extern crate sled;
 
 mod file_system;
 mod pipeline;
