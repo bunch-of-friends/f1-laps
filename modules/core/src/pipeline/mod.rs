@@ -5,34 +5,32 @@ mod routines;
 use self::input::*;
 use self::output::*;
 use pipeline::routines::lap_telemetry::LapTelemetryTempStore;
+use storage::Storage;
 
-pub struct Pipeline {
+pub(crate) struct Pipeline {
+    should_store_laps: bool,
     context: Context,
     current_lap_telemetry: LapTelemetryTempStore,
 }
 
 impl Pipeline {
-    pub fn new() -> Pipeline {
+    pub fn new(should_store_laps: bool) -> Pipeline {
         Pipeline {
+            should_store_laps: should_store_laps,
             context: Context::empty(),
             current_lap_telemetry: LapTelemetryTempStore::new(),
         }
     }
 
-    pub fn process(&mut self, tick: Tick) -> Output {
+    pub fn process(&mut self, storage: &'static Storage, tick: Tick) -> Output {
         let labels = routines::labels::build_labels(&tick, &self.context);
         let events = routines::events::build_events(&tick, &self.context, &labels);
 
-        let finished_lap_ticks = routines::lap_telemetry::update_temp_store(
-            &tick,
-            &labels,
-            &events,
-            &mut self.current_lap_telemetry,
-        );
+        let finished_lap_telemetry = routines::lap_telemetry::update_temp_store(&tick, &labels, &events, &mut self.current_lap_telemetry);
 
-        // if self.should_store_laps {
-        //     self.try_store_lap(finished_lap_ticks, &events);
-        // }
+        if self.should_store_laps {
+            routines::lap_telemetry::try_store_lap(storage, finished_lap_telemetry, &events, &self.context)
+        }
 
         let new_context = routines::context::build_context(&tick, &self.context);
 
@@ -40,27 +38,6 @@ impl Pipeline {
 
         convert_to_output(tick, labels, events)
     }
-
-    // fn try_store_lap(&self, finished_lap_ticks: Option<Vec<CarTelemetry>>, events: &Events) {
-    //     if let Some(ticks) = finished_lap_ticks {
-    //         if let Some(ref finished_lap) = events.finished_lap {
-    //             let metadata = LapMetadata::new(
-    //                 &self.context.session_context.session,
-    //                 finished_lap,
-    //                 self.context.session_context.car_status.tyre_compound,
-    //             );
-
-    //             let t = thread::spawn(move || {
-    //                 storage::store_lap(ticks, &metadata);
-    //             });
-
-    //             if self.should_wait_for_fs {
-    //                 let j = t.join();
-    //                 assert!(!j.is_err());
-    //             }
-    //         }
-    //     }
-    // }
 }
 
 fn convert_to_output(tick: Tick, labels: Labels, events: Events) -> Output {

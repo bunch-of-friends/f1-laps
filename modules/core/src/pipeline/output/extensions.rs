@@ -63,6 +63,9 @@ impl SessionContext {
             current_sector: None,
             car_motion: None,
             car_status: None,
+            car_setup: None,
+            participants_info: None,
+            session_data: None,
         }
     }
 }

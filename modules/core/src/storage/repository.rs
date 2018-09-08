@@ -9,6 +9,7 @@ pub struct Repository<T: Serialize + DeserializeOwned> {
     pub marker: PhantomData<T>,
 }
 
+#[allow(dead_code)]
 impl<T: Serialize + DeserializeOwned> Repository<T> {
     pub fn new(path: String) -> Repository<T> {
         let config = ConfigBuilder::new().path(&path).build();
@@ -24,9 +25,12 @@ impl<T: Serialize + DeserializeOwned> Repository<T> {
         }
     }
 
-    pub fn set(&self, key: String, value: &T) {
+    pub fn set(&self, key: String, value: &T) -> Option<()> {
         let bytes = bincode::serialize(value).expect("failed to serialise");
-        self.tree.set(key.as_bytes().to_vec(), bytes);
+        match self.tree.set(key.as_bytes().to_vec(), bytes) {
+            Ok(_) => Some(()),
+            Err(_) => None,
+        }
     }
 
     pub fn get(&self, key: String) -> Option<T> {
@@ -42,8 +46,11 @@ impl<T: Serialize + DeserializeOwned> Repository<T> {
         }
     }
 
-    pub fn delete(&self, key: String) {
-        self.tree.del(key.as_bytes());
+    pub fn delete(&self, key: String) -> Option<()> {
+        match self.tree.del(key.as_bytes()) {
+            Ok(_) => Some(()),
+            Err(_) => None,
+        }
     }
 
     pub fn get_all(&self) -> Vec<T> {
