@@ -40,7 +40,9 @@ where
 {
     if tick.is_some() {
         Some(tick.unwrap().player.clone())
-    } else {
+    } else if context.is_some() {
         Some(context.unwrap().clone())
+    } else {
+        None
     }
 }
