@@ -4,7 +4,7 @@ mod routines;
 
 use self::input::*;
 use self::output::*;
-use pipeline::routines::lap_telemetry_store::LapTelemetryTempStore;
+use pipeline::routines::lap_telemetry::LapTelemetryTempStore;
 
 pub struct Pipeline {
     context: Context,
@@ -23,12 +23,12 @@ impl Pipeline {
         let labels = routines::labels::build_labels(&tick, &self.context);
         let events = routines::events::build_events(&tick, &self.context, &labels);
 
-        // let finished_lap_ticks = routines::lap_ticks::update_lap_ticks(
-        //     tick,
-        //     &labels,
-        //     &events,
-        //     &mut self.current_lap_telemetry,
-        // );
+        let finished_lap_ticks = routines::lap_telemetry::update_temp_store(
+            &tick,
+            &labels,
+            &events,
+            &mut self.current_lap_telemetry,
+        );
 
         // if self.should_store_laps {
         //     self.try_store_lap(finished_lap_ticks, &events);
@@ -100,4 +100,3 @@ where
         None
     }
 }
-
