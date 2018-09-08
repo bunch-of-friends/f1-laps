@@ -1,5 +1,6 @@
 use chrono::serde::ts_nanoseconds;
 use chrono::{DateTime, Utc};
+use pipeline::output::*;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LapHeader {
@@ -18,6 +19,12 @@ pub struct LapHeader {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct LapData {
-    
+pub struct LapTelemetry {
+    pub session_data: SessionData,
+    pub lap_data: Vec<OptMultiCarData<LapData>>,
+    pub car_status: Vec<OptMultiCarData<CarStatus>>,
+    pub car_telemetry: Vec<OptMultiCarData<CarTelemetry>>,
+    pub car_motion: Vec<OptMultiCarData<CarMotion>>,
+    pub car_setup: OptMultiCarData<CarSetup>,
+    pub participants_info: OptMultiCarData<ParticipantInfo>,
 }

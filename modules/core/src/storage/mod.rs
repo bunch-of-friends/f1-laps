@@ -4,14 +4,14 @@ pub(crate) mod repository;
 
 use std::sync::mpsc;
 use storage::file_system::path_helper::PathHelper;
-use storage::models::{LapData, LapHeader};
+use storage::models::{LapTelemetry, LapHeader};
 use storage::repository::Repository;
 use udp::Packet;
 
 pub(crate) struct Storage {
     pub path_helper: PathHelper,
     pub lap_headers: Repository<LapHeader>,
-    pub lap_data: Repository<LapData>,
+    pub lap_telemetry: Repository<LapTelemetry>,
 }
 
 impl Storage {
@@ -19,7 +19,7 @@ impl Storage {
         let path_helper = file_system::initialise(storage_folder_path);
         Storage {
             lap_headers: Repository::<LapHeader>::new(path_helper.get_lap_headers_folder_path()),
-            lap_data: Repository::<LapData>::new(path_helper.get_lap_data_folder_path()),
+            lap_telemetry: Repository::<LapTelemetry>::new(path_helper.get_lap_telemetry_folder_path()),
             path_helper: path_helper,
         }
     }

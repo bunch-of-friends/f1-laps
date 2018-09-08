@@ -55,7 +55,7 @@ fn ensure_storage_folders_created(path_helper: &PathHelper) {
     ensure_folder_created(path_helper.get_storage_folder_path().as_str());
     ensure_folder_created(path_helper.get_packets_folder_path().as_str());
     ensure_folder_created(path_helper.get_lap_headers_folder_path().as_str());
-    ensure_folder_created(path_helper.get_lap_data_folder_path().as_str());
+    ensure_folder_created(path_helper.get_lap_telemetry_folder_path().as_str());
 }
 
 fn ensure_folder_created(path: &str) {
