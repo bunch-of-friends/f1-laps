@@ -1,39 +1,144 @@
 #[macro_use]
 extern crate neon;
+extern crate neon_serde;
 #[macro_use]
 extern crate lazy_static;
 extern crate f1_laps_core;
-
-pub mod arr_helpers;
-pub mod obj_helpers;
+extern crate serde;
 
 use f1_laps_core::prelude::*;
 use neon::context::Context;
 use neon::prelude::*;
+use serde::ser::Serialize;
 use std::sync::Mutex;
-
-use arr_helpers as ah;
-use obj_helpers as oh;
 
 lazy_static! {
     static ref COLLECTOR: Mutex<Collector> = Mutex::new(Collector::new());
 }
 
 pub struct Collector {
-    tick: Option<Tick>,
-    session: Option<Session>,
-    sector: Option<Sector>,
-    lap: Option<Lap>,
+    session_identifier: Option<SessionIdentifier>,
+    finished_lap: Option<Lap>,
+    finished_sector: Option<Sector>,
+    session_data: Option<SessionData>,
+    lap_data: Option<OptMultiCarData<LapData>>,
+    car_status: Option<OptMultiCarData<CarStatus>>,
+    car_telemetry: Option<OptMultiCarData<CarTelemetry>>,
+    car_motion: Option<OptMultiCarData<CarMotion>>,
+    car_setup: Option<OptMultiCarData<CarSetup>>,
+    participants_info: Option<OptMultiCarData<ParticipantInfo>>,
 }
 
 impl Collector {
     pub fn new() -> Collector {
         Collector {
-            tick: None,
-            session: None,
-            sector: None,
-            lap: None,
+            session_identifier: None,
+            finished_lap: None,
+            finished_sector: None,
+            session_data: None,
+            lap_data: None,
+            car_status: None,
+            car_telemetry: None,
+            car_motion: None,
+            car_setup: None,
+            participants_info: None,
         }
+    }
+
+    pub fn update(&mut self, output: Output) {
+        if output.events.started_session.is_some() {
+            self.session_identifier = output.events.started_session;
+        }
+
+        if output.events.finished_lap.is_some() {
+            self.finished_lap = output.events.finished_lap;
+        }
+
+        if output.events.finished_sector.is_some() {
+            self.finished_sector = output.events.finished_sector;
+        }
+
+        if output.session_data.is_some() {
+            self.session_data = output.session_data;
+        }
+
+        self.lap_data = Some(output.lap_data);
+
+        if output.car_status.is_some() {
+            self.car_status = output.car_status;
+        }
+
+        self.car_telemetry = Some(output.car_telemetry);
+
+        self.car_motion = Some(output.car_motion);
+
+        if output.car_setup.is_some() {
+            self.car_setup = output.car_setup;
+        }
+
+        if output.participants_info.is_some() {
+            self.participants_info = output.participants_info;
+        }
+    }
+
+    pub fn get_session_identifier(&mut self) -> Option<SessionIdentifier> {
+        let res = self.session_identifier.clone();
+        self.session_identifier = None;
+        res
+    }
+
+    pub fn get_finished_lap(&mut self) -> Option<Lap> {
+        let res = self.finished_lap.clone();
+        self.finished_lap = None;
+        res
+    }
+
+    pub fn get_finished_sector(&mut self) -> Option<Sector> {
+        let res = self.finished_sector.clone();
+        self.finished_sector = None;
+        res
+    }
+
+    pub fn get_session_data(&mut self) -> Option<SessionData> {
+        let res = self.session_data.clone();
+        self.session_data = None;
+        res
+    }
+
+    pub fn get_lap_data(&mut self) -> Option<OptMultiCarData<LapData>> {
+        let res = self.lap_data.clone();
+        self.lap_data = None;
+        res
+    }
+
+    pub fn get_car_status(&mut self) -> Option<OptMultiCarData<CarStatus>> {
+        let res = self.car_status.clone();
+        self.car_status = None;
+        res
+    }
+
+    pub fn get_car_telemetry(&mut self) -> Option<OptMultiCarData<CarTelemetry>> {
+        let res = self.car_telemetry.clone();
+        self.car_telemetry = None;
+        res
+    }
+
+    pub fn get_car_motion(&mut self) -> Option<OptMultiCarData<CarMotion>> {
+        let res = self.car_motion.clone();
+        self.car_motion = None;
+        res
+    }
+
+    pub fn get_car_setup(&mut self) -> Option<OptMultiCarData<CarSetup>> {
+        let res = self.car_setup.clone();
+        self.car_setup = None;
+        res
+    }
+
+    pub fn get_participants_info(&mut self) -> Option<OptMultiCarData<ParticipantInfo>> {
+        let res = self.participants_info.clone();
+        self.participants_info = None;
+        res
     }
 }
 
@@ -47,33 +152,24 @@ fn initialise(mut cx: FunctionContext) -> JsResult<JsUndefined> {
 
 fn start_listening(mut cx: FunctionContext) -> JsResult<JsUndefined> {
     let port = cx.argument::<JsNumber>(0)?.value() as i32;
+    let should_store_packets = cx.argument::<JsBoolean>(1)?.value();
 
-    f1_laps_core::start_listening(port, on_received);
-
-    Ok(JsUndefined::new())
-}
-
-fn replay_all_laps(_cx: FunctionContext) -> JsResult<JsUndefined> {
-    f1_laps_core::replay_packets(on_received);
+    f1_laps_core::start_listening(port, should_store_packets, on_output_received);
 
     Ok(JsUndefined::new())
 }
 
-fn on_received(output: Output) {
+fn replay_packets(mut cx: FunctionContext) -> JsResult<JsUndefined> {
+    let should_simulate_time = cx.argument::<JsBoolean>(0)?.value();
+
+    f1_laps_core::replay_packets(should_simulate_time, on_output_received);
+
+    Ok(JsUndefined::new())
+}
+
+fn on_output_received(output: Output) {
     let mut collector = COLLECTOR.lock().unwrap();
-    collector.tick = Some(output.tick);
-
-    if let Some(session) = output.stats.started_session {
-        collector.session = Some(session);
-    }
-
-    if let Some(lap) = output.stats.finished_lap {
-        collector.lap = Some(lap);
-    }
-
-    if let Some(sector) = output.stats.finished_sector {
-        collector.sector = Some(sector);
-    }
+    collector.update(output);
 }
 
 fn get_next_tick(mut cx: FunctionContext) -> JsResult<JsObject> {
@@ -81,362 +177,101 @@ fn get_next_tick(mut cx: FunctionContext) -> JsResult<JsObject> {
 
     let object = cx.empty_object();
 
-    let mut should_remove_tick = false;
-    let mut should_remove_session = false;
-    let mut should_remove_lap = false;
-    let mut should_remove_sector = false;
+    append_as_js(
+        &mut cx,
+        "sessionIdentifier",
+        collector.get_session_identifier().as_ref(),
+        &object,
+    )?;
 
-    if let Some(ref tick) = collector.tick {
-        let live_data_obj = build_live_data_js_object(&mut cx, tick);
-        oh::set_obj_prop(&mut cx, &object, "liveData", live_data_obj)?;
+    append_as_js(
+        &mut cx,
+        "finishedLap",
+        collector.get_finished_lap().as_ref(),
+        &object,
+    )?;
 
-        should_remove_tick = true;
-    }
+    append_as_js(
+        &mut cx,
+        "finishedSector",
+        collector.get_finished_sector().as_ref(),
+        &object,
+    )?;
 
-    if let Some(ref session) = collector.session {
-        let session_obj = build_session_js_object(&mut cx, &session);
-        oh::set_obj_prop(&mut cx, &object, "sessionStarted", session_obj)?;
+    append_as_js(
+        &mut cx,
+        "sessionData",
+        collector.get_session_data().as_ref(),
+        &object,
+    )?;
 
-        should_remove_session = true;
-    }
+    append_as_js(
+        &mut cx,
+        "lapData",
+        collector.get_lap_data().as_ref(),
+        &object,
+    )?;
 
-    if let Some(ref lap) = collector.lap {
-        let lap_obj = build_lap_js_object(&mut cx, &lap);
-        oh::set_obj_prop(&mut cx, &object, "lapFinished", lap_obj)?;
+    append_as_js(
+        &mut cx,
+        "carStatus",
+        collector.get_car_status().as_ref(),
+        &object,
+    )?;
 
-        should_remove_lap = true;
-    }
+    append_as_js(
+        &mut cx,
+        "carTelemetry",
+        collector.get_car_telemetry().as_ref(),
+        &object,
+    )?;
 
-    if let Some(ref sector) = collector.sector {
-        let sector_obj = build_sector_js_object(&mut cx, &sector);
-        oh::set_obj_prop(&mut cx, &object, "sectorFinished", sector_obj)?;
+    append_as_js(
+        &mut cx,
+        "carMotion",
+        collector.get_car_motion().as_ref(),
+        &object,
+    )?;
 
-        should_remove_sector = true;
-    }
+    append_as_js(
+        &mut cx,
+        "carSetup",
+        collector.get_car_setup().as_ref(),
+        &object,
+    )?;
 
-    if should_remove_tick {
-        collector.tick = None;
-    }
-    if should_remove_session {
-        collector.session = None;
-    }
-    if should_remove_lap {
-        collector.lap = None;
-    }
-    if should_remove_sector {
-        collector.sector = None;
-    }
+    append_as_js(
+        &mut cx,
+        "participants",
+        collector.get_participants_info().as_ref(),
+        &object,
+    )?;
 
     Ok(object)
 }
 
-fn get_lap_data(mut cx: FunctionContext) -> JsResult<JsArray> {
-    // let identifier = cx.argument::<JsString>(0)?.value();
-
-    // let data = f1_laps_core::get_lap_data(identifier);
-    let arr = cx.empty_array();
-
-    // let mut index = 0;
-    // for item in data.iter() {
-    //     let js_object = build_live_data_js_object(&mut cx, item);
-    //     ah::set_obj_item(&mut cx, &arr, index, js_object)?;
-    //     index += 1;
-    // }
-
-    Ok(arr)
-}
-
-fn get_all_laps_metadata(mut cx: FunctionContext) -> JsResult<JsArray> {
-    let metadata = f1_laps_core::get_all_laps_metadata();
-    let arr = cx.empty_array();
-    let mut index = 0;
-    for item in metadata.iter() {
-        let js_object = build_lap_metadata_js_object(&mut cx, &item);
-        ah::set_obj_item(&mut cx, &arr, index, js_object)?;
-        index += 1;
+fn append_as_js<'j, C, V>(
+    cx: &mut C,
+    key: &str,
+    option: Option<&V>,
+    object: &Handle<'j, JsObject>,
+) -> NeonResult<bool>
+where
+    C: Context<'j>,
+    V: Serialize + ?Sized,
+{
+    if let Some(value) = option {
+        let js_value = neon_serde::to_value(cx, value)?;
+        object.set(cx, key, js_value)
+    } else {
+        Ok(false)
     }
-
-    Ok(arr)
 }
-
-fn replay_lap(mut _cx: FunctionContext) -> JsResult<JsUndefined> {
-    // let identifier = cx.argument::<JsString>(0)?.value();
-
-    // f1_laps_core::replay_lap(identifier);
-
-    Ok(JsUndefined::new())
-}
-
-fn build_lap_metadata_js_object<'a>(
-    cx: &mut FunctionContext<'a>,
-    d: &LapMetadata,
-) -> NeonResult<Handle<'a, JsObject>> {
-    let obj = cx.empty_object();
-
-    oh::set_str_prop(cx, &obj, "identifier", d.identifier.as_str())?;
-    oh::set_str_prop(cx, &obj, "recordedDate", d.recorded_date.as_str())?;
-    oh::set_num_prop(cx, &obj, "trackId", d.track_id as f64)?;
-    oh::set_num_prop(cx, &obj, "teamId", d.team_id as f64)?;
-    oh::set_num_prop(cx, &obj, "era", d.era as f64)?;
-    oh::set_num_prop(cx, &obj, "tyreCompound", d.tyre_compound as f64)?;
-    oh::set_num_prop(cx, &obj, "sessionType", d.session_type as f64)?;
-    oh::set_num_prop(cx, &obj, "lapNumber", d.lap_number as f64)?;
-    oh::set_num_prop(cx, &obj, "lapTime", d.lap_time as f64)?;
-    oh::set_str_prop(cx, &obj, "note", d.note.as_str())?;
-
-    let sector_times = cx.empty_array();
-    for i in 0..d.sector_times.len() {
-        ah::set_num_item(cx, &sector_times, i as u32, d.sector_times[i] as f64)?;
-    }
-    obj.set(cx, "sectorTimes", sector_times)?;
-
-    Ok(obj)
-}
-
-fn build_session_js_object<'a>(
-    cx: &mut FunctionContext<'a>,
-    d: &Session,
-) -> NeonResult<Handle<'a, JsObject>> {
-    let obj = cx.empty_object();
-
-    oh::set_num_prop(cx, &obj, "era", d.era as f64)?;
-    oh::set_num_prop(cx, &obj, "trackId", d.track_id as f64)?;
-    oh::set_num_prop(cx, &obj, "teamId", d.team_id as f64)?;
-    oh::set_num_prop(cx, &obj, "sessionType", d.session_type as f64)?;
-
-    Ok(obj)
-}
-
-fn build_live_data_js_object<'a>(
-    cx: &mut FunctionContext<'a>,
-    d: &Tick,
-) -> NeonResult<Handle<'a, JsObject>> {
-    let obj = cx.empty_object();
-
-    oh::set_num_prop(cx, &obj, "currentLap", d.lap_number as f64)?;
-    oh::set_num_prop(cx, &obj, "currentLapTime", d.lap_time as f64)?;
-    oh::set_num_prop(cx, &obj, "currentSector", d.sector_number as f64)?;
-    oh::set_num_prop(cx, &obj, "currentSpeed", d.speed as f64)?;
-    oh::set_num_prop(cx, &obj, "currentGear", d.gear as f64)?;
-    oh::set_num_prop(cx, &obj, "currentTyreCompound", d.tyre_compound as f64)?;
-    oh::set_bool_prop(cx, &obj, "isLapValid", d.is_current_lap_valid)?;
-    oh::set_num_prop(cx, &obj, "lastLapTime", d.last_lap_time as f64)?;
-    oh::set_num_prop(cx, &obj, "currentLapSector1Time", d.sector1_time as f64)?;
-    oh::set_num_prop(cx, &obj, "currentLapSector2Time", d.sector2_time as f64)?;
-    oh::set_num_prop(cx, &obj, "sessionTime", d.session_time as f64)?;
-    oh::set_num_prop(
-        cx,
-        &obj,
-        "total_session_distance",
-        d.session_distance as f64,
-    )?;
-    oh::set_num_prop(cx, &obj, "x", d.x as f64)?;
-    oh::set_num_prop(cx, &obj, "y", d.y as f64)?;
-    oh::set_num_prop(cx, &obj, "z", d.z as f64)?;
-    // oh::set_num_prop(cx, &obj, "sessionTimeLeft", d.session_time_left as f64)?;
-    oh::set_num_prop(cx, &obj, "lapDistance", d.lap_distance as f64)?;
-    oh::set_num_prop(cx, &obj, "totalLaps", d.total_laps as f64)?;
-    oh::set_num_prop(cx, &obj, "carPosition", d.car_position as f64)?;
-    // oh::set_num_prop(cx, &obj, "inPits", d.in_pits as f64)?;
-    // oh::set_bool_prop(cx, &obj, "pitLimiterStatus", d.pit_limiter_status)?;
-    // oh::set_num_prop(cx, &obj, "pitSpeedLimit", d.pit_speed_limit as f64)?;
-    oh::set_bool_prop(cx, &obj, "drs", d.is_drs_open)?;
-    // oh::set_num_prop(cx, &obj, "drsAllowed", d.drs_allowed as f64)?;
-    oh::set_num_prop(cx, &obj, "vehicleFiaFlags", d.vehicle_fia_flags as f64)?;
-    oh::set_num_prop(cx, &obj, "throttle", d.throttle as f64)?;
-    oh::set_num_prop(cx, &obj, "steer", d.steer as f64)?;
-    oh::set_num_prop(cx, &obj, "brake", d.brake as f64)?;
-    // oh::set_num_prop(cx, &obj, "gforceLat", d.gforce_lat as f64)?;
-    // oh::set_num_prop(cx, &obj, "gforceLon", d.gforce_lon as f64)?;
-    // oh::set_num_prop(cx, &obj, "gforceVert", d.gforce_vert as f64)?;
-    oh::set_num_prop(cx, &obj, "engineRate", d.engine_rate as f64)?;
-    // oh::set_num_prop(cx, &obj, "revLightsPercent", d.rev_lights_percent as f64)?;
-    // oh::set_num_prop(cx, &obj, "maxRpm", d.max_rpm as f64)?;
-    // oh::set_num_prop(cx, &obj, "idleRpm", d.idle_rpm as f64)?;
-    oh::set_num_prop(cx, &obj, "maxGears", d.max_gears as f64)?;
-    // oh::set_num_prop(cx, &obj, "tractionControl", d.traction_control as f64)?;
-    // oh::set_num_prop(cx, &obj, "antiLockBrakes", d.anti_lock_brakes as f64)?;
-    // oh::set_num_prop(cx, &obj, "frontBrakeBias", d.front_brake_bias as f64)?;
-    // oh::set_num_prop(cx, &obj, "fuelInTank", d.fuel_in_tank as f64)?;
-    // oh::set_num_prop(cx, &obj, "fuelCapacity", d.fuel_capacity as f64)?;
-    // oh::set_num_prop(cx, &obj, "fuelMix", d.fuel_mix as f64)?;
-    // oh::set_num_prop(cx, &obj, "engineTemperature", d.engine_temperature as f64)?;
-    oh::set_num_prop(cx, &obj, "tyreCompound", d.tyre_compound as f64)?;
-    // oh::set_num_prop(
-    //     cx,
-    //     &obj,
-    //     "frontLeftWingDamage",
-    //     d.front_left_wing_damage as f64,
-    // )?;
-    // oh::set_num_prop(
-    //     cx,
-    //     &obj,
-    //     "frontRightWingDamage",
-    //     d.front_right_wing_damage as f64,
-    // )?;
-    // oh::set_num_prop(cx, &obj, "rearWingDamage", d.rear_wing_damage as f64)?;
-    // oh::set_num_prop(cx, &obj, "engineDamage", d.engine_damage as f64)?;
-    // oh::set_num_prop(cx, &obj, "gearBoxDamage", d.gear_box_damage as f64)?;
-    // oh::set_num_prop(cx, &obj, "exhaustDamage", d.exhaust_damage as f64)?;
-    oh::set_num_prop(cx, &obj, "carsTotal", d.cars_total as f64)?;
-    // oh::set_num_prop(cx, &obj, "playerCarIndex", d.player_car_index as f64)?;
-
-    // let brakes_temperature = cx.empty_array();
-    // for i in 0..d.brakes_temperature.len() {
-    //     ah::set_num_item(
-    //         cx,
-    //         &brakes_temperature,
-    //         i as u32,
-    //         d.brakes_temperature[i] as f64,
-    //     )?;
-    // }
-    // obj.set(cx, "brakesTemperature", brakes_temperature)?;
-
-    // let tyres_pressure = cx.empty_array();
-    // for i in 0..d.tyres_pressure.len() {
-    //     ah::set_num_item(cx, &tyres_pressure, i as u32, d.tyres_pressure[i] as f64)?;
-    // }
-    // obj.set(cx, "tyresPressure", tyres_pressure)?;
-
-    // let tyres_temperature = cx.empty_array();
-    // for i in 0..d.tyres_temperature.len() {
-    //     ah::set_num_item(
-    //         cx,
-    //         &tyres_temperature,
-    //         i as u32,
-    //         d.tyres_temperature[i] as f64,
-    //     )?;
-    // }
-    // obj.set(cx, "tyresTemperature", tyres_temperature)?;
-
-    // let tyres_wear = cx.empty_array();
-    // for i in 0..d.tyres_wear.len() {
-    //     ah::set_num_item(cx, &tyres_wear, i as u32, d.tyres_wear[i] as f64)?;
-    // }
-    // obj.set(cx, "tyresWear", tyres_wear)?;
-
-    // let tyres_damage = cx.empty_array();
-    // for i in 0..d.tyres_damage.len() {
-    //     ah::set_num_item(cx, &tyres_damage, i as u32, d.tyres_damage[i] as f64)?;
-    // }
-    // obj.set(cx, "tyresDamage", tyres_damage)?;
-
-    // let car_data = cx.empty_array();
-    // for i in 0..d.car_data.len() {
-    //     let car_data_obj = build_car_js_object(cx, &d.car_data[i]);
-    //     ah::set_obj_item(cx, &car_data, i as u32, car_data_obj)?;
-    // }
-    // obj.set(cx, "carData", car_data)?;
-
-    Ok(obj)
-}
-
-// fn build_car_js_object<'a>(
-//     cx: &mut FunctionContext<'a>,
-//     d: &Car,
-// ) -> NeonResult<Handle<'a, JsObject>> {
-//     let obj = cx.empty_object();
-
-//     let world_position = cx.empty_array();
-//     for i in 0..d.world_position.len() {
-//         ah::set_num_item(cx, &world_position, i as u32, d.world_position[i] as f64)?;
-//     }
-//     obj.set(cx, "worldPosition", world_position)?;
-
-//     oh::set_num_prop(cx, &obj, "lastLapTime", d.last_lap_time as f64)?;
-//     oh::set_num_prop(cx, &obj, "currentLapTime", d.current_lap_time as f64)?;
-//     oh::set_num_prop(cx, &obj, "bestLapTime", d.best_lap_time as f64)?;
-//     oh::set_num_prop(cx, &obj, "sector1Time", d.sector1_time as f64)?;
-//     oh::set_num_prop(cx, &obj, "sector2Time", d.sector2_time as f64)?;
-//     oh::set_num_prop(cx, &obj, "lapDistance", d.lap_distance as f64)?;
-//     oh::set_num_prop(cx, &obj, "driverId", d.driver_id as f64)?;
-//     oh::set_num_prop(cx, &obj, "teamId", d.team_id as f64)?;
-//     oh::set_num_prop(cx, &obj, "carPosition", d.car_position as f64)?;
-//     oh::set_num_prop(cx, &obj, "currentLapNum", d.current_lap_num as f64)?;
-//     oh::set_num_prop(cx, &obj, "inPits", d.in_pits as f64)?;
-//     oh::set_num_prop(cx, &obj, "sector", d.sector as f64)?;
-//     oh::set_num_prop(cx, &obj, "currentLapInvalid", d.current_lap_invalid as f64)?;
-//     oh::set_num_prop(cx, &obj, "penalties", d.penalties as f64)?;
-
-//     Ok(obj)
-// }
-
-fn build_lap_js_object<'a>(
-    cx: &mut FunctionContext<'a>,
-    d: &Lap,
-) -> NeonResult<Handle<'a, JsObject>> {
-    let obj = cx.empty_object();
-
-    oh::set_num_prop(cx, &obj, "lapNumber", d.lap_number as f64)?;
-    oh::set_num_prop(cx, &obj, "lapTime", d.lap_time as f64)?;
-    oh::set_num_prop(cx, &obj, "sector1Time", d.sector_times[0] as f64)?;
-    oh::set_num_prop(cx, &obj, "sector2Time", d.sector_times[1] as f64)?;
-    oh::set_num_prop(cx, &obj, "sector3Time", d.sector_times[2] as f64)?;
-
-    // let record_marker_obj = build_record_marker_js_object(cx, &d.record_marker);
-    // oh::set_obj_prop(cx, &obj, "recordMarker", record_marker_obj)?;
-
-    Ok(obj)
-}
-
-fn build_sector_js_object<'a>(
-    cx: &mut FunctionContext<'a>,
-    d: &Sector,
-) -> NeonResult<Handle<'a, JsObject>> {
-    let obj = cx.empty_object();
-
-    oh::set_num_prop(cx, &obj, "sector", d.sector_number as f64)?;
-    oh::set_num_prop(cx, &obj, "sectorTime", d.sector_time as f64)?;
-
-    // let record_marker_obj = build_record_marker_js_object(cx, &d.record_marker);
-    // oh::set_obj_prop(cx, &obj, "recordMarker", record_marker_obj)?;
-
-    Ok(obj)
-}
-
-// fn build_record_marker_js_object<'a>(
-//     cx: &mut FunctionContext<'a>,
-//     d: &RecordMarker,
-// ) -> NeonResult<Handle<'a, JsObject>> {
-//     let obj = cx.empty_object();
-
-//     oh::set_bool_prop(cx, &obj, "isBestEverPersonal", d.is_best_ever_personal)?;
-//     oh::set_bool_prop(
-//         cx,
-//         &obj,
-//         "isBestEverCompoundPersonal",
-//         d.is_best_ever_compound_personal,
-//     )?;
-//     oh::set_bool_prop(
-//         cx,
-//         &obj,
-//         "isBestSessionPersonal",
-//         d.is_best_session_personal,
-//     )?;
-//     oh::set_bool_prop(
-//         cx,
-//         &obj,
-//         "isBestSessionPersonalCompound",
-//         d.is_best_session_personal_compound,
-//     )?;
-//     oh::set_bool_prop(cx, &obj, "isBestSessionAll", d.is_best_session_all)?;
-//     oh::set_bool_prop(
-//         cx,
-//         &obj,
-//         "isBestSessionAllCompound",
-//         d.is_best_session_all_compound,
-//     )?;
-
-//     Ok(obj)
-// }
 
 register_module!(mut cx, {
     cx.export_function("initialise", initialise)?;
     cx.export_function("startListening", start_listening)?;
-    cx.export_function("replayAllLaps", replay_all_laps)?;
+    cx.export_function("replayPackets", replay_packets)?;
     cx.export_function("getNextTick", get_next_tick)?;
-    cx.export_function("getLapData", get_lap_data)?;
-    cx.export_function("getAllLapsMetadata", get_all_laps_metadata)?;
-    cx.export_function("replayLap", replay_lap)?;
     Ok(())
 });

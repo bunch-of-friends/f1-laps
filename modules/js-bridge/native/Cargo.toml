@@ -8,6 +8,9 @@ build = "build.rs"
 f1-laps-core = { path = "../../core" }
 neon = "0.2.0"
 lazy_static = "1.0.1"
+neon-serde = { git = "https://github.com/apendleton/neon-serde", branch = "oh-point-two" }
+serde = "1.0.71"
+serde_derive = "1.0.71"
 
 [build-dependencies]
 neon-build = "0.2.0"
