@@ -90,12 +90,16 @@ pub(crate) fn try_store_lap(storage: &'static Storage, finished_lap_telemetry: O
         return;
     }
 
-    assert!(events.finished_lap.is_some());
-    assert!(context.session_context.current_session.is_some());
-    assert!(context.session_context.session_data.is_some());
-    assert!(context.session_context.participants_info.is_some());
-    assert!(context.session_context.car_status.is_some());
-    assert!(context.session_context.car_setup.is_some());
+    if events.finished_lap.is_none()
+        || context.session_context.current_session.is_none()
+        || context.session_context.session_data.is_none()
+        || context.session_context.participants_info.is_none()
+        || context.session_context.car_status.is_none()
+        || context.session_context.car_setup.is_none()
+    {
+        println!("would store a lap but data incomplete");
+        return;
+    }
 
     let (lap_header, lap_telemetry) = get_storage_items(
         finished_lap_telemetry.unwrap(),
