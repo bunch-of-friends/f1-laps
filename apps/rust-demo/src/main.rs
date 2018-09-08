@@ -32,7 +32,7 @@ fn start(
     match mode_value {
         "replay" | "r" => {
             println!("running in replay mode");
-            Some(f1_laps_core::replay_packets(context, b_value, on_received))
+            Some(f1_laps_core::replay_packets(context, b_value, false, on_received))
         }
         "udp" | "u" => {
             println!("running in udp mode");
