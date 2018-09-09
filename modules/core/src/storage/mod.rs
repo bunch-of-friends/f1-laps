@@ -1,26 +1,34 @@
-pub mod data_store;
+mod file_system;
+pub(crate) mod models;
+pub(crate) mod repository;
 
-use std::sync::Mutex;
-
-use self::data_store::DataStore;
-use file_system;
-use file_system::path_helper;
 use std::sync::mpsc;
+use storage::file_system::path_helper::PathHelper;
+use storage::models::{LapTelemetry, LapHeader};
+use storage::repository::Repository;
 use udp::Packet;
 
-lazy_static! {
-    static ref DATA_STORE: Mutex<DataStore> = Mutex::new(DataStore::new());
+pub(crate) struct Storage {
+    pub path_helper: PathHelper,
+    pub lap_headers: Repository<LapHeader>,
+    pub lap_telemetry: Repository<LapTelemetry>,
 }
 
-pub(crate) fn initialise(storage_folder_path: &str) {
-    let path_helper = file_system::initialise(storage_folder_path);
-    DATA_STORE.lock().unwrap().initialise(path_helper)
-}
+impl Storage {
+    pub fn new(storage_folder_path: &str) -> Storage {
+        let path_helper = file_system::initialise(storage_folder_path);
+        Storage {
+            lap_headers: Repository::<LapHeader>::new(path_helper.get_lap_headers_folder_path()),
+            lap_telemetry: Repository::<LapTelemetry>::new(path_helper.get_lap_telemetry_folder_path()),
+            path_helper: path_helper,
+        }
+    }
 
-pub(crate) fn store_packets(packets: Vec<Packet>) {
-    DATA_STORE.lock().unwrap().store_packets(packets)
-}
+    pub fn store_packets(&self, packets: Vec<Packet>) {
+        file_system::store_packets(packets, &self.path_helper);
+    }
 
-pub(crate) fn get_all_packets(tx: &mpsc::Sender<Vec<Packet>>) {
-    DATA_STORE.lock().unwrap().get_all_packets(tx)
+    pub fn get_all_packets(&self, tx: &mpsc::Sender<Vec<Packet>>) {
+        file_system::get_all_packets(&self.path_helper, tx)
+    }
 }

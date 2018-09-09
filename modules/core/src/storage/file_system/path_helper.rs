@@ -3,6 +3,8 @@ use chrono::Utc;
 use std::clone::Clone;
 
 const PACKETS_DIR: &'static str = "packets";
+const LAP_HEADERS: &'static str = "lh";
+const LAP_TELEMETRY: &'static str = "lt";
 
 pub struct PathHelper {
     root_folder: String,
@@ -25,6 +27,14 @@ impl PathHelper {
 
     pub fn get_packets_folder_path(&self) -> String {
         self.get_full_path(PACKETS_DIR)
+    }
+
+    pub fn get_lap_headers_folder_path (&self) -> String {
+        self.get_full_path(LAP_HEADERS)
+    }
+    
+    pub fn get_lap_telemetry_folder_path(&self) -> String {
+        self.get_full_path(LAP_TELEMETRY)
     }
 
     pub fn get_packet_file_path(&self, file_name: &str) -> String {

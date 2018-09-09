@@ -14,8 +14,8 @@ core.carMotion.register(data => console.log('carMotion >> ', data));
 core.participantsInfo.register(data => console.log('participantsInfo >> ', data));
 core.carSetup.register(data => console.log('carSetup >> ', data));
 
-// core.startListening(20777);
-core.replayPackets();
+core.startListening(20777);
+//core.replayPackets();
 
 // let metadata = core.getAllLapsMetadata();
 // console.log("metadata >>", metadata);

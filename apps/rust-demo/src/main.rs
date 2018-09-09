@@ -1,18 +1,23 @@
 extern crate f1_laps_core;
 
+use f1_laps_core::Context;
 use f1_laps_core::prelude::*;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    f1_laps_core::initialise("../../_data-storage".to_string());
+    let context = f1_laps_core::initialise("../../_data-storage".to_string());
+    let static_ref: &'static Context = Box::leak(context);
 
-    if let Some(h) = start(&args) {
+    if let Some(h) = start(&args, static_ref) {
         assert!(!h.0.join().is_err());
         assert!(!h.1.join().is_err());
     }
 }
 
-fn start(args: &Vec<String>) -> Option<(std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)> {
+fn start(
+    args: &Vec<String>,
+    context: &'static Context,
+) -> Option<(std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)> {
     let mut mode_value = "";
     let mut b_value = true;
 
@@ -27,11 +32,16 @@ fn start(args: &Vec<String>) -> Option<(std::thread::JoinHandle<()>, std::thread
     match mode_value {
         "replay" | "r" => {
             println!("running in replay mode");
-            Some(f1_laps_core::replay_packets(b_value, on_received))
+            Some(f1_laps_core::replay_packets(context, b_value, false, on_received))
         }
         "udp" | "u" => {
             println!("running in udp mode");
-            Some(f1_laps_core::start_listening(20777, b_value, on_received))
+            Some(f1_laps_core::start_listening(
+                context,
+                20777,
+                b_value,
+                on_received,
+            ))
         }
         _ => {
             println!("no mode selected");
