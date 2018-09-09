@@ -8,12 +8,7 @@ use std::time::Duration;
 use storage::Storage;
 use udp::Packet;
 
-pub(crate) fn start_listening(
-    storage: &'static Storage,
-    port: i32,
-    should_store_packets: bool,
-    tx: mpsc::Sender<Tick>,
-) {
+pub(crate) fn start_listening(storage: &'static Storage, port: i32, should_store_packets: bool, tx: mpsc::Sender<Tick>) {
     let socket = bind_to_address(format!("0.0.0.0:{}", port));
     let buffer_size = serialisation::get_buffer_size();
 
@@ -37,6 +32,7 @@ pub(crate) fn start_listening(
         });
     }
 
+    let serialiser = Arc::new(Mutex::new(serialisation::get_serialiser()));
     loop {
         let mut buffer = Vec::with_capacity(buffer_size);
         for _ in 0..buffer_size {
@@ -46,9 +42,10 @@ pub(crate) fn start_listening(
         if let Some((amt, _src)) = socket.recv_from(&mut buffer).ok() {
             let tx = tx.clone();
             let packets_mutex_receive = packets.clone();
-            let mut serialiser = serialisation::get_serialiser();
+            let serialiser_mutex = serialiser.clone();
             thread::spawn(move || {
-                if let Some(tick) = serialiser.converto_to_tick(&buffer, amt) {
+                let mut serialiser_local = serialiser_mutex.lock().unwrap();
+                if let Some(tick) = serialiser_local.converto_to_tick(&buffer, amt) {
                     tx.send(tick).ok();
 
                     if should_store_packets {

@@ -178,11 +178,12 @@ fn replay_packets(mut cx: FunctionContext) -> JsResult<JsUndefined> {
 
     let collector = COLLECTOR.lock().unwrap();
 
-    // f1_laps_core::replay_packets(
-    //     &collector.context.unwrap(),
-    //     should_simulate_time,
-    //     on_output_received,
-    // );
+    f1_laps_core::replay_packets(
+        &collector.context.unwrap(),
+        should_simulate_time,
+        false,
+        on_output_received,
+    );
 
     Ok(JsUndefined::new())
 }
