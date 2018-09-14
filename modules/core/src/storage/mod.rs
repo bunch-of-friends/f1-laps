@@ -18,14 +18,14 @@ impl Storage {
     pub fn new(storage_folder_path: &str) -> Storage {
         let path_helper = file_system::initialise(storage_folder_path);
         Storage {
-            lap_headers: Repository::<LapHeader>::new(path_helper.get_lap_headers_folder_path()),
-            lap_telemetry: Repository::<LapTelemetry>::new(path_helper.get_lap_telemetry_folder_path()),
-            path_helper: path_helper,
+            lap_headers: Repository::<LapHeader>::new(&path_helper.get_lap_headers_folder_path()),
+            lap_telemetry: Repository::<LapTelemetry>::new(&path_helper.get_lap_telemetry_folder_path()),
+            path_helper,
         }
     }
 
-    pub fn store_packets(&self, packets: Vec<Packet>) {
-        file_system::store_packets(packets, &self.path_helper);
+    pub fn store_packets(&self, packets: &[Packet]) {
+        file_system::store_packets(&packets, &self.path_helper);
     }
 
     pub fn get_all_packets(&self, tx: &mpsc::Sender<Vec<Packet>>) {

@@ -16,7 +16,7 @@ pub(crate) fn initialise(storage_folder_path: &str) -> PathHelper {
     build_data_store(&path_helper)
 }
 
-pub(crate) fn store_packets(packets: Vec<Packet>, path_helper: &PathHelper) {
+pub(crate) fn store_packets(packets: &[Packet], path_helper: &PathHelper) {
     let path = path_helper.get_packets_file_name();
     let file = File::create(&path).unwrap();
     bincode::serialize_into(file, &packets).unwrap();

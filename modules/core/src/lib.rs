@@ -1,3 +1,6 @@
+#![allow(unknown_lints)]
+#![warn(clippy)]
+
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -18,6 +21,7 @@ use pipeline::output::Output;
 use pipeline::Pipeline;
 use std::sync::mpsc::{self, TryRecvError};
 use std::thread;
+use storage::models::{LapHeader, LapTelemetry};
 use storage::Storage;
 
 pub use pipeline::output::*;
@@ -26,7 +30,7 @@ pub struct Context {
     pub(crate) storage: Storage,
 }
 
-pub fn initialise(storage_folder_path: String) -> Box<Context> {
+pub fn initialise(storage_folder_path: &str) -> Box<Context> {
     let context = Context {
         storage: Storage::new(&storage_folder_path),
     };
@@ -46,15 +50,18 @@ where
     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
     let t = thread::spawn(move || {
-        udp::start_listening(&context.storage, port, should_store_packets, tx);
+        udp::start_listening(&context.storage, port, should_store_packets, &tx);
     });
 
     let mut pipeline = Pipeline::new(true);
 
     let r = thread::spawn(move || loop {
-        if let Some(tick) = rx.recv().ok() {
-            let output = pipeline.process(&context.storage, tick);
-            f(output);
+        match rx.recv() {
+            Ok(tick) => {
+                let output = pipeline.process(&context.storage, tick);
+                f(output);
+            }
+            Err(_) => print!("error receiving tick"),
         }
     });
 
@@ -92,4 +99,12 @@ where
     });
 
     (t, r)
+}
+
+pub fn get_laps_headers(context: &'static Context) -> Vec<LapHeader> {
+    context.storage.lap_headers.get_all()
+}
+
+pub fn get_lap_telemetry(context: &'static Context, lap_id: &str) -> Option<LapTelemetry> {
+    context.storage.lap_telemetry.get(lap_id)
 }

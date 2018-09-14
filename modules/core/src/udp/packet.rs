@@ -12,7 +12,7 @@ impl Packet {
     pub fn new(bytes: Vec<u8>) -> Packet {
         Packet {
             timestamp: Utc::now(),
-            bytes: bytes,
+            bytes,
         }
     }
 

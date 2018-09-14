@@ -11,7 +11,7 @@ pub struct Repository<T: Serialize + DeserializeOwned> {
 
 #[allow(dead_code)]
 impl<T: Serialize + DeserializeOwned> Repository<T> {
-    pub fn new(path: String) -> Repository<T> {
+    pub fn new(path: &str) -> Repository<T> {
         let config = ConfigBuilder::new().path(&path).build();
 
         let tree = match Tree::start(config) {
@@ -20,12 +20,12 @@ impl<T: Serialize + DeserializeOwned> Repository<T> {
         };
 
         Repository {
-            tree: tree,
+            tree,
             marker: PhantomData,
         }
     }
 
-    pub fn set(&self, key: String, value: &T) -> Option<()> {
+    pub fn set(&self, key: &str, value: &T) -> Option<()> {
         let bytes = bincode::serialize(value).expect("failed to serialise");
         match self.tree.set(key.as_bytes().to_vec(), bytes) {
             Ok(_) => Some(()),
@@ -33,7 +33,7 @@ impl<T: Serialize + DeserializeOwned> Repository<T> {
         }
     }
 
-    pub fn get(&self, key: String) -> Option<T> {
+    pub fn get(&self, key: &str) -> Option<T> {
         match self.tree.get(key.as_bytes()) {
             Ok(result) => {
                 if let Some(bytes) = result {
@@ -46,7 +46,7 @@ impl<T: Serialize + DeserializeOwned> Repository<T> {
         }
     }
 
-    pub fn delete(&self, key: String) -> Option<()> {
+    pub fn delete(&self, key: &str) -> Option<()> {
         match self.tree.del(key.as_bytes()) {
             Ok(_) => Some(()),
             Err(_) => None,
@@ -55,7 +55,7 @@ impl<T: Serialize + DeserializeOwned> Repository<T> {
 
     pub fn get_all(&self) -> Vec<T> {
         self.tree
-            .scan(&vec![0])
+            .scan(&[0])
             .map(|x| match x {
                 Ok((_key, value)) => Some(value),
                 Err(_) => None,
