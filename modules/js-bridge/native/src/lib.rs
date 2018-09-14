@@ -13,13 +13,14 @@ use serde::ser::Serialize;
 use std::sync::Mutex;
 
 lazy_static! {
-    static ref COLLECTOR: Mutex<Collector> = Mutex::new(Collector::new());
+    static ref COLLECTOR: Mutex<Collector> = Mutex::new(Default::default());
 }
 
+#[derive(Default)]
 pub struct Collector {
     context: Option<&'static f1_laps_core::Context>,
     session_identifier: Option<SessionIdentifier>,
-    finished_lap: Option<Lap>,
+    finished_lap:   Option<Lap>,
     finished_sector: Option<Sector>,
     session_data: Option<SessionData>,
     lap_data: Option<OptMultiCarData<LapData>>,
@@ -31,21 +32,6 @@ pub struct Collector {
 }
 
 impl Collector {
-    pub fn new() -> Collector {
-        Collector {
-            context: None,
-            session_identifier: None,
-            finished_lap: None,
-            finished_sector: None,
-            session_data: None,
-            lap_data: None,
-            car_status: None,
-            car_telemetry: None,
-            car_motion: None,
-            car_setup: None,
-            participants_info: None,
-        }
-    }
 
     pub fn update(&mut self, output: Output) {
         if output.events.started_session.is_some() {
@@ -149,7 +135,7 @@ fn initialise(mut cx: FunctionContext) -> JsResult<JsUndefined> {
 
     let mut collector = COLLECTOR.lock().unwrap();
 
-    let context = f1_laps_core::initialise(storage_folder_path);
+    let context = f1_laps_core::initialise(&storage_folder_path);
     collector.context = Some(Box::leak(context));
 
 
@@ -202,70 +188,70 @@ fn get_next_tick(mut cx: FunctionContext) -> JsResult<JsObject> {
         &mut cx,
         "sessionIdentifier",
         collector.get_session_identifier().as_ref(),
-        &object,
+        object,
     )?;
 
     append_as_js(
         &mut cx,
         "finishedLap",
         collector.get_finished_lap().as_ref(),
-        &object,
+        object,
     )?;
 
     append_as_js(
         &mut cx,
         "finishedSector",
         collector.get_finished_sector().as_ref(),
-        &object,
+        object,
     )?;
 
     append_as_js(
         &mut cx,
         "sessionData",
         collector.get_session_data().as_ref(),
-        &object,
+        object,
     )?;
 
     append_as_js(
         &mut cx,
         "lapData",
         collector.get_lap_data().as_ref(),
-        &object,
+        object,
     )?;
 
     append_as_js(
         &mut cx,
         "carStatus",
         collector.get_car_status().as_ref(),
-        &object,
+        object,
     )?;
 
     append_as_js(
         &mut cx,
         "carTelemetry",
         collector.get_car_telemetry().as_ref(),
-        &object,
+        object,
     )?;
 
     append_as_js(
         &mut cx,
         "carMotion",
         collector.get_car_motion().as_ref(),
-        &object,
+        object,
     )?;
 
     append_as_js(
         &mut cx,
         "carSetup",
         collector.get_car_setup().as_ref(),
-        &object,
+        object,
     )?;
 
     append_as_js(
         &mut cx,
         "participants",
         collector.get_participants_info().as_ref(),
-        &object,
+        object,
     )?;
 
     Ok(object)
@@ -275,7 +261,7 @@ fn append_as_js<'j, C, V>(
     cx: &mut C,
     key: &str,
     option: Option<&V>,
-    object: &Handle<'j, JsObject>,
+    object: Handle<'j, JsObject>,
 ) -> NeonResult<bool>
 where
     C: Context<'j>,

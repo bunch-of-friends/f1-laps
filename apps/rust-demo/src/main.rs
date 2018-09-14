@@ -5,7 +5,7 @@ use f1_laps_core::Context;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let context = f1_laps_core::initialise("../../_data-storage".to_string());
+    let context = f1_laps_core::initialise("../../_data-storage");
     let context: &'static Context = Box::leak(context);
 
     // let x = f1_laps_core::get_laps_headers(context);
@@ -21,7 +21,7 @@ fn main() {
 }
 
 fn start(
-    args: &Vec<String>,
+    args: &[String],
     context: &'static Context,
 ) -> Option<(std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)> {
     let mut mode_value = "";
@@ -63,6 +63,7 @@ fn start(
     }
 }
 
+#[allow(needless_pass_by_value)]
 fn on_received(output: Output) {
     if output.labels.is_flashback {
         println!("flashback");
