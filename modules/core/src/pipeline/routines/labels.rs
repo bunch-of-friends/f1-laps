@@ -10,11 +10,11 @@ pub fn build_labels(tick: &Tick, context: &Context) -> Labels {
     let is_teleported = is_teleported(is_new_session, tick, context);
 
     Labels {
-        is_new_session: is_new_session,
-        is_new_lap: is_new_lap,
-        is_new_sector: is_new_sector,
-        is_flashback: is_flashback,
-        is_teleported: is_teleported,
+        is_new_session,
+        is_new_lap,
+        is_new_sector,
+        is_flashback,
+        is_teleported,
     }
 }
 

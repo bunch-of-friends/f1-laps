@@ -1,3 +1,6 @@
+#![allow(question_mark)]
+#![allow(float_cmp)]
+
 use pipeline::input::*;
 use pipeline::output::*;
 
@@ -7,9 +10,9 @@ pub fn build_events(tick: &Tick, context: &Context, labels: &Labels) -> Events {
     let finished_sector = get_finished_sector(tick, labels, &finished_lap);
 
     Events {
-        started_session: started_session,
-        finished_lap: finished_lap,
-        finished_sector: finished_sector,
+        started_session,
+        finished_lap,
+        finished_sector,
     }
 }
 

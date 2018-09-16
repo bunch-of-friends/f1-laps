@@ -2,9 +2,9 @@ use chrono::Utc;
 
 use std::clone::Clone;
 
-const PACKETS_DIR: &'static str = "packets";
-const LAP_HEADERS: &'static str = "lh";
-const LAP_TELEMETRY: &'static str = "lt";
+const PACKETS_DIR: &str = "packets";
+const LAP_HEADERS: &str = "lh";
+const LAP_TELEMETRY: &str = "lt";
 
 pub struct PathHelper {
     root_folder: String,

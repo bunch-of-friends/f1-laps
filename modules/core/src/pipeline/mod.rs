@@ -16,7 +16,7 @@ pub(crate) struct Pipeline {
 impl Pipeline {
     pub fn new(should_store_laps: bool) -> Pipeline {
         Pipeline {
-            should_store_laps: should_store_laps,
+            should_store_laps,
             context: Context::empty(),
             current_lap_telemetry: LapTelemetryTempStore::new(),
         }
@@ -42,8 +42,8 @@ impl Pipeline {
 
 fn convert_to_output(tick: Tick, labels: Labels, events: Events) -> Output {
     Output {
-        labels: labels,
-        events: events,
+        labels,
+        events,
         session_data: tick.session_data,
         lap_data: convert_to_opt_multi_car(tick.lap_data),
         car_status: convert_to_opt_multi_car_opt(tick.car_status),

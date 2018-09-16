@@ -128,7 +128,7 @@ impl PacketParticipantsInfo {
                 .iter()
                 .flat_map(|a| a.iter())
                 .filter(|x| **x > 0 as u8)
-                .map(|x| x.clone())
+                .cloned()
                 .collect();
             let name = match str::from_utf8(&name_buffer) {
                 Ok(v) => v,
@@ -194,7 +194,7 @@ where
         .collect();
 
     MultiCarData {
-        player: player,
-        others: others,
+        player,
+        others,
     }
 }

@@ -13,9 +13,10 @@ use serde::ser::Serialize;
 use std::sync::Mutex;
 
 lazy_static! {
-    static ref COLLECTOR: Mutex<Collector> = Mutex::new(Collector::new());
+    static ref COLLECTOR: Mutex<Collector> = Mutex::new(Default::default());
 }
 
+#[derive(Default)]
 pub struct Collector {
     context: Option<&'static f1_laps_core::Context>,
     session_identifier: Option<SessionIdentifier>,
@@ -31,22 +32,6 @@ pub struct Collector {
 }
 
 impl Collector {
-    pub fn new() -> Collector {
-        Collector {
-            context: None,
-            session_identifier: None,
-            finished_lap: None,
-            finished_sector: None,
-            session_data: None,
-            lap_data: None,
-            car_status: None,
-            car_telemetry: None,
-            car_motion: None,
-            car_setup: None,
-            participants_info: None,
-        }
-    }
-
     pub fn update(&mut self, output: Output) {
         if output.events.started_session.is_some() {
             self.session_identifier = output.events.started_session;
@@ -149,9 +134,8 @@ fn initialise(mut cx: FunctionContext) -> JsResult<JsUndefined> {
 
     let mut collector = COLLECTOR.lock().unwrap();
 
-    let context = f1_laps_core::initialise(storage_folder_path);
+    let context = f1_laps_core::initialise(&storage_folder_path);
     collector.context = Some(Box::leak(context));
-
 
     Ok(JsUndefined::new())
 }
@@ -163,12 +147,7 @@ fn start_listening(mut cx: FunctionContext) -> JsResult<JsUndefined> {
     let collector = COLLECTOR.lock().unwrap();
     let x = collector.context.unwrap();
 
-    f1_laps_core::start_listening(
-        x,
-        port,
-        should_store_packets,
-        on_output_received,
-    );
+    f1_laps_core::start_listening(x, port, should_store_packets, on_output_received);
 
     Ok(JsUndefined::new())
 }
@@ -188,9 +167,31 @@ fn replay_packets(mut cx: FunctionContext) -> JsResult<JsUndefined> {
     Ok(JsUndefined::new())
 }
 
-fn on_output_received(output: Output) {
-    let mut collector = COLLECTOR.lock().unwrap();
-    collector.update(output);
+fn get_laps(mut cx: FunctionContext) -> JsResult<JsValue> {
+    let collector = COLLECTOR.lock().unwrap();
+    let laps = f1_laps_core::get_laps_headers(&collector.context.unwrap());
+
+    let js_array = neon_serde::to_value(&mut cx, &laps)?;
+    Ok(js_array)
+}
+
+fn get_lap_telemetry(mut cx: FunctionContext) -> JsResult<JsValue> {
+    let lap_id = cx.argument::<JsString>(0)?.value();
+
+    let collector = COLLECTOR.lock().unwrap();
+    let telemetry = f1_laps_core::get_lap_telemetry(&collector.context.unwrap(), &lap_id);
+
+    let js_array = neon_serde::to_value(&mut cx, &telemetry)?;
+    Ok(js_array)
+}
+
+fn delete_lap(mut cx: FunctionContext) -> JsResult<JsUndefined> {
+    let lap_id = cx.argument::<JsString>(0)?.value();
+
+    let collector = COLLECTOR.lock().unwrap();
+    f1_laps_core::delete_lap(&collector.context.unwrap(), &lap_id);
+
+    Ok(JsUndefined::new())
 }
 
 fn get_next_tick(mut cx: FunctionContext) -> JsResult<JsObject> {
@@ -202,80 +203,85 @@ fn get_next_tick(mut cx: FunctionContext) -> JsResult<JsObject> {
         &mut cx,
         "sessionIdentifier",
         collector.get_session_identifier().as_ref(),
-        &object,
+        object,
     )?;
 
     append_as_js(
         &mut cx,
         "finishedLap",
         collector.get_finished_lap().as_ref(),
-        &object,
+        object,
     )?;
 
     append_as_js(
         &mut cx,
         "finishedSector",
         collector.get_finished_sector().as_ref(),
-        &object,
+        object,
     )?;
 
     append_as_js(
         &mut cx,
         "sessionData",
         collector.get_session_data().as_ref(),
-        &object,
+        object,
     )?;
 
     append_as_js(
         &mut cx,
         "lapData",
         collector.get_lap_data().as_ref(),
-        &object,
+        object,
     )?;
 
     append_as_js(
         &mut cx,
         "carStatus",
         collector.get_car_status().as_ref(),
-        &object,
+        object,
     )?;
 
     append_as_js(
         &mut cx,
         "carTelemetry",
         collector.get_car_telemetry().as_ref(),
-        &object,
+        object,
     )?;
 
     append_as_js(
         &mut cx,
         "carMotion",
         collector.get_car_motion().as_ref(),
-        &object,
+        object,
     )?;
 
     append_as_js(
         &mut cx,
         "carSetup",
         collector.get_car_setup().as_ref(),
-        &object,
+        object,
     )?;
 
     append_as_js(
         &mut cx,
         "participants",
         collector.get_participants_info().as_ref(),
-        &object,
+        object,
     )?;
 
     Ok(object)
+}
+
+fn on_output_received(output: Output) {
+    let mut collector = COLLECTOR.lock().unwrap();
+    collector.update(output);
 }
 
 fn append_as_js<'j, C, V>(
     cx: &mut C,
     key: &str,
     option: Option<&V>,
-    object: &Handle<'j, JsObject>,
+    object: Handle<'j, JsObject>,
 ) -> NeonResult<bool>
 where
     C: Context<'j>,
@@ -294,5 +300,8 @@ register_module!(mut cx, {
     cx.export_function("startListening", start_listening)?;
     cx.export_function("replayPackets", replay_packets)?;
     cx.export_function("getNextTick", get_next_tick)?;
+    cx.export_function("getLaps", get_laps)?;
+    cx.export_function("getLapTelemetry", get_lap_telemetry)?;
+    cx.export_function("deleteLap", delete_lap)?;
     Ok(())
 });

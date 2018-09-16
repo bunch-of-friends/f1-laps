@@ -79,9 +79,9 @@ pub(crate) fn update_temp_store(
     current_telemetry.add_tick(tick);
 
     if events.finished_lap.is_some() {
-        return Some(finished_lap_telemetry);
+        Some(finished_lap_telemetry)
     } else {
-        return None;
+        None
     }
 }
 
@@ -111,8 +111,8 @@ pub(crate) fn try_store_lap(storage: &'static Storage, finished_lap_telemetry: O
         events.finished_lap.as_ref().unwrap(),
     );
 
-    storage.lap_headers.set(lap_header.id.clone(), &lap_header);
-    storage.lap_telemetry.set(lap_telemetry.id.clone(), &lap_telemetry);
+    storage.lap_headers.set(&lap_header.id, &lap_header);
+    storage.lap_telemetry.set(&lap_telemetry.id, &lap_telemetry);
 }
 
 fn get_storage_items(
@@ -171,9 +171,9 @@ fn get_tick_timestamp(tick: &Tick) -> (u8, f32) {
 
 fn get_timestamped<T>(data: T, lap_number: u8, lap_time: f32) -> LapTimeStamped<T> {
     LapTimeStamped {
-        lap_number: lap_number,
-        lap_time: lap_time,
-        data: data,
+        lap_number,
+        lap_time,
+        data,
     }
 }
 

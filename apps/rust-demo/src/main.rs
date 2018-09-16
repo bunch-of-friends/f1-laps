@@ -1,21 +1,27 @@
 extern crate f1_laps_core;
 
-use f1_laps_core::Context;
 use f1_laps_core::prelude::*;
+use f1_laps_core::Context;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let context = f1_laps_core::initialise("../../_data-storage".to_string());
-    let static_ref: &'static Context = Box::leak(context);
+    let context = f1_laps_core::initialise("../../_data-storage");
+    let context: &'static Context = Box::leak(context);
 
-    if let Some(h) = start(&args, static_ref) {
+    // let x = f1_laps_core::get_laps_headers(context);
+    // println!("{:?}", x);
+
+    // let y = f1_laps_core::get_lap_telemetry(context, x.first().unwrap().id.clone());
+    // println!("{:?}", y);
+
+    if let Some(h) = start(&args, context) {
         assert!(!h.0.join().is_err());
         assert!(!h.1.join().is_err());
     }
 }
 
 fn start(
-    args: &Vec<String>,
+    args: &[String],
     context: &'static Context,
 ) -> Option<(std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)> {
     let mut mode_value = "";
@@ -32,7 +38,12 @@ fn start(
     match mode_value {
         "replay" | "r" => {
             println!("running in replay mode");
-            Some(f1_laps_core::replay_packets(context, b_value, false, on_received))
+            Some(f1_laps_core::replay_packets(
+                context,
+                b_value,
+                false,
+                on_received,
+            ))
         }
         "udp" | "u" => {
             println!("running in udp mode");
@@ -52,6 +63,7 @@ fn start(
     }
 }
 
+#[allow(needless_pass_by_value)]
 fn on_received(output: Output) {
     if output.labels.is_flashback {
         println!("flashback");
@@ -61,8 +73,12 @@ fn on_received(output: Output) {
         println!("teleported");
     }
 
-    if let Some(ref participants_info) = output.participants_info {
-        println!("PARTICIPANTS >>> {:?}", participants_info);
+    // if let Some(ref participants_info) = output.participants_info {
+    //     println!("PARTICIPANTS >>> {:?}", participants_info);
+    // }
+
+    if let Some(ref session) = output.events.started_session {
+        println!("SESSION STARTER >>> {:?}", session);
     }
 
     if let Some(ref sector) = output.events.finished_sector {
@@ -73,12 +89,12 @@ fn on_received(output: Output) {
         println!("LAP FINISHED >>> {:?}", lap);
     }
 
-    println!(
-        "L{} {}/3 {}",
-        output.lap_data.player.current_lap_number,
-        output.lap_data.player.current_sector_number,
-        output.lap_data.player.current_lap_time
-    );
+    // println!(
+    //     "L{} {}/3 {}",
+    //     output.lap_data.player.current_lap_number,
+    //     output.lap_data.player.current_sector_number,
+    //     output.lap_data.player.current_lap_time
+    // );
 
     // if let Some(ref car_telemetry) = output.car_telemetry {
     //     println!("{:?}", car_telemetry);

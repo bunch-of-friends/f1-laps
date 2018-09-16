@@ -25,7 +25,7 @@ impl Lap {
 
     pub fn completed(s1_t: f32, s2_t: f32, s3_t: f32, lap_t: f32, lap_n: u8) -> Lap {
         assert!(lap_n > 0);
-        assert!((s1_t + s2_t + s3_t) == lap_t);
+        assert!(((s1_t + s2_t + s3_t) - lap_t).abs() < 0.001);
 
         Lap {
             lap_number: lap_n,

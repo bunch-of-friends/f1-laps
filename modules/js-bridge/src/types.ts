@@ -3,6 +3,9 @@ export interface Core {
     startListening(port: number, shouldStorePackets: boolean): void;
     replayPackets(shouldSimulateTime: boolean): void;
     getNextTick(): Tick;
+    getLaps(): Array<LapHeader>;
+    getLapTelemetry(lapId: String): LapTelemetry;
+    deleteLap(lapId: String): void;
 }
 
 export interface Tick {
@@ -34,7 +37,7 @@ export interface SessionIdentifier {
 export interface Lap {
     lap_number: number;
     lap_time: number;
-    sector_times: Array<number>;
+    sector_times: [number, number, number];
     is_complete: boolean;
 }
 
@@ -88,9 +91,9 @@ export interface CarStatus {
     max_rpm: number;
     max_gears: number;
     is_drs_allowed: boolean;
-    tyres_wear: Array<number>;
+    tyres_wear: [number, number, number, number];
     tyre_compound: TyreCompound;
-    tyres_damage: Array<number>;
+    tyres_damage: [number, number, number, number];
     front_left_wing_damage: number;
     front_right_wing_damage: number;
     rear_wing_damage: number;
@@ -115,11 +118,11 @@ export interface CarTelemetry {
     rev_lights_percent: number;
     engine_rpm: number;
     is_drs_open: boolean;
-    brakes_temperature: Array<number>;
-    tyres_surface_temperature: Array<number>;
-    tyres_inner_temperature: Array<number>;
+    brakes_temperature: [number, number, number, number];
+    tyres_surface_temperature: [number, number, number, number];
+    tyres_inner_temperature: [number, number, number, number];
     engine_temperature: number;
-    tyres_pressure: Array<number>;
+    tyres_pressure: [number, number, number, number];
 }
 
 export interface CarMotion {
@@ -330,4 +333,30 @@ export enum Team {
     Williams2003 = 38,
     Brawn2009 = 39,
     Lotus1978 = 40
+}
+
+export interface LapHeader {
+    id: String;
+    recorded_date: number;
+    track_id: Track;
+    team_id: Team;
+    era: Era;
+    tyre_compound: TyreCompound;
+    weather: Weather;
+    session_type: SessionType;
+    lap_number: number;
+    lap_time: number;
+    sector_times: [number, number, number];
+    note: String;
+}
+
+export interface LapTelemetry {
+    id: String;
+    session_data: SessionData;
+    lap_data: Array<LapData>;
+    car_status: Array<CarStatus>;
+    car_telemetry: Array<CarTelemetry>;
+    car_motion: Array<CarMotion>;
+    car_setup: CarSetup;
+    participants_info: ParticipantInfo;
 }
