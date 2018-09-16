@@ -108,3 +108,8 @@ pub fn get_laps_headers(context: &'static Context) -> Vec<LapHeader> {
 pub fn get_lap_telemetry(context: &'static Context, lap_id: &str) -> Option<LapTelemetry> {
     context.storage.lap_telemetry.get(lap_id)
 }
+
+pub fn delete_lap(context: &'static Context, lap_id: &str) {
+    context.storage.lap_headers.delete(lap_id);
+    context.storage.lap_telemetry.delete(lap_id);
+}
