@@ -3,6 +3,7 @@ version: 2
 jobs:
   build:
     docker:
+    # need custom docker image with both Rust and NPM
       - image: abronan/rust-circleci:latest
 
     steps:
@@ -30,12 +31,13 @@ jobs:
             rustup run nightly rustc --version --verbose
             rustup run nightly cargo --version --verbose
             cd modules/core && rustup run nightly cargo build
-      - run:
-          name: JS-BRIDGE Nightly Build
-          command: |
-            rustup run nightly rustc --version --verbose
-            rustup run nightly cargo --version --verbose
-            cd modules/js-bridge/native && rustup run nightly cargo build
+      # this has to be done via NPM
+      # - run:
+      #     name: JS-BRIDGE Nightly Build
+      #     command: |
+      #       rustup run nightly rustc --version --verbose
+      #       rustup run nightly cargo --version --verbose
+      #       cd modules/js-bridge/native && rustup run nightly cargo build
       - run:
           name: RUST-DEMO Nightly Build
           command: |
@@ -48,12 +50,13 @@ jobs:
             rustup run stable rustc --version --verbose
             rustup run stable cargo --version --verbose
             cd modules/core && rustup run stable cargo build
-      - run:
-          name: JS-BRIDGE Stable Build
-          command: |
-            rustup run stable rustc --version --verbose
-            rustup run stable cargo --version --verbose
-            cd modules/js-bridge/native && rustup run stable cargo build
+      # this has to be done via NPM
+      # - run:
+      #     name: JS-BRIDGE Stable Build
+      #     command: |
+      #       rustup run stable rustc --version --verbose
+      #       rustup run stable cargo --version --verbose
+      #       cd modules/js-bridge/native && rustup run stable cargo build
       - run:
           name: RUST-DEMO Stable Build
           command: |
