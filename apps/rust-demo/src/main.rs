@@ -1,5 +1,5 @@
 #![allow(unknown_lints)]
-#![warn(clippy)]
+#![deny(clippy)]
 
 extern crate f1_laps_core;
 

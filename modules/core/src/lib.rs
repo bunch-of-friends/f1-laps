@@ -1,5 +1,5 @@
 #![allow(unknown_lints)]
-#![warn(clippy)]
+#![deny(clippy)]
 
 extern crate serde;
 #[macro_use]

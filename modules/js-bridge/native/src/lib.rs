@@ -1,3 +1,6 @@
+#![allow(unknown_lints)]
+#![deny(clippy)]
+
 #[macro_use]
 extern crate neon;
 extern crate neon_serde;
