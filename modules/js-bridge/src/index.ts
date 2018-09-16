@@ -69,11 +69,13 @@ function checkInitialised() {
 function getNextTick() {
     const tick = core.getNextTick();
 
-    liveTelemetrySubject.notifyObservers({
-        lapData: tick.lapData,
-        carTelemetry: tick.carTelemetry,
-        carMotion: tick.carMotion
-    });
+    if (tick.lapData && tick.carTelemetry && tick.carMotion) {
+        liveTelemetrySubject.notifyObservers({
+            lapData: tick.lapData,
+            carTelemetry: tick.carTelemetry,
+            carMotion: tick.carMotion
+        });
+    }
 
     if (tick.sessionIdentifier) {
         sessionIdentifierSubject.notifyObservers(tick.sessionIdentifier);

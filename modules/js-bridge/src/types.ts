@@ -9,10 +9,9 @@ export interface Core {
 }
 
 export interface Tick {
-    lapData: MultiCarData<LapData>;
-    carTelemetry: MultiCarData<CarTelemetry>;
-    carMotion: MultiCarData<CarMotion>;
-
+    lapData?: MultiCarData<LapData>;
+    carTelemetry?: MultiCarData<CarTelemetry>;
+    carMotion?: MultiCarData<CarMotion>;
     sessionIdentifier?: SessionIdentifier;
     finishedLap?: Lap;
     finishedSector?: Sector;
