@@ -2,7 +2,7 @@ const core = require('../native') as Core;
 const stayAwake = require('stay-awake');
 
 import { createSubject, createObservable } from '@bunch-of-friends/observable';
-import { MultiCarData, SessionIdentifier, SessionData, Lap, Sector, CarStatus, CarTelemetry, CarMotion, CarSetup, ParticipantInfo, Core, LapData } from './types';
+import { MultiCarData, SessionIdentifier, SessionData, Lap, Sector, CarStatus, CarTelemetry, CarMotion, CarSetup, ParticipantInfo, Core, LapData, LapTelemetry, LapHeader } from './types';
 
 export * from './types';
 export * from '@bunch-of-friends/observable';
@@ -119,4 +119,22 @@ export function replayPackets(shouldSimulateTime = true) {
     checkInitialised();
 
     core.replayPackets(shouldSimulateTime);
+}
+
+export function getLaps(): Array<LapHeader> {
+    checkInitialised();
+
+    return core.getLaps();
+}
+
+export function getLapTelemetry(lapId: String): LapTelemetry {
+    checkInitialised();
+
+    return core.getLapTelemetry(lapId);
+}
+
+export function deleteLap(lapId: String) {
+    checkInitialised();
+
+    core.deleteLap(lapId);
 }
