@@ -1,5 +1,7 @@
 # f1-laps
 
+[![CircleCI](https://circleci.com/gh/davidbohunek/f1-laps.svg?style=svg)](https://circleci.com/gh/davidbohunek/f1-laps)
+
 Eventually a companion app to Codemaster F1 games, which uses the game telemetry data to keep track of best lap times across the game (and eventually more!).
 
 Current plan
