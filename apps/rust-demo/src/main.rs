@@ -1,3 +1,6 @@
+#![allow(unknown_lints)]
+#![warn(clippy)]
+
 extern crate f1_laps_core;
 
 use f1_laps_core::prelude::*;
