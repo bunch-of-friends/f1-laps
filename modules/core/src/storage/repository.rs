@@ -19,10 +19,7 @@ impl<T: Serialize + DeserializeOwned> Repository<T> {
             Err(e) => panic!("failed to build tree from path: {:?}, error: {:?}", path, e),
         };
 
-        Repository {
-            tree,
-            marker: PhantomData,
-        }
+        Repository { tree, marker: PhantomData }
     }
 
     pub fn set(&self, key: &str, value: &T) -> Option<()> {
@@ -59,8 +56,7 @@ impl<T: Serialize + DeserializeOwned> Repository<T> {
             .map(|x| match x {
                 Ok((_key, value)) => Some(value),
                 Err(_) => None,
-            })
-            .filter(|x| x.is_some())
+            }).filter(|x| x.is_some())
             .map(|x| bincode::deserialize::<T>(&x.unwrap()).ok())
             .filter(|x| x.is_some())
             .map(|x| x.unwrap())

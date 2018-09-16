@@ -123,13 +123,7 @@ impl PacketSessionData {
 impl PacketParticipantsInfo {
     pub fn to_model(&self) -> MultiCarData<ParticipantInfo> {
         to_multi_car_data(&self.m_header, &self.m_participants, |x| {
-            let name_buffer: Vec<u8> = x
-                .m_name
-                .iter()
-                .flat_map(|a| a.iter())
-                .filter(|x| **x > 0 as u8)
-                .cloned()
-                .collect();
+            let name_buffer: Vec<u8> = x.m_name.iter().flat_map(|a| a.iter()).filter(|x| **x > 0 as u8).cloned().collect();
             let name = match str::from_utf8(&name_buffer) {
                 Ok(v) => v,
                 Err(e) => {
@@ -177,11 +171,7 @@ impl PacketCarSetupData {
     }
 }
 
-fn to_multi_car_data<T, S>(
-    header: &PacketHeader,
-    source: &[S; 20],
-    f: impl Fn(&S) -> T,
-) -> MultiCarData<T>
+fn to_multi_car_data<T, S>(header: &PacketHeader, source: &[S; 20], f: impl Fn(&S) -> T) -> MultiCarData<T>
 where
     T: Clone,
 {
@@ -193,8 +183,5 @@ where
         .map(|(_, x)| f(x))
         .collect();
 
-    MultiCarData {
-        player,
-        others,
-    }
+    MultiCarData { player, others }
 }

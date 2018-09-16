@@ -9,13 +9,8 @@ use serialisation::{self, ReceivePacket};
 use storage::Storage;
 use udp::Packet;
 
-pub(crate) fn replay_packets(
-    storage: &'static Storage,
-    should_simulate_time: bool,
-    tx: mpsc::Sender<Tick>,
-) {
-    let (packet_tx, packet_rx): (mpsc::Sender<Vec<Packet>>, mpsc::Receiver<Vec<Packet>>) =
-        mpsc::channel();
+pub(crate) fn replay_packets(storage: &'static Storage, should_simulate_time: bool, tx: mpsc::Sender<Tick>) {
+    let (packet_tx, packet_rx): (mpsc::Sender<Vec<Packet>>, mpsc::Receiver<Vec<Packet>>) = mpsc::channel();
 
     thread::spawn(move || {
         storage.get_all_packets(&packet_tx);
@@ -45,10 +40,7 @@ pub(crate) fn replay_packets(
     });
 }
 
-fn simulate_time(
-    last_packet_time: DateTime<Utc>,
-    current_packet_time: DateTime<Utc>,
-) -> DateTime<Utc> {
+fn simulate_time(last_packet_time: DateTime<Utc>, current_packet_time: DateTime<Utc>) -> DateTime<Utc> {
     if current_packet_time < last_packet_time {
         //normally this is just the first packet only
         return current_packet_time;

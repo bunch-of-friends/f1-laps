@@ -170,11 +170,7 @@ fn get_tick_timestamp(tick: &Tick) -> (u8, f32) {
 }
 
 fn get_timestamped<T>(data: T, lap_number: u8, lap_time: f32) -> LapTimeStamped<T> {
-    LapTimeStamped {
-        lap_number,
-        lap_time,
-        data,
-    }
+    LapTimeStamped { lap_number, lap_time, data }
 }
 
 fn get_retain_fn<T>(flashback_lap: u8, lap_time: f32) -> impl Fn(&LapTimeStamped<T>) -> bool {

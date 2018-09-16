@@ -19,10 +19,7 @@ pub fn build_events(tick: &Tick, context: &Context, labels: &Labels) -> Events {
 fn get_started_session(tick: &Tick, labels: &Labels) -> Option<SessionIdentifier> {
     if labels.is_new_session {
         if let Some(ref session_data) = tick.session_data {
-            return Some(SessionIdentifier::from(
-                session_data,
-                &tick.header,
-            ));
+            return Some(SessionIdentifier::from(session_data, &tick.header));
         }
     }
 
@@ -66,13 +63,7 @@ fn build_finished_lap(lap_data: &LapData, context: &Context) -> Option<Lap> {
     let finished_lap_time = lap_data.last_lap_time;
     let sector_3 = finished_lap_time - sector_1 - sector_2;
 
-    Some(Lap::completed(
-        sector_1,
-        sector_2,
-        sector_3,
-        finished_lap_time,
-        finished_lap.lap_number,
-    ))
+    Some(Lap::completed(sector_1, sector_2, sector_3, finished_lap_time, finished_lap.lap_number))
 }
 
 fn build_finished_sector(lap_data: &LapData, finished_lap: &Option<Lap>) -> Option<Sector> {

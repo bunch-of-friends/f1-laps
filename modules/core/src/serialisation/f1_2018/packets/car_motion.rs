@@ -7,21 +7,21 @@ pub struct PacketMotionData {
     pub m_carMotionData: [CarMotionData; 20], // Data for all cars on track
 
     // Extra player car ONLY data
-    pub m_suspensionPosition: [f32; 4], // Note: All wheel arrays have the following order:
-    pub m_suspensionVelocity: [f32; 4], // RL, RR, FL, FR
+    pub m_suspensionPosition: [f32; 4],     // Note: All wheel arrays have the following order:
+    pub m_suspensionVelocity: [f32; 4],     // RL, RR, FL, FR
     pub m_suspensionAcceleration: [f32; 4], // RL, RR, FL, FR
-    pub m_wheelSpeed: [f32; 4],         // Speed of each wheel
-    pub m_wheelSlip: [f32; 4],          // Slip ratio for each wheel
-    pub m_localVelocityX: f32,          // Velocity in local space
-    pub m_localVelocityY: f32,          // Velocity in local space
-    pub m_localVelocityZ: f32,          // Velocity in local space
-    pub m_angularVelocityX: f32,        // Angular velocity x-component
-    pub m_angularVelocityY: f32,        // Angular velocity y-component
-    pub m_angularVelocityZ: f32,        // Angular velocity z-component
-    pub m_angularAccelerationX: f32,    // Angular velocity x-component
-    pub m_angularAccelerationY: f32,    // Angular velocity y-component
-    pub m_angularAccelerationZ: f32,    // Angular velocity z-component
-    pub m_frontWheelsAngle: f32,        // Current front wheels angle in radians
+    pub m_wheelSpeed: [f32; 4],             // Speed of each wheel
+    pub m_wheelSlip: [f32; 4],              // Slip ratio for each wheel
+    pub m_localVelocityX: f32,              // Velocity in local space
+    pub m_localVelocityY: f32,              // Velocity in local space
+    pub m_localVelocityZ: f32,              // Velocity in local space
+    pub m_angularVelocityX: f32,            // Angular velocity x-component
+    pub m_angularVelocityY: f32,            // Angular velocity y-component
+    pub m_angularVelocityZ: f32,            // Angular velocity z-component
+    pub m_angularAccelerationX: f32,        // Angular velocity x-component
+    pub m_angularAccelerationY: f32,        // Angular velocity y-component
+    pub m_angularAccelerationZ: f32,        // Angular velocity z-component
+    pub m_frontWheelsAngle: f32,            // Current front wheels angle in radians
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]

@@ -26,8 +26,8 @@ pub struct LapDataItem {
     pub m_currentLapInvalid: u8, // Current lap invalid - 0 = valid, 1 = invalid
     pub m_penalties: u8,         // Accumulated time penalties in seconds to be added
     pub m_gridPosition: u8,      // Grid position the vehicle started the race in
-    pub m_driverStatus: u8, // Status of driver - 0 = in garage, 1 = flying                           // 2 = in lap, 3 = out lap, 4 = on track
-    pub m_resultStatus: u8, // Result status - 0 = invalid, 1 = inactive, 2 = active
-                            // 3 = finished, 4 = disqualified, 5 = not classified
-                            // 6 = retired
+    pub m_driverStatus: u8,      // Status of driver - 0 = in garage, 1 = flying                           // 2 = in lap, 3 = out lap, 4 = on track
+    pub m_resultStatus: u8,      // Result status - 0 = invalid, 1 = inactive, 2 = active
+                                 // 3 = finished, 4 = disqualified, 5 = not classified
+                                 // 6 = retired
 }

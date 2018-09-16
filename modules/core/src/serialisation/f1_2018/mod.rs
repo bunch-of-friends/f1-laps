@@ -89,8 +89,7 @@ impl Serialiser {
 
     fn is_current_frame(&self, header: &packets::PacketHeader) -> bool {
         if let Some(ref current_frame) = self.current_frame {
-            current_frame.header.session_uid == header.m_sessionUID
-                && current_frame.header.frame_id == header.m_frameIdentifier
+            current_frame.header.session_uid == header.m_sessionUID && current_frame.header.frame_id == header.m_frameIdentifier
         } else {
             false
         }
@@ -107,9 +106,7 @@ impl Serialiser {
 
 impl ReceivePacket for Serialiser {
     fn new() -> Self {
-        Serialiser {
-            current_frame: None,
-        }
+        Serialiser { current_frame: None }
     }
 
     fn converto_to_tick(&mut self, datagram: &[u8], _size: usize) -> Option<Tick> {
@@ -199,9 +196,7 @@ impl Frame {
     }
 
     pub fn to_tick(&self) -> Option<Tick> {
-        assert!(
-            self.lap_data.is_some() && self.car_motion.is_some() && self.car_telemetry.is_some()
-        );
+        assert!(self.lap_data.is_some() && self.car_motion.is_some() && self.car_telemetry.is_some());
 
         Some(Tick {
             header: self.header.clone(),

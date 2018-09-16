@@ -4,7 +4,7 @@ pub(crate) mod repository;
 
 use std::sync::mpsc;
 use storage::file_system::path_helper::PathHelper;
-use storage::models::{LapTelemetry, LapHeader};
+use storage::models::{LapHeader, LapTelemetry};
 use storage::repository::Repository;
 use udp::Packet;
 

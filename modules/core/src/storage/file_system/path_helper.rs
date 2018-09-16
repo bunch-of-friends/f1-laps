@@ -29,10 +29,10 @@ impl PathHelper {
         self.get_full_path(PACKETS_DIR)
     }
 
-    pub fn get_lap_headers_folder_path (&self) -> String {
+    pub fn get_lap_headers_folder_path(&self) -> String {
         self.get_full_path(LAP_HEADERS)
     }
-    
+
     pub fn get_lap_telemetry_folder_path(&self) -> String {
         self.get_full_path(LAP_TELEMETRY)
     }
@@ -42,11 +42,7 @@ impl PathHelper {
     }
 
     pub fn get_packets_file_name(&self) -> String {
-        format!(
-            "{}/{}.bin",
-            self.get_packets_folder_path(),
-            Utc::now().format("%Y-%m-%d-%H-%M-%S")
-        )
+        format!("{}/{}.bin", self.get_packets_folder_path(), Utc::now().format("%Y-%m-%d-%H-%M-%S"))
     }
 }
 
