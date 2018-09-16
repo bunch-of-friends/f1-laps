@@ -10,30 +10,58 @@ jobs:
       - restore_cache:
           key: project-cache
       - run:
-          name: Check formatting
+          name: CORE formatting
           command: |
             rustfmt --version
             cd modules/core && cargo fmt --all -- --check
+      - run:
+          name: JS-BRIDGE formatting
+          command: |
+            rustfmt --version
             cd modules/js-bridge/native && cargo fmt --all -- --check
+      - run:
+          name: RUST-DEMO formatting
+          command: |
+            rustfmt --version
             cd apps/rust-demo && cargo fmt --all -- --check
       - run:
-          name: Nightly Build
+          name: CORE Nightly Build
           command: |
             rustup run nightly rustc --version --verbose
             rustup run nightly cargo --version --verbose
             cd modules/core && rustup run nightly cargo build
+      - run:
+          name: JS-BRIDGE Nightly Build
+          command: |
+            rustup run nightly rustc --version --verbose
+            rustup run nightly cargo --version --verbose
             cd modules/js-bridge/native && rustup run nightly cargo build
+      - run:
+          name: RUST-DEMO Nightly Build
+          command: |
+            rustup run nightly rustc --version --verbose
+            rustup run nightly cargo --version --verbose
             cd apps/rust-demo && rustup run nightly cargo build
       - run:
-          name: Stable Build
+          name: CORE Stable Build
           command: |
             rustup run stable rustc --version --verbose
             rustup run stable cargo --version --verbose
             cd modules/core && rustup run stable cargo build
+      - run:
+          name: JS-BRIDGE Stable Build
+          command: |
+            rustup run stable rustc --version --verbose
+            rustup run stable cargo --version --verbose
             cd modules/js-bridge/native && rustup run stable cargo build
+      - run:
+          name: RUST-DEMO Stable Build
+          command: |
+            rustup run stable rustc --version --verbose
+            rustup run stable cargo --version --verbose
             cd apps/rust-demo && rustup run stable cargo build
       - run:
-          name: Test
+          name: CORE Tests
           command: cd modules/core && rustup run stable cargo test
       - save_cache:
           key: project-cache
