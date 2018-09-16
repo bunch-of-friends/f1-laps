@@ -13,24 +13,33 @@ jobs:
           name: Check formatting
           command: |
             rustfmt --version
-            cargo fmt -- --write-mode=diff
+            cd modules/core && cargo fmt --all -- --check
+            cd modules/js-bridge/native && cargo fmt --all -- --check
+            cd apps/rust-demo && cargo fmt --all -- --check
       - run:
           name: Nightly Build
           command: |
             rustup run nightly rustc --version --verbose
             rustup run nightly cargo --version --verbose
-            rustup run nightly cargo build
+            cd modules/core && rustup run nightly cargo build
+            cd modules/js-bridge/native && rustup run nightly cargo build
+            cd apps/rust-demo && rustup run nightly cargo build
       - run:
           name: Stable Build
           command: |
             rustup run stable rustc --version --verbose
             rustup run stable cargo --version --verbose
-            rustup run stable cargo build
+            cd modules/core && rustup run stable cargo build
+            cd modules/js-bridge/native && rustup run stable cargo build
+            cd apps/rust-demo && rustup run stable cargo build
       - run:
           name: Test
-          command: rustup run stable cargo test
+          command: cd modules/core && rustup run stable cargo test
       - save_cache:
           key: project-cache
           paths:
             - "~/.cargo"
-            - "./target"
+            - "./modules/core/target"
+            - "./modules/js-bridge/native/target"
+            - "./apps/rust-demo/target"
+            
