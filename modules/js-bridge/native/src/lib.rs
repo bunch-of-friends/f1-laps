@@ -301,7 +301,7 @@ register_module!(mut cx, {
     cx.export_function("replayPackets", replay_packets)?;
     cx.export_function("getNextTick", get_next_tick)?;
     cx.export_function("getLapsHeaders", get_laps_headers)?;
-    cx.export_function("getLapTelemetry", get_laps_telemetry)?;
+    cx.export_function("getLapTelemetry", get_lap_telemetry)?;
     cx.export_function("deleteLap", delete_lap)?;
     Ok(())
 });
