@@ -2,12 +2,12 @@ import * as JSBridgeCore from 'f1-laps-js-bridge';
 import { app, View } from 'hyperapp';
 import { AppActions } from './app-actions';
 import { AppState } from './app-state';
-import { LapTick } from 'f1-laps-js-bridge';
+import { LiveTelemetryTick } from 'f1-laps-js-bridge';
 
 const DATA_UPDATE_INTERVAL = 20;
 
 export interface AppContext {
-    liveDataBuffer: Array<LapTick>;
+    liveDataBuffer: Array<LiveTelemetryTick>;
     lastUpdateTime: number;
 }
 
@@ -39,13 +39,13 @@ export function startApp(
     core.initialise({ updateInterval: 30, storagePath: '../../_data-storage' });
     const boundActions = app(state, actions, view, container);
 
-    core.liveData.register(data => {
+    core.liveTelemetry.register(data => {
         context.liveDataBuffer.push(data);
     });
 
     context.lastUpdateTime = 0;
     requestAnimationFrame(updatePlots(context, boundActions));
 
-    core.replayAllLaps();
+    core.replayPackets();
     (window as any).gs = boundActions.getState; // Debugging
 }

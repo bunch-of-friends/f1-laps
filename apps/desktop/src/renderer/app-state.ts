@@ -1,4 +1,4 @@
-import { LapTick } from "f1-laps-js-bridge";
+import { LiveTelemetryTick } from "f1-laps-js-bridge";
 
 export interface FPSState {
     lastUpdateTime?: number;
@@ -8,7 +8,7 @@ export interface FPSState {
 
 export interface LiveData {
     anyDataReceived: boolean;
-    lapTicks: Array<LapTick>;
+    lapTicks: Array<LiveTelemetryTick>;
     currentLap?: number;
     wallClockStartTime?: number;
     wallClockTime?: number;

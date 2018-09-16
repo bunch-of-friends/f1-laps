@@ -4,21 +4,28 @@ export interface Core {
     replayPackets(shouldSimulateTime: boolean): void;
     getNextTick(): Tick;
     getLaps(): Array<LapHeader>;
-    getLapTelemetry(lapId: String): LapTelemetry;
+    getLapTelemetry(lapId: String): StoredTelemetry;
     deleteLap(lapId: String): void;
 }
 
 export interface Tick {
+    lapData: MultiCarData<LapData>;
+    carTelemetry: MultiCarData<CarTelemetry>;
+    carMotion: MultiCarData<CarMotion>;
+
     sessionIdentifier?: SessionIdentifier;
     finishedLap?: Lap;
     finishedSector?: Sector;
     sessionData?: SessionData;
-    lapData?: MultiCarData<LapData>;
     carStatus?: MultiCarData<CarStatus>;
-    carTelemetry?: MultiCarData<CarTelemetry>;
-    carMotion?: MultiCarData<CarMotion>;
     carSetup?: MultiCarData<CarSetup>;
     participants?: MultiCarData<ParticipantInfo>;
+}
+
+export interface LiveTelemetryTick {
+    lapData: MultiCarData<LapData>;
+    carTelemetry: MultiCarData<CarTelemetry>;
+    carMotion: MultiCarData<CarMotion>;
 }
 
 export interface MultiCarData<T> {
@@ -350,7 +357,7 @@ export interface LapHeader {
     note: String;
 }
 
-export interface LapTelemetry {
+export interface StoredTelemetry {
     id: String;
     session_data: SessionData;
     lap_data: Array<LapData>;

@@ -2,31 +2,34 @@ const core = require('../native') as Core;
 const stayAwake = require('stay-awake');
 
 import { createSubject, createObservable } from '@bunch-of-friends/observable';
-import { MultiCarData, SessionIdentifier, SessionData, Lap, Sector, CarStatus, CarTelemetry, CarMotion, CarSetup, ParticipantInfo, Core, LapData, LapTelemetry, LapHeader } from './types';
+import { MultiCarData, SessionIdentifier, SessionData, Lap, Sector, CarStatus, LiveTelemetryTick, CarSetup, ParticipantInfo, Core, StoredTelemetry, LapHeader } from './types';
 
 export * from './types';
 export * from '@bunch-of-friends/observable';
 
 let sessionIdentifierSubject = createSubject<SessionIdentifier>();
 let sessionIdentifierObservable = createObservable<SessionIdentifier>(sessionIdentifierSubject);
+
 let lapFinishedSubject = createSubject<Lap>();
-let lapFinishedObservable = createObservable<Lap>(lapFinishedSubject);
+let lapFinishedObservable = createObservable(lapFinishedSubject);
+
 let sectorFinishedSubject = createSubject<Sector>();
-let sectorFinishedObservable = createObservable<Sector>(sectorFinishedSubject);
+let sectorFinishedObservable = createObservable(sectorFinishedSubject);
+
 let sessionDataSubject = createSubject<SessionData>();
-let sessionDataObservable = createObservable<SessionData>(sessionDataSubject);
-let lapDataSubject = createSubject<MultiCarData<LapData>>();
-let lapDataObservable = createObservable<MultiCarData<LapData>>(lapDataSubject);
+let sessionDataObservable = createObservable(sessionDataSubject);
+
+let liveTelemetrySubject = createSubject<LiveTelemetryTick>();
+let liveTelemetryObservable = createObservable(liveTelemetrySubject);
+
 let carStatusSubject = createSubject<MultiCarData<CarStatus>>();
-let carStatusObservable = createObservable<MultiCarData<CarStatus>>(carStatusSubject);
-let carTelemetrySubject = createSubject<MultiCarData<CarTelemetry>>();
-let carTelemetryObservable = createObservable<MultiCarData<CarTelemetry>>(carTelemetrySubject);
-let carMotionSubject = createSubject<MultiCarData<CarMotion>>();
-let carMotionObservable = createObservable<MultiCarData<CarMotion>>(carMotionSubject);
+let carStatusObservable = createObservable(carStatusSubject);
+
 let carSetupSubject = createSubject<MultiCarData<CarSetup>>();
-let carSetupObservable = createObservable<MultiCarData<CarSetup>>(carSetupSubject);
+let carSetupObservable = createObservable(carSetupSubject);
+
 let participantsInfoSubject = createSubject<MultiCarData<ParticipantInfo>>();
-let participantsInfoObservable = createObservable<MultiCarData<ParticipantInfo>>(participantsInfoSubject);
+let participantsInfoObservable = createObservable(participantsInfoSubject);
 
 let initialised = false;
 
@@ -35,10 +38,8 @@ export {
     lapFinishedObservable as lapFinished,
     sectorFinishedObservable as sectorFinished,
     sessionDataObservable as sessionData,
-    lapDataObservable as lapData,
+    liveTelemetryObservable as liveTelemetry,
     carStatusObservable as carStatus,
-    carTelemetryObservable as carTelemetry,
-    carMotionObservable as carMotion,
     carSetupObservable as carSetup,
     participantsInfoObservable as participantsInfo
 };
@@ -68,6 +69,12 @@ function checkInitialised() {
 function getNextTick() {
     const tick = core.getNextTick();
 
+    liveTelemetrySubject.notifyObservers({
+        lapData: tick.lapData,
+        carTelemetry: tick.carTelemetry,
+        carMotion: tick.carMotion
+    });
+
     if (tick.sessionIdentifier) {
         sessionIdentifierSubject.notifyObservers(tick.sessionIdentifier);
     }
@@ -84,20 +91,8 @@ function getNextTick() {
         sessionDataSubject.notifyObservers(tick.sessionData);
     }
 
-    if (tick.lapData) {
-        lapDataSubject.notifyObservers(tick.lapData);
-    }
-
     if (tick.carStatus) {
         carStatusSubject.notifyObservers(tick.carStatus);
-    }
-
-    if (tick.carTelemetry) {
-        carTelemetrySubject.notifyObservers(tick.carTelemetry);
-    }
-
-    if (tick.carMotion) {
-        carMotionSubject.notifyObservers(tick.carMotion);
     }
 
     if (tick.carSetup) {
@@ -127,13 +122,13 @@ export function getLaps(): Array<LapHeader> {
     return core.getLaps();
 }
 
-export function getLapTelemetry(lapId: String): LapTelemetry {
+export function getStoredTelemetry(lapId: String): StoredTelemetry {
     checkInitialised();
 
     return core.getLapTelemetry(lapId);
 }
 
-export function deleteLap(lapId: String) {
+export function deleteTelemetry(lapId: String) {
     checkInitialised();
 
     core.deleteLap(lapId);

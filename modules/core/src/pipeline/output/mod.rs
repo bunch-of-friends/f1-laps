@@ -28,13 +28,15 @@ pub struct HistoryContext {}
 pub struct Output {
     pub labels: Labels,
     pub events: Events,
-    pub session_data: Option<SessionData>,
+
     pub lap_data: OptMultiCarData<LapData>,
-    pub car_status: Option<OptMultiCarData<CarStatus>>,
     pub car_telemetry: OptMultiCarData<CarTelemetry>,
     pub car_motion: OptMultiCarData<CarMotion>,
+
+    pub car_status: Option<OptMultiCarData<CarStatus>>,
     pub car_setup: Option<OptMultiCarData<CarSetup>>,
     pub participants_info: Option<OptMultiCarData<ParticipantInfo>>,
+    pub session_data: Option<SessionData>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

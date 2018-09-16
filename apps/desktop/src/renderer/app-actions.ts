@@ -1,17 +1,17 @@
 import { AppState, LiveData, ActivePlots, FPSState } from "./app-state";
-import { LapTick } from "f1-laps-js-bridge";
+import { LiveTelemetryTick } from "f1-laps-js-bridge";
 
 const TIME_RANGE = 100;
 const FPS_UPDATE_INTERVAL = 0.5;
 
-function latestLapTick(lapTicks: Array<LapTick>) {
+function latestLapTick(lapTicks: Array<LiveTelemetryTick>) {
     return lapTicks[lapTicks.length - 1];
 }
 
-function filterInvisible(lapTicks: Array<LapTick>) {
-    const currentTime = lapTicks.length > 0 ? latestLapTick(lapTicks).currentLapTime : 0;
+function filterInvisible(lapTicks: Array<LiveTelemetryTick>) {
+    const currentTime = lapTicks.length > 0 ? latestLapTick(lapTicks).lapData.player.current_lap_time : 0;
     const firstVisible = lapTicks.findIndex(
-        a => a.currentLapTime > currentTime - TIME_RANGE
+        a => a.lapData.player.current_lap_time > currentTime - TIME_RANGE
     );
 
     return lapTicks.slice(firstVisible);
@@ -45,7 +45,7 @@ function updateFPS(timeSeconds: number, fps: FPSState) {
 export const appActions = {
     liveData: {
         liveDataReceived: (
-            newLapTicks: Array<LapTick>
+            newLapTicks: Array<LiveTelemetryTick>
         ) => (
             {
                 lapTicks,
@@ -55,10 +55,10 @@ export const appActions = {
             }: LiveData
         ) => {
             let allLapTicks = lapTicks.concat(newLapTicks);
-            const latestLap = latestLapTick(allLapTicks).currentLap;
+            const latestLap = latestLapTick(allLapTicks).lapData.player.current_lap_number;
             const lapChanged = latestLap !== currentLap;
             if (lapChanged) {
-                allLapTicks = newLapTicks.filter((lapTick) => lapTick.currentLap === latestLap);
+                allLapTicks = newLapTicks.filter((lapTick) => lapTick.lapData.player.current_lap_number === latestLap);
             }
 
             return {
