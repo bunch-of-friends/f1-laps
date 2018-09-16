@@ -1,13 +1,39 @@
 version: 2
+
 jobs:
   build:
     docker:
-      - image: debian:stretch
+      - image: abronan/rust-circleci:latest
+
     steps:
       - checkout
+      - restore_cache:
+          key: project-cache
       - run:
-          name: Greeting
-          command: echo Hello...
+          name: Check formatting
+          command: |
+            rustfmt --version
+            cargo fmt -- --write-mode=diff
       - run:
-          name: Print the Current Time
-          command: date
+          name: Nightly Build
+          command: |
+            rustup run nightly rustc --version --verbose
+            rustup run nightly cargo --version --verbose
+            rustup run nightly cargo build
+      - run:
+          name: Stable Build
+          command: |
+            rustup run stable rustc --version --verbose
+            rustup run stable cargo --version --verbose
+            rustup run stable cargo build
+      - run:
+          name: Test
+          command: rustup run stable cargo test
+      - run:
+          name: Upload Coverage
+          command: ./scripts/codecov.sh
+      - save_cache:
+          key: project-cache
+          paths:
+            - "~/.cargo"
+            - "./target"
