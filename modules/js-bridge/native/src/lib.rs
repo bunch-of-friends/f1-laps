@@ -175,7 +175,7 @@ fn get_laps_headers(mut cx: FunctionContext) -> JsResult<JsValue> {
     Ok(js_array)
 }
 
-fn get_laps_telemetry(mut cx: FunctionContext) -> JsResult<JsValue> {
+fn get_lap_telemetry(mut cx: FunctionContext) -> JsResult<JsValue> {
     let lap_id = cx.argument::<JsString>(0)?.value();
 
     let collector = COLLECTOR.lock().unwrap();
@@ -301,7 +301,7 @@ register_module!(mut cx, {
     cx.export_function("replayPackets", replay_packets)?;
     cx.export_function("getNextTick", get_next_tick)?;
     cx.export_function("getLapsHeaders", get_laps_headers)?;
-    cx.export_function("getLapsTelemetry", get_laps_telemetry)?;
+    cx.export_function("getLapTelemetry", get_laps_telemetry)?;
     cx.export_function("deleteLap", delete_lap)?;
     Ok(())
 });
