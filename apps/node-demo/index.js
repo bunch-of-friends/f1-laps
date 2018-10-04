@@ -20,5 +20,5 @@ core.initialise({ updateInterval: 50, storagePath: '../../_data-storage' });
 const laps = core.getLaps();
 console.log('laps >>', laps);
 
-// const telemetry = core.getLapTelemetry(laps[0].id);
-// console.log('telemetry >>', telemetry);
+const telemetry = core.getStoredTelemetry(laps[0].id);
+console.log('telemetry >>', telemetry);

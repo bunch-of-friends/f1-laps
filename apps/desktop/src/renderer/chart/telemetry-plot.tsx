@@ -4,7 +4,7 @@ import { round } from 'lodash';
 import Chart, { ChartConfiguration } from 'chart.js';
 import { AppState, ActivePlot } from '../app-state';
 import { AppActions } from '../app-actions';
-import { LapTick } from 'f1-laps-js-bridge';
+import { LiveTelemetryTick } from 'f1-laps-js-bridge';
 
 const CHART_RANGE = 60;
 
@@ -103,9 +103,9 @@ const createChart = (
         });
     }
 
-function toCompressedPoints(
-    data: Array<LapTick>,
-    pointSelector: (lapTick: LapTick) => Point
+function toCompressedPoints<T>(
+    data: Array<T>,
+    pointSelector: (lapTick: T) => Point
 ) {
     const compressedData = data.slice(0, 2).map(pointSelector);
     for (let i = 2; i < data.length; i++) {
@@ -190,9 +190,9 @@ export const TelemetryPlot = (
 
 export interface TelemetryPlotAttributes {
     suggestedYRange: [number, number];
-    data: Array<LapTick>;
+    data: Array<LiveTelemetryTick>;
     key: string;
     label: string;
-    pointSelector: (lapTick: LapTick) => Point;
+    pointSelector: (lapTick: LiveTelemetryTick) => Point;
     debug: boolean;
 }
