@@ -5,14 +5,17 @@ import { AppState } from './app-state';
 import { TelemetryPage } from '../telemetry/telemetry-page';
 import { DebugPage } from '../debug/debug-page';
 import { AppActions } from './app-actions';
+import { LapsPage } from '../laps/laps-page';
+
+import './app-container.css';
 
 export const AppContainer = (state: AppState, actions: AppActions) => {
     return (
-        <div id="container">
+        <div id="app-container">
             <nav>
-                <Link to="/">Telemetry</Link> | <Link to="/debug">Debug</Link>
+                <Link to="/">Telemetry</Link> | <Link to="/laps">Laps</Link> | <Link to="/debug">Debug</Link>
             </nav>
-            <div class="buttons">
+            <div id="app-buttons">
                 {getListeningButton(state, actions)}
                 <button
                     disabled={state.isListening}
@@ -23,6 +26,7 @@ export const AppContainer = (state: AppState, actions: AppActions) => {
             </div>
             <div class="page">
                 <Route path="/" render={TelemetryPage} />
+                <Route path="/laps" render={LapsPage} />
                 <Route path="/debug" render={DebugPage} />
             </div>
         </div>

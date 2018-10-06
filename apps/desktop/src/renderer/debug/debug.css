@@ -6,6 +6,12 @@
     float: left;
 }
 
+.debug-page:after{
+    clear: both;
+    content: "";
+    display: block;
+}
+
 .debug-nested-prop {
     margin-left: 5px;
 }
