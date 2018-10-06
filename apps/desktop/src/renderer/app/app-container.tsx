@@ -13,7 +13,8 @@ export const AppContainer = (state: AppState, actions: AppActions) => {
     return (
         <div id="app-container">
             <nav>
-                <Link to="/">Telemetry</Link> | <Link to="/laps">Laps</Link> | <Link to="/debug">Debug</Link>
+                <Link to="/">Telemetry</Link> | <Link to="/laps">Laps</Link> |{' '}
+                <Link to="/debug">Debug</Link>
             </nav>
             <div id="app-buttons">
                 {getListeningButton(state, actions)}

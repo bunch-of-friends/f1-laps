@@ -26,6 +26,7 @@ export type ActivePlots = {
 };
 
 export interface AppState {
+    referenceLap?: core.StoredTelemetry;
     storedLaps: Array<core.LapHeader>;
     sessionIndenfier?: core.SessionIdentifier;
     sessionData?: core.SessionData;

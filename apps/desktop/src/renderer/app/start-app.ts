@@ -79,7 +79,7 @@ const updateState = (buffer: AppDataBuffer, a: AppActions) => (
         a.liveTelemetry.liveTelemetryReceived(buffer.liveTelemetry);
     }
 
-    a.onAppBufferFlushed(buffer);
+    actions.onAppBufferFlushed(appDataBuffer);
     buffer.flush();
 
     requestAnimationFrame(updateState(buffer, a));

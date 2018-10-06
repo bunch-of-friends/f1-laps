@@ -66,8 +66,20 @@ export const actions = {
             storedLaps: core.getLaps(),
         };
     },
-    getTelemetry: core.getStoredTelemetry,
-    deleteTelemetry: core.deleteTelemetry,
+    setReferenceLap: (id: String) => {
+        return {
+            referenceLap: core.getStoredTelemetry(id),
+        };
+    },
+    unsetReferenceLap: () => {
+        return {
+            referenceLap: undefined,
+        };
+    },
+    deleteTelemetry: (id: String) => {
+        core.deleteTelemetry(id);
+        return actions.getLaps();
+    },
     liveTelemetry: {
         liveTelemetryReceived: (newTicks: Array<core.LiveTelemetryTick>) => ({
             ticks,

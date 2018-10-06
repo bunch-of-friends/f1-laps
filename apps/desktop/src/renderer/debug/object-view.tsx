@@ -41,6 +41,11 @@ function renderProp(data: any) {
     } else if (typeof data === 'object') {
         return <p class="debug-nested-prop">{renderData(data)}</p>;
     } else {
-        return <span>{data}<br /></span>;
+        return (
+            <span>
+                {data}
+                <br />
+            </span>
+        );
     }
 }
