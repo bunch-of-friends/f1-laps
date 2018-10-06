@@ -1,4 +1,5 @@
-table#laps td, table#laps th {
+table#laps td,
+table#laps th {
     padding: 3px;
 }
 

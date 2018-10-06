@@ -6,9 +6,9 @@
     float: left;
 }
 
-.debug-page:after{
+.debug-page:after {
     clear: both;
-    content: "";
+    content: '';
     display: block;
 }
 

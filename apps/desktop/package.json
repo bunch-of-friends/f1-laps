@@ -10,7 +10,7 @@
         "build": "NODE_ENV=production electron-webpack",
         "dev": "electron-webpack dev",
         "lint": "tslint 'src/**/*.{ts,tsx}'",
-        "prettier": "prettier --write 'src/**/*.{ts,tsx}'"
+        "prettier": "prettier --write 'src/**/*.{ts,tsx,css}'"
     },
     "author": "",
     "license": "MIT",
