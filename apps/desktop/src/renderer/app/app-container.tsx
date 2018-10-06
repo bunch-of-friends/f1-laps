@@ -14,7 +14,12 @@ export const AppContainer = (state: AppState, actions: AppActions) => {
             </nav>
             <div class="buttons">
                 {getListeningButton(state, actions)}
-                <button disabled={state.isListening} onclick={() => actions.replayPackets()}>Replay packets</button>
+                <button
+                    disabled={state.isListening}
+                    onclick={() => actions.replayPackets()}
+                >
+                    Replay packets
+                </button>
             </div>
             <div class="page">
                 <Route path="/" render={TelemetryPage} />
@@ -39,4 +44,3 @@ function getListeningButton(state: AppState, actions: AppActions) {
         );
     }
 }
-

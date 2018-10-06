@@ -4,6 +4,7 @@
         "jsx": "react",
         "jsxFactory": "h",
         "strict": true,
-        "noImplicitAny": true
+        "noImplicitAny": true,
+        "noUnusedLocals": true
     }
 }

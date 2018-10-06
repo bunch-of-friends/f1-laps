@@ -136,7 +136,8 @@ export const actions = {
     },
     getState: () => (state: AppState) => state,
     location: location.actions,
-    onAppBufferFlushed: (buffer: AppDataBuffer) => (state: AppState) => { //TODO: merge with live telemetry
+    onAppBufferFlushed: (buffer: AppDataBuffer) => (state: AppState) => {
+        // TODO: merge with live telemetry
         return {
             lapFinished: buffer.lapFinished || state.lapFinished,
             sectorFinished: buffer.sectorFinished || state.sectorFinished,

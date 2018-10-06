@@ -18,11 +18,13 @@ function renderData(data?: { [key: string]: any }) {
         return (
             <p>
                 {Object.keys(data).map(key => {
-                    <span>
-                        <span>{key}: </span>
-                        <span>{renderProp(data[key])}</span>
-                        <br />
-                    </span>;
+                    return (
+                        <span>
+                            <span>{key}: </span>
+                            <span>{renderProp(data[key])}</span>
+                            <br />
+                        </span>
+                    );
                 })}
             </p>
         );
@@ -34,7 +36,7 @@ function renderData(data?: { [key: string]: any }) {
 function renderProp(data: any) {
     if (Array.isArray(data)) {
         return data.map(x => {
-            <div class="debug-nested-prop">{renderProp(x)}</div>;
+            return <div class="debug-nested-prop">{renderProp(x)}</div>;
         });
     } else if (typeof data === 'object') {
         return <div class="debug-nested-prop">{renderData(data)}</div>;

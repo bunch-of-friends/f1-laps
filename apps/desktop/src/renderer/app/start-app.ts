@@ -62,27 +62,25 @@ export function startApp(container: Element | null) {
     (window as any).gs = boundActions.getState; // debugging
 }
 
-const updateState = (appDataBuffer: AppDataBuffer, actions: AppActions) => (
+const updateState = (buffer: AppDataBuffer, a: AppActions) => (
     timestamp: number
 ) => {
-    actions.liveTelemetry.frameUpdate(timestamp);
+    a.liveTelemetry.frameUpdate(timestamp);
 
     const shouldUpdateData =
-        timestamp - appDataBuffer.lastCollectionTime > DATA_UPDATE_INTERVAL;
+        timestamp - buffer.lastCollectionTime > DATA_UPDATE_INTERVAL;
 
     if (!shouldUpdateData) {
-        requestAnimationFrame(updateState(appDataBuffer, actions));
+        requestAnimationFrame(updateState(buffer, a));
         return;
     }
 
-    if (appDataBuffer.liveTelemetry.length) {
-        actions.liveTelemetry.liveTelemetryReceived(
-            appDataBuffer.liveTelemetry
-        );
+    if (buffer.liveTelemetry.length) {
+        a.liveTelemetry.liveTelemetryReceived(buffer.liveTelemetry);
     }
 
-    actions.onAppBufferFlushed(appDataBuffer);
-    appDataBuffer.flush();
+    a.onAppBufferFlushed(buffer);
+    buffer.flush();
 
-    requestAnimationFrame(updateState(appDataBuffer, actions));
+    requestAnimationFrame(updateState(buffer, a));
 };
