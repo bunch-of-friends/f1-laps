@@ -9,15 +9,8 @@
     "sourceMap": true,
     "strict": true,
     "target": "es5",
-    "lib": [
-      "dom",
-      "es2015"
-    ],
+    "lib": ["dom", "es2015"],
     "outDir": "lib"
   },
-  "exclude": [
-    "node_modules",
-    "lib",
-    "tests"
-  ]
+  "exclude": ["node_modules", "lib", "tests"]
 }
