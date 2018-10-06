@@ -6,7 +6,14 @@ import { AppContainer } from './app-container/app-container';
 
 const context: AppContext = {
     lastUpdateTime: -1,
-    liveDataBuffer: []
+    liveDataBuffer: [],
 };
 
-startApp(core, appInitialState, appActions, AppContainer, document.getElementById('app'), context);
+startApp(
+    core,
+    appInitialState,
+    appActions,
+    AppContainer,
+    document.getElementById('app'),
+    context
+);

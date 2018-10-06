@@ -1,5 +1,5 @@
 {
-  "main": {
-    "extraEntries": ["@/preload.js"]
-  }
+    "main": {
+        "extraEntries": ["@/preload.js"]
+    }
 }
