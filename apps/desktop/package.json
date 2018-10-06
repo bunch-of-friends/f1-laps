@@ -1,33 +1,35 @@
 {
-  "name": "f1-laps-desktop",
-  "version": "0.1.0",
-  "description": "F1 laps desktop app",
-  "main": "index.js",
-  "scripts": {
-    "refresh": "rm -rf node_modules package-lock.json && npm i",
-    "start": "npm run clean && npm run build && electron ./dist/main/main.js",
-    "clean": "rm -rf dist/",
-    "build": "NODE_ENV=production electron-webpack",
-    "dev": "electron-webpack dev"
-  },
-  "author": "",
-  "license": "MIT",
-  "dependencies": {
-    "@types/chart.js": "^2.7.30",
-    "@types/lodash": "^4.14.116",
-    "chart.js": "^2.7.2",
-    "electron-webpack-ts": "^2.0.2",
-    "f1-laps-js-bridge": "file:../../modules/js-bridge",
-    "hyperapp": "^1.2.8",
-    "lodash": "^4.17.10",
-    "moment": "^2.22.2",
-    "typescript": "^3.0.1"
-  },
-  "devDependencies": {
-    "electron": "^2.0.0",
-    "electron-webpack": "^2.1.2",
-    "electron-webpack-ts": "^2.0.2",
-    "html-webpack-plugin": "^3.2.0",
-    "webpack": "^4.16.5"
-  }
+    "name": "f1-laps-desktop",
+    "version": "0.1.0",
+    "description": "F1 laps desktop app",
+    "main": "index.js",
+    "scripts": {
+        "refresh": "rm -rf node_modules package-lock.json && npm i",
+        "start": "npm run clean && npm run build && electron ./dist/main/main.js",
+        "clean": "rm -rf dist/",
+        "build": "NODE_ENV=production electron-webpack",
+        "dev": "electron-webpack dev"
+    },
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "@types/chart.js": "^2.7.30",
+        "@types/lodash": "^4.14.116",
+        "chart.js": "^2.7.2",
+        "electron-webpack-ts": "^2.0.2",
+        "f1-laps-js-bridge": "file:../../modules/js-bridge",
+        "hyperapp": "^1.2.8",
+        "hyperapp-hash-router": "^0.1.0",
+        "lodash": "^4.17.10",
+        "moment": "^2.22.2",
+        "typescript": "^3.0.1"
+    },
+    "devDependencies": {
+        "electron": "^2.0.0",
+        "electron-webpack": "^2.1.2",
+        "electron-webpack-ts": "^2.0.2",
+        "html-webpack-plugin": "^3.2.0",
+        "prettier": "1.14.3",
+        "webpack": "^4.16.5"
+    }
 }

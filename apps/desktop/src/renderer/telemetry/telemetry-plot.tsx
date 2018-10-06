@@ -1,16 +1,16 @@
 import { h } from 'hyperapp';
-import { Point, isColinear } from '../math/linear-algebra';
+import { Point, isColinear } from '../helpers/linear-algebra';
 import { round } from 'lodash';
 import Chart, { ChartConfiguration } from 'chart.js';
-import { AppState, ActivePlot } from '../app-state';
-import { AppActions } from '../app-actions';
+import { AppState, ActivePlot } from '../app/app-state';
+import { AppActions } from '../app/app-actions';
 import { LiveTelemetryTick } from 'f1-laps-js-bridge';
 
 const CHART_RANGE = 60;
 
 function filterXBoundingTicks(tickVal: number, index: number, allTicks: Array<Point>) {
     if (index === 0) {
-        return tickVal > 0 ? round(tickVal, 1): '';
+        return tickVal > 0 ? round(tickVal, 1) : '';
     }
 
     if (index === allTicks.length - 1 || tickVal < 0) {
@@ -42,8 +42,13 @@ const createChart = (
 ) => (
     canvas: HTMLCanvasElement
 ) => {
+        const context = canvas.getContext('2d');
+        if (!context) {
+            throw new Error('canvas not found');
+        }
+
         const newChart = new Chart(
-            canvas.getContext('2d'),
+            context,
             {
                 type: 'scatter',
                 data: {
@@ -130,18 +135,31 @@ const onTelemetryPlotUpdate = (
 ) => (
     element: HTMLCanvasElement, oldAttributes: TelemetryPlotAttributes
 ) => {
-    if (oldAttributes.data !== currentAttributes.data) {
+        if (oldAttributes.data === currentAttributes.data) {
+            return;
+        }
+
+        const activePlot = activePlots[currentAttributes.key].instance;
+        if (!activePlot.data.datasets || !activePlot.data.datasets.length) {
+            return;
+        }
+
         const compressedPoints = toCompressedPoints(
             currentAttributes.data,
             currentAttributes.pointSelector
         )
-        const activePlot = activePlots[currentAttributes.key].instance;
+
         activePlot.data.datasets[0].data = compressedPoints;
         if (compressedPoints.length > 0) {
             const currentTime = compressedPoints[compressedPoints.length - 1].x;
             const plotOptions = (activePlot as ChartConfiguration).options;
-            plotOptions.scales.xAxes[0].ticks.max = currentTime;
-            plotOptions.scales.xAxes[0].ticks.min = currentTime - CHART_RANGE;
+            if (plotOptions && plotOptions.scales && plotOptions.scales.xAxes) {
+                let x = plotOptions.scales.xAxes[0];
+                if (x.ticks) {
+                    x.ticks.max = currentTime;
+                    x.ticks.min = currentTime - CHART_RANGE;
+                }
+            }
         }
         activePlot.update();
 
@@ -150,7 +168,6 @@ const onTelemetryPlotUpdate = (
             displayedPoints: compressedPoints.length
         });
     }
-}
 
 export const TelemetryPlot = (
     attributes: TelemetryPlotAttributes
@@ -179,10 +196,10 @@ export const TelemetryPlot = (
                     ) : null
                 }
                 <canvas
-            width="1200"
-            height="200"
-            oncreate={createChart(attributes, actions)}
-            onupdate={onTelemetryPlotUpdate(attributes, activePlots, actions)}
+                    width="1200"
+                    height="200"
+                    oncreate={createChart(attributes, actions)}
+                    onupdate={onTelemetryPlotUpdate(attributes, activePlots, actions)}
                 />
             </div>
         );
