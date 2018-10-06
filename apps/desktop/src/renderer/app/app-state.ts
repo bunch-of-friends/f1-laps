@@ -26,10 +26,10 @@ export type ActivePlots = {
 };
 
 export interface AppState {
-    lapFinished?: core.Lap;
-    sectorFinished?: core.Sector;
     sessionIndenfier?: core.SessionIdentifier;
     sessionData?: core.SessionData;
+    lapFinished?: core.Lap;
+    sectorFinished?: core.Sector;
     carStatus?: core.MultiCarData<core.CarStatus>;
     carSetup?: core.MultiCarData<core.CarSetup>;
     participantsInfo?: core.MultiCarData<core.ParticipantInfo>;
