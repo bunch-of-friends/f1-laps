@@ -8,17 +8,27 @@ function currentLapTick({ liveData }: AppState) {
 }
 
 function wallClockElapsedTime({ liveData }: AppState) {
-    return liveData.wallClockTime - liveData.wallClockStartTime
+    return liveData.wallClockTime - liveData.wallClockStartTime;
 }
 
-export const Time = () => (state: AppState) => (
-    state.liveData.anyDataReceived ?
+export const Time = () => (state: AppState) =>
+    state.liveData.anyDataReceived ? (
         <div>
-            <h3>Time: {round(currentLapTick(state).lapData.player.current_lap_time, 2)}</h3>
+            <h3>
+                Time:{' '}
+                {round(
+                    currentLapTick(state).lapData.player.current_lap_time,
+                    2
+                )}
+            </h3>
             <h3>Wall Clock Time: {round(wallClockElapsedTime(state), 2)}</h3>
-            <h3>Drift: {round(
-                wallClockElapsedTime(state) - currentLapTick(state).lapData.player.current_lap_time,
-                2
-            )}</h3>
-        </div> : null
-);
+            <h3>
+                Drift:{' '}
+                {round(
+                    wallClockElapsedTime(state) -
+                        currentLapTick(state).lapData.player.current_lap_time,
+                    2
+                )}
+            </h3>
+        </div>
+    ) : null;

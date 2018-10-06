@@ -11,12 +11,12 @@ export interface AppContext {
     lastUpdateTime: number;
 }
 
-const updatePlots = (
-    context: AppContext,
-    boundActions: AppActions
-) => (timestamp: number) => {
+const updatePlots = (context: AppContext, boundActions: AppActions) => (
+    timestamp: number
+) => {
     boundActions.liveData.frameUpdate(timestamp);
-    const shouldUpdateData = timestamp - context.lastUpdateTime > DATA_UPDATE_INTERVAL;
+    const shouldUpdateData =
+        timestamp - context.lastUpdateTime > DATA_UPDATE_INTERVAL;
     const hasNewData = context.liveDataBuffer.length > 0;
     if (shouldUpdateData && hasNewData) {
         boundActions.liveData.liveDataReceived(context.liveDataBuffer);
@@ -26,7 +26,7 @@ const updatePlots = (
     }
 
     requestAnimationFrame(updatePlots(context, boundActions));
-}
+};
 
 export function startApp(
     core: typeof JSBridgeCore,

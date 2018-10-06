@@ -1,4 +1,4 @@
-import { LiveTelemetryTick } from "f1-laps-js-bridge";
+import { LiveTelemetryTick } from 'f1-laps-js-bridge';
 
 export interface FPSState {
     lastUpdateTime?: number;
@@ -21,13 +21,13 @@ export interface ActivePlot {
 }
 
 export type ActivePlots = {
-    [key: string]: ActivePlot
-}
+    [key: string]: ActivePlot;
+};
 
 export interface AppState {
     liveData: LiveData;
     activePlots: ActivePlots;
-};
+}
 
 export const appInitialState: AppState = {
     liveData: {
@@ -35,5 +35,5 @@ export const appInitialState: AppState = {
         lapTicks: [],
         fps: {},
     },
-    activePlots: {}
+    activePlots: {},
 };

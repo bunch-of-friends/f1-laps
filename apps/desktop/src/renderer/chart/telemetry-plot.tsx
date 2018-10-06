@@ -8,9 +8,13 @@ import { LiveTelemetryTick } from 'f1-laps-js-bridge';
 
 const CHART_RANGE = 60;
 
-function filterXBoundingTicks(tickVal: number, index: number, allTicks: Array<Point>) {
+function filterXBoundingTicks(
+    tickVal: number,
+    index: number,
+    allTicks: Array<Point>
+) {
     if (index === 0) {
-        return tickVal > 0 ? round(tickVal, 1): '';
+        return tickVal > 0 ? round(tickVal, 1) : '';
     }
 
     if (index === allTicks.length - 1 || tickVal < 0) {
@@ -20,7 +24,11 @@ function filterXBoundingTicks(tickVal: number, index: number, allTicks: Array<Po
     return tickVal;
 }
 
-function filterYBoundingTicks(tickVal: number, index: number, allTicks: Array<Point>) {
+function filterYBoundingTicks(
+    tickVal: number,
+    index: number,
+    allTicks: Array<Point>
+) {
     if (index === 0) {
         return null;
     }
@@ -33,75 +41,67 @@ function filterYBoundingTicks(tickVal: number, index: number, allTicks: Array<Po
 }
 
 const createChart = (
-    {
-        suggestedYRange,
-        key,
-        label
-    }: TelemetryPlotAttributes,
+    { suggestedYRange, key, label }: TelemetryPlotAttributes,
     actions: AppActions
-) => (
-    canvas: HTMLCanvasElement
-) => {
-        const newChart = new Chart(
-            canvas.getContext('2d'),
-            {
-                type: 'scatter',
-                data: {
-                    datasets: [
-                        {
-                            borderColor: 'rgba(66, 134, 244, 1)',
-                            backgroundColor: 'rgba(66, 134, 244, 1)',
-                            label,
-                            fill: false,
-                            data: []
-                        }
-                    ]
+) => (canvas: HTMLCanvasElement) => {
+    const newChart = new Chart(canvas.getContext('2d'), {
+        type: 'scatter',
+        data: {
+            datasets: [
+                {
+                    borderColor: 'rgba(66, 134, 244, 1)',
+                    backgroundColor: 'rgba(66, 134, 244, 1)',
+                    label,
+                    fill: false,
+                    data: [],
                 },
-                options: {
-                    showLines: true,
-                    responsive: false,
-                    animation: {
-                        duration: 0
-                    },
-                    events: ['click'],
-                    elements: {
-                        point: {
-                            radius: 0,
-                            hitRadius: 0
+            ],
+        },
+        options: {
+            showLines: true,
+            responsive: false,
+            animation: {
+                duration: 0,
+            },
+            events: ['click'],
+            elements: {
+                point: {
+                    radius: 0,
+                    hitRadius: 0,
+                },
+                line: {
+                    tension: 0,
+                },
+            },
+            scales: {
+                xAxes: [
+                    {
+                        ticks: {
+                            maxRotation: 0,
+                            min: -CHART_RANGE,
+                            max: 0,
+                            callback: filterXBoundingTicks,
                         },
-                        line: {
-                            tension: 0
-                        }
                     },
-                    scales: {
-                        xAxes: [
-                            {
-                                ticks: {
-                                    maxRotation: 0,
-                                    min: -CHART_RANGE,
-                                    max: 0,
-                                    callback: filterXBoundingTicks
-                                },
-                            }
-                        ],
-                        yAxes: [
-                            {
-                                ticks: {
-                                    min: suggestedYRange[0],
-                                    max: suggestedYRange[1],
-                                    callback: filterYBoundingTicks
-                                }
-                            }
-                        ]
-                    }
-                }
-            } as ChartConfiguration);
+                ],
+                yAxes: [
+                    {
+                        ticks: {
+                            min: suggestedYRange[0],
+                            max: suggestedYRange[1],
+                            callback: filterYBoundingTicks,
+                        },
+                    },
+                ],
+            },
+        },
+    } as ChartConfiguration);
 
-        actions.activePlots.plotActive({
-            key,
-            activePlot: newChart
-        });
-    }
+    actions.activePlots.plotActive({
+        key,
+        activePlot: newChart,
+    });
+};
 
 function toCompressedPoints<T>(
     data: Array<T>,
@@ -127,14 +127,12 @@ const onTelemetryPlotUpdate = (
     currentAttributes: TelemetryPlotAttributes,
     activePlots: { [key: string]: ActivePlot },
     actions: AppActions
-) => (
-    element: HTMLCanvasElement, oldAttributes: TelemetryPlotAttributes
-) => {
+) => (element: HTMLCanvasElement, oldAttributes: TelemetryPlotAttributes) => {
     if (oldAttributes.data !== currentAttributes.data) {
         const compressedPoints = toCompressedPoints(
             currentAttributes.data,
             currentAttributes.pointSelector
-        )
+        );
         const activePlot = activePlots[currentAttributes.key].instance;
         activePlot.data.datasets[0].data = compressedPoints;
         if (compressedPoints.length > 0) {
@@ -147,46 +145,46 @@ const onTelemetryPlotUpdate = (
 
         actions.activePlots.displayedPointsChanged({
             key: currentAttributes.key,
-            displayedPoints: compressedPoints.length
+            displayedPoints: compressedPoints.length,
         });
     }
-}
+};
 
-export const TelemetryPlot = (
-    attributes: TelemetryPlotAttributes
-) => (
+export const TelemetryPlot = (attributes: TelemetryPlotAttributes) => (
     { activePlots }: AppState,
     actions: AppActions
 ) => {
-        const activePlot = activePlots[attributes.key];
-        return (
-            <div>
-                {
-                    (attributes.debug && activePlot) ? (
-                        <table>
-                            <th>
-                                <td colSpan="2">{attributes.label} debug info</td>
-                            </th>
-                            <tr>
-                                <td>Total Points:</td>
-                                <td>{attributes.data.length}</td>
-                            </tr>
-                            <tr>
-                                <td>Displayed points:</td>
-                                <td>{activePlots[attributes.key].displayedPoints}</td>
-                            </tr>
-                        </table>
-                    ) : null
-                }
-                <canvas
-            width="1200"
-            height="200"
-            oncreate={createChart(attributes, actions)}
-            onupdate={onTelemetryPlotUpdate(attributes, activePlots, actions)}
-                />
-            </div>
-        );
-    };
+    const activePlot = activePlots[attributes.key];
+    return (
+        <div>
+            {attributes.debug && activePlot ? (
+                <table>
+                    <th>
+                        <td colSpan="2">{attributes.label} debug info</td>
+                    </th>
+                    <tr>
+                        <td>Total Points:</td>
+                        <td>{attributes.data.length}</td>
+                    </tr>
+                    <tr>
+                        <td>Displayed points:</td>
+                        <td>{activePlots[attributes.key].displayedPoints}</td>
+                    </tr>
+                </table>
+            ) : null}
+            <canvas
+                width="1200"
+                height="200"
+                oncreate={createChart(attributes, actions)}
+                onupdate={onTelemetryPlotUpdate(
+                    attributes,
+                    activePlots,
+                    actions
+                )}
+            />
+        </div>
+    );
+};
 
 export interface TelemetryPlotAttributes {
     suggestedYRange: [number, number];
