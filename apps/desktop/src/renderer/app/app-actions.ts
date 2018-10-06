@@ -61,7 +61,11 @@ export const actions = {
         };
     },
     replayPackets: core.replayPackets,
-    getLaps: core.getLaps,
+    getLaps: () => {
+        return {
+            storedLaps: core.getLaps(),
+        };
+    },
     getTelemetry: core.getStoredTelemetry,
     deleteTelemetry: core.deleteTelemetry,
     liveTelemetry: {

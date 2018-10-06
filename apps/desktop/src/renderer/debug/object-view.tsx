@@ -22,10 +22,10 @@ function renderData(data?: { [key: string]: any }) {
                         <span>
                             <span>{key}: </span>
                             <span>{renderProp(data[key])}</span>
-                            <br />
                         </span>
                     );
                 })}
+                <br />
             </p>
         );
     } else {
@@ -36,11 +36,11 @@ function renderData(data?: { [key: string]: any }) {
 function renderProp(data: any) {
     if (Array.isArray(data)) {
         return data.map(x => {
-            return <div class="debug-nested-prop">{renderProp(x)}</div>;
+            return <p class="debug-nested-prop">{renderProp(x)}</p>;
         });
     } else if (typeof data === 'object') {
-        return <div class="debug-nested-prop">{renderData(data)}</div>;
+        return <p class="debug-nested-prop">{renderData(data)}</p>;
     } else {
-        return <span>{data}</span>;
+        return <span>{data}<br /></span>;
     }
 }
