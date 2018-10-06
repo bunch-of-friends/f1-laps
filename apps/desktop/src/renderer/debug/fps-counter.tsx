@@ -1,8 +1,8 @@
-import { h } from 'hyperapp';
-import { round } from 'lodash';
+import { h } from "hyperapp";
+import { round } from "lodash";
 
-import { AppState } from '../app-state';
+import { AppState } from "../app-state";
 
 export const FPSCounter = () => ({ liveData: { fps } }: AppState) => (
-    <div>FPS: {isNaN(fps.currentFPS) ? '' : round(fps.currentFPS)}</div>
+  <div>FPS: {isNaN(fps.currentFPS) ? "" : round(fps.currentFPS)}</div>
 );

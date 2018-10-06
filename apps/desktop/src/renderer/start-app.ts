@@ -1,51 +1,51 @@
-import * as JSBridgeCore from 'f1-laps-js-bridge';
-import { app, View } from 'hyperapp';
-import { AppActions } from './app-actions';
-import { AppState } from './app-state';
-import { LiveTelemetryTick } from 'f1-laps-js-bridge';
+import * as JSBridgeCore from "f1-laps-js-bridge";
+import { app, View } from "hyperapp";
+import { AppActions } from "./app-actions";
+import { AppState } from "./app-state";
+import { LiveTelemetryTick } from "f1-laps-js-bridge";
 
 const DATA_UPDATE_INTERVAL = 20;
 
 export interface AppContext {
-    liveDataBuffer: Array<LiveTelemetryTick>;
-    lastUpdateTime: number;
+  liveDataBuffer: Array<LiveTelemetryTick>;
+  lastUpdateTime: number;
 }
 
-const updatePlots = (
-    context: AppContext,
-    boundActions: AppActions
-) => (timestamp: number) => {
-    boundActions.liveData.frameUpdate(timestamp);
-    const shouldUpdateData = timestamp - context.lastUpdateTime > DATA_UPDATE_INTERVAL;
-    const hasNewData = context.liveDataBuffer.length > 0;
-    if (shouldUpdateData && hasNewData) {
-        boundActions.liveData.liveDataReceived(context.liveDataBuffer);
+const updatePlots = (context: AppContext, boundActions: AppActions) => (
+  timestamp: number
+) => {
+  boundActions.liveData.frameUpdate(timestamp);
+  const shouldUpdateData =
+    timestamp - context.lastUpdateTime > DATA_UPDATE_INTERVAL;
+  const hasNewData = context.liveDataBuffer.length > 0;
+  if (shouldUpdateData && hasNewData) {
+    boundActions.liveData.liveDataReceived(context.liveDataBuffer);
 
-        context.liveDataBuffer = [];
-        context.lastUpdateTime = timestamp;
-    }
+    context.liveDataBuffer = [];
+    context.lastUpdateTime = timestamp;
+  }
 
-    requestAnimationFrame(updatePlots(context, boundActions));
-}
+  requestAnimationFrame(updatePlots(context, boundActions));
+};
 
 export function startApp(
-    core: typeof JSBridgeCore,
-    state: AppState,
-    actions: AppActions,
-    view: View<AppState, AppActions>,
-    container: Element | null,
-    context: AppContext
+  core: typeof JSBridgeCore,
+  state: AppState,
+  actions: AppActions,
+  view: View<AppState, AppActions>,
+  container: Element | null,
+  context: AppContext
 ) {
-    core.initialise({ updateInterval: 30, storagePath: '../../_data-storage' });
-    const boundActions = app(state, actions, view, container);
+  core.initialise({ updateInterval: 30, storagePath: "../../_data-storage" });
+  const boundActions = app(state, actions, view, container);
 
-    core.liveTelemetry.register(data => {
-        context.liveDataBuffer.push(data);
-    });
+  core.liveTelemetry.register(data => {
+    context.liveDataBuffer.push(data);
+  });
 
-    context.lastUpdateTime = 0;
-    requestAnimationFrame(updatePlots(context, boundActions));
+  context.lastUpdateTime = 0;
+  requestAnimationFrame(updatePlots(context, boundActions));
 
-    core.replayPackets();
-    (window as any).gs = boundActions.getState; // Debugging
+  core.replayPackets();
+  (window as any).gs = boundActions.getState; // Debugging
 }
