@@ -117,8 +117,6 @@ impl ReceivePacket for Serialiser {
         }
 
         let header = ser_result.unwrap();
-        context.log(LogEvent::Debug, &format!("received packet type: {}", header.m_packetId));
-
         let mut result: Option<Tick> = None;
 
         if !self.is_current_frame(&header) {
@@ -129,9 +127,8 @@ impl ReceivePacket for Serialiser {
             } else if self.current_frame.is_none() {
                 self.current_frame = Some(Frame::new(&header));
             }
-        } else {
-            self.append_to_current_frame(&header, datagram);
         }
+        self.append_to_current_frame(&header, datagram);
 
         result
     }
