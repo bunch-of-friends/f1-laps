@@ -25,7 +25,10 @@ pub(crate) fn start_listening(context: &'static AppContext, port: i32, should_st
 
             let len = packets_local.len();
             if len > 0 {
-                context.log(LogEvent::Debug, &format!("checking for packets to store... storing packets, count {}", len));
+                context.log(
+                    LogEvent::Debug,
+                    &format!("checking for packets to store... storing packets, count {}", len),
+                );
 
                 let packets_to_store = packets_local.clone();
                 packets_local.clear();
