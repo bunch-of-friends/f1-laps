@@ -1,19 +1,19 @@
 {
-  "name": "f1-laps-node-test",
-  "version": "0.1.0",
-  "main": "index.js",
-  "scripts": {
-    "refresh": "rm -rf node_modules package-lock.json && npm i",
-    "start": "npm run refresh && node ./index.js"
-  },
-  "maintainers": [
-    {
-      "name": "David Bohunek",
-      "email": "bohunek@gmail.com"
+    "name": "f1-laps-node-test",
+    "version": "0.1.0",
+    "main": "index.js",
+    "scripts": {
+        "refresh": "rm -rf node_modules package-lock.json && npm i",
+        "start": "npm run refresh && node ./index.js"
+    },
+    "maintainers": [
+        {
+            "name": "David Bohunek",
+            "email": "bohunek@gmail.com"
+        }
+    ],
+    "license": "MIT",
+    "dependencies": {
+        "f1-laps-js-bridge": "file:../../modules/js-bridge"
     }
-  ],
-  "license": "MIT",
-  "dependencies": {
-    "f1-laps-js-bridge": "file:../../modules/js-bridge"
-  }
 }

@@ -1,9 +1,9 @@
 {
-  "defaultSeverity": "error",
-  "extends": ["tslint-config-prettier", "tslint-config-bunch-of-friends"],
-  "rules": {
-      "trailing-comma": true,
-      "variable-name": false,
-      "no-unused-variable": false
-  }
+    "defaultSeverity": "error",
+    "extends": ["tslint-config-prettier", "tslint-config-bunch-of-friends"],
+    "rules": {
+        "trailing-comma": true,
+        "variable-name": false,
+        "no-unused-variable": false
+    }
 }
