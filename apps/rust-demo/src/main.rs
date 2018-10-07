@@ -7,7 +7,7 @@ use f1_laps_core::prelude::*;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let context = f1_laps_core::initialise("../../_data-storage", logger);
+    let context = f1_laps_core::initialise("../../_data-storage", on_log_received);
     let context: &'static AppContext = Box::leak(context);
 
     // let x = f1_laps_core::get_laps_headers(context);
@@ -111,6 +111,7 @@ fn on_received(output: Output) {
     // }
 }
 
-fn logger(e: LogEvent, m: &str) {
+#[allow(needless_pass_by_value)]
+fn on_log_received(e: LogEvent, m: &str) {
     println!(">>> {:?}: {}", e, m);
 }
