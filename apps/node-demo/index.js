@@ -1,8 +1,10 @@
-const core = require("f1-laps-js-bridge");
+const core = require('f1-laps-js-bridge');
 
-console.log("node test is running");
+console.log('node test is running');
 
-core.initialise({ updateInterval: 50, storagePath: "../../_data-storage" });
+core.initialise({ updateInterval: 50, storagePath: '../../_data-storage' });
+
+core.logs.register(logs => console.log('>>>', logs));
 
 // core.newSession.register(data => console.log('newSession >> ', data));
 // core.lapFinished.register(data => console.log('lapFinished >> ', data));
@@ -14,11 +16,13 @@ core.initialise({ updateInterval: 50, storagePath: "../../_data-storage" });
 // core.participantsInfo.register(data => console.log('participantsInfo >> ', data));
 // core.carSetup.register(data => console.log('carSetup >> ', data));
 
-//core.startListening(20777);
+core.startListening(20777);
 //core.replayPackets();
 
-const laps = core.getLaps();
-console.log("laps >>", laps);
+// const laps = core.getLaps();
+// console.log('laps >>', laps);
 
-const telemetry = core.getStoredTelemetry(laps[0].id);
-console.log("telemetry >>", telemetry);
+// const telemetry = core.getStoredTelemetry(laps[0].id);
+// console.log('telemetry >>', telemetry);
+
+console.log('hello');
