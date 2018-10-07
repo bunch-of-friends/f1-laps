@@ -2,7 +2,7 @@ import * as core from 'f1-laps-js-bridge';
 
 export class AppDataBuffer {
     public logs: Array<core.LogItem>;
-    public lastCollectionTime: number;
+    public lastFlushTime: number;
     public liveTelemetry: Array<core.LiveTelemetryTick>;
     public lapFinished?: core.Lap;
     public sectorFinished?: core.Sector;
@@ -15,10 +15,12 @@ export class AppDataBuffer {
     constructor() {
         this.logs = [];
         this.liveTelemetry = [];
-        this.lastCollectionTime = 0;
+        this.lastFlushTime = 0;
     }
 
-    public flush() {
+    public flush(time: number) {
+        this.lastFlushTime = time;
+
         this.logs = [];
         this.liveTelemetry = [];
         this.lapFinished = undefined;

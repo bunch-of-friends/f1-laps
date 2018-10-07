@@ -62,6 +62,11 @@ export const actions = {
         };
     },
     replayPackets: core.replayPackets,
+    clearLogs: () => {
+        return {
+            logs: [],
+        };
+    },
     getLaps: () => {
         return {
             storedLaps: core.getLaps(),

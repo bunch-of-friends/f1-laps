@@ -28,9 +28,9 @@ export interface LogItem {
 }
 
 export enum LogEvent {
-    Debug = 0,
-    UserInfo = 1,
-    Error = 2,
+    Debug = 'Debug',
+    UserInfo = 'UserInfo',
+    Error = 'Error',
 }
 
 export interface LiveTelemetryTick {
