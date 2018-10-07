@@ -16,6 +16,10 @@ export function startApp(container: Element | null) {
 
     core.initialise({ updateInterval: 30, storagePath: '../../_data-storage' });
 
+    core.logs.register(logs => {
+        appDataBuffer.logs = appDataBuffer.logs.concat(logs);
+    });
+
     core.liveTelemetry.register(data => {
         appDataBuffer.liveTelemetry.push(data);
     });

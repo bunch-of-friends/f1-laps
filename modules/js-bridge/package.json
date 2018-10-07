@@ -7,7 +7,8 @@
     "build": "npm run build:neon && npm run build:typescript",
     "build:neon": "neon build",
     "build:typescript": "tsc",
-    "lint": "tslint '**/*.ts{,x}' -e '**/node_modules/**'"
+    "lint": "tslint 'src/**/*.{ts,tsx}'",
+    "prettier": "prettier --write 'src/**/*.{ts,tsx,css}'"
   },
   "pre-commit": [
     "lint"
@@ -27,9 +28,11 @@
   "devDependencies": {
     "@types/node": "^10.5.6",
     "pre-commit": "^1.2.2",
-    "tslint": "^5.10.0",
+    "prettier": "1.14.3",
+    "tslint": "^5.11.0",
     "tslint-config-bunch-of-friends": "^1.0.2",
-    "tslint-eslint-rules": "^5.3.1",
-    "typescript": "^3.1.0-dev.20180813"
+    "tslint-config-prettier": "^1.15.0",
+    "tslint-eslint-rules": "^5.4.0",
+    "typescript": "^3.1.1"
   }
 }

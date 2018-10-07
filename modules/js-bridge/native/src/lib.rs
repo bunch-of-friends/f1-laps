@@ -4,10 +4,12 @@
 #[macro_use]
 extern crate neon;
 extern crate neon_serde;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 #[macro_use]
 extern crate lazy_static;
 extern crate f1_laps_core;
-extern crate serde;
 
 use f1_laps_core::prelude::*;
 use neon::context::Context;
@@ -19,9 +21,15 @@ lazy_static! {
     static ref COLLECTOR: Mutex<Collector> = Mutex::new(Default::default());
 }
 
+#[derive(Clone, Serialize)]
+pub struct LogItem {
+    pub event: LogEvent,
+    pub message: String,
+}
+
 #[derive(Default)]
 pub struct Collector {
-    context: Option<&'static f1_laps_core::Context>,
+    context: Option<&'static AppContext>,
     session_identifier: Option<SessionIdentifier>,
     finished_lap: Option<Lap>,
     finished_sector: Option<Sector>,
@@ -32,6 +40,7 @@ pub struct Collector {
     car_motion: Option<OptMultiCarData<CarMotion>>,
     car_setup: Option<OptMultiCarData<CarSetup>>,
     participants_info: Option<OptMultiCarData<ParticipantInfo>>,
+    logs: Vec<LogItem>,
 }
 
 impl Collector {
@@ -68,6 +77,16 @@ impl Collector {
 
         if output.participants_info.is_some() {
             self.participants_info = output.participants_info;
+        }
+    }
+
+    pub fn get_logs(&mut self) -> Option<Vec<LogItem>> {
+        if self.logs.len() > 0 {
+            let res = self.logs.to_vec();
+            self.logs.clear();
+            Some(res)
+        } else {
+            None
         }
     }
 
@@ -137,7 +156,7 @@ fn initialise(mut cx: FunctionContext) -> JsResult<JsUndefined> {
 
     let mut collector = COLLECTOR.lock().unwrap();
 
-    let context = f1_laps_core::initialise(&storage_folder_path);
+    let context = f1_laps_core::initialise(&storage_folder_path, on_log_received);
     collector.context = Some(Box::leak(context));
 
     Ok(JsUndefined::new())
@@ -202,6 +221,7 @@ fn get_next_tick(mut cx: FunctionContext) -> JsResult<JsObject> {
 
     let object = cx.empty_object();
 
+    append_as_js(&mut cx, "logs", collector.get_logs().as_ref(), object)?;
     append_as_js(
         &mut cx,
         "sessionIdentifier",
@@ -278,6 +298,14 @@ fn get_next_tick(mut cx: FunctionContext) -> JsResult<JsObject> {
 fn on_output_received(output: Output) {
     let mut collector = COLLECTOR.lock().unwrap();
     collector.update(output);
+}
+
+fn on_log_received(e: LogEvent, m: &str) {
+    let mut collector = COLLECTOR.lock().unwrap();
+    collector.logs.push(LogItem {
+        event: e,
+        message: m.to_string(),
+    });
 }
 
 fn append_as_js<'j, C, V>(

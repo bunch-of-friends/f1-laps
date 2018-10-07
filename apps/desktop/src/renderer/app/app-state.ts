@@ -26,6 +26,8 @@ export type ActivePlots = {
 };
 
 export interface AppState {
+    logs: Array<core.LogItem>;
+    debugLogs: Array<core.LogItem>;
     referenceLap?: core.StoredTelemetry;
     storedLaps: Array<core.LapHeader>;
     sessionIndenfier?: core.SessionIdentifier;
@@ -42,6 +44,8 @@ export interface AppState {
 }
 
 export const state: AppState = {
+    logs: [],
+    debugLogs: [],
     storedLaps: [],
     liveTelemetry: {
         wallClockStartTime: 0,

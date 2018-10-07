@@ -4,12 +4,11 @@
 extern crate f1_laps_core;
 
 use f1_laps_core::prelude::*;
-use f1_laps_core::Context;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let context = f1_laps_core::initialise("../../_data-storage");
-    let context: &'static Context = Box::leak(context);
+    let context = f1_laps_core::initialise("../../_data-storage", logger);
+    let context: &'static AppContext = Box::leak(context);
 
     // let x = f1_laps_core::get_laps_headers(context);
     // println!("{:?}", x);
@@ -25,7 +24,7 @@ fn main() {
 
 fn start(
     args: &[String],
-    context: &'static Context,
+    context: &'static AppContext,
 ) -> Option<(std::thread::JoinHandle<()>, std::thread::JoinHandle<()>)> {
     let mut mode_value = "";
     let mut b_value = true;
@@ -110,4 +109,8 @@ fn on_received(output: Output) {
     // if let Some(ref car_motion) = output.car_motion {
     //     println!("{:?}", car_motion);
     // }
+}
+
+fn logger(e: LogEvent, m: &str) {
+    println!(">>> {:?}: {}", e, m);
 }
