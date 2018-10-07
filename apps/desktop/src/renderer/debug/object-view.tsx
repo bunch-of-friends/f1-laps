@@ -8,7 +8,7 @@ export const ObjectView = ({
     data?: Object;
 }) => (
     <div>
-        <h4>{title}</h4>
+        <span class="debug-title">{title}</span>
         {renderData(data)}
     </div>
 );

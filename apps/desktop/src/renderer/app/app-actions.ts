@@ -8,20 +8,20 @@ const TIME_RANGE = 100;
 const FPS_UPDATE_INTERVAL = 0.5;
 const LOG_MAX_COUNT = 50;
 
-function latestLapTick(lapTicks: Array<core.LiveTelemetryTick>) {
-    return lapTicks[lapTicks.length - 1];
+function latestLapTick(ticks: Array<core.LiveTelemetryTick>) {
+    return ticks[ticks.length - 1];
 }
 
-function filterInvisible(lapTicks: Array<core.LiveTelemetryTick>) {
+function filterInvisible(ticks: Array<core.LiveTelemetryTick>) {
     const currentTime =
-        lapTicks.length > 0
-            ? latestLapTick(lapTicks).lapData.player.current_lap_time
+        ticks.length > 0
+            ? latestLapTick(ticks).lapData.player.current_lap_time
             : 0;
-    const firstVisible = lapTicks.findIndex(
+    const firstVisible = ticks.findIndex(
         a => a.lapData.player.current_lap_time > currentTime - TIME_RANGE
     );
 
-    return lapTicks.slice(firstVisible);
+    return ticks.slice(firstVisible);
 }
 
 function updateFPS(timeSeconds: number, fps: FPSState) {
@@ -93,12 +93,12 @@ export const actions = {
             wallClockStartTime,
             wallClockTime,
         }: LiveTelemetry) => {
-            let allLapTicks = ticks.concat(newTicks);
-            const latestLap = latestLapTick(allLapTicks).lapData.player
+            let allticks = ticks.concat(newTicks);
+            const latestLap = latestLapTick(allticks).lapData.player
                 .current_lap_number;
             const lapChanged = latestLap !== currentLap;
             if (lapChanged) {
-                allLapTicks = newTicks.filter(
+                allticks = newTicks.filter(
                     lapTick =>
                         lapTick.lapData.player.current_lap_number === latestLap
                 );
@@ -106,7 +106,7 @@ export const actions = {
 
             return {
                 anyDataReceived: true,
-                lapTicks: filterInvisible(allLapTicks),
+                ticks: filterInvisible(allticks),
                 currentLap: latestLap,
                 wallClockStartTime: lapChanged
                     ? wallClockTime
