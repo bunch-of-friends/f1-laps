@@ -1,0 +1,17 @@
+#app-container {
+    padding: 10px;
+}
+
+#app-buttons {
+    margin-top: 15px;
+}
+
+#app-buttons button {
+    margin-right: 5px;
+}
+
+.page {
+    margin-top: 15px;
+    padding: 10px;
+    border: 1px solid #ccc;
+}

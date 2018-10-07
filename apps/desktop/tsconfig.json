@@ -3,7 +3,8 @@
     "compilerOptions": {
         "jsx": "react",
         "jsxFactory": "h",
-        "strict": false,
-        "noImplicitAny": true
+        "strict": true,
+        "noImplicitAny": true,
+        "noUnusedLocals": true
     }
 }

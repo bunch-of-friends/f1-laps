@@ -1,18 +1,18 @@
 import { h } from 'hyperapp';
 import { round } from 'lodash';
 
-import { AppState } from '../app-state';
+import { AppState } from '../app/app-state';
 
-function currentLapTick({ liveData }: AppState) {
-    return liveData.lapTicks[liveData.lapTicks.length - 1];
+function currentLapTick({ liveTelemetry }: AppState) {
+    return liveTelemetry.ticks[liveTelemetry.ticks.length - 1];
 }
 
-function wallClockElapsedTime({ liveData }: AppState) {
-    return liveData.wallClockTime - liveData.wallClockStartTime;
+function wallClockElapsedTime({ liveTelemetry }: AppState) {
+    return liveTelemetry.wallClockTime - liveTelemetry.wallClockStartTime;
 }
 
 export const Time = () => (state: AppState) =>
-    state.liveData.anyDataReceived ? (
+    state.liveTelemetry.anyDataReceived ? (
         <div>
             <h3>
                 Time:{' '}

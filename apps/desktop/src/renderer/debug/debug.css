@@ -1,0 +1,17 @@
+.debug-page > div {
+    border: 1px solid #000;
+    min-height: 100px;
+    margin: 10px;
+    padding: 5px;
+    float: left;
+}
+
+.debug-page:after {
+    clear: both;
+    content: '';
+    display: block;
+}
+
+.debug-nested-prop {
+    margin-left: 5px;
+}

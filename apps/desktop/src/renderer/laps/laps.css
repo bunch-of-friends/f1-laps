@@ -1,0 +1,8 @@
+table#laps td,
+table#laps th {
+    padding: 3px;
+}
+
+table#laps thead {
+    border-bottom: 1px solid #000;
+}

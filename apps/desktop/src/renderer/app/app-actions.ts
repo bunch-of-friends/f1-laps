@@ -1,14 +1,17 @@
-import { AppState, LiveData, ActivePlots, FPSState } from './app-state';
-import { LiveTelemetryTick } from 'f1-laps-js-bridge';
+import { location } from 'hyperapp-hash-router';
+import * as core from 'f1-laps-js-bridge';
+
+import { AppState, LiveTelemetry, ActivePlots, FPSState } from './app-state';
+import { AppDataBuffer } from './app-data-buffer';
 
 const TIME_RANGE = 100;
 const FPS_UPDATE_INTERVAL = 0.5;
 
-function latestLapTick(lapTicks: Array<LiveTelemetryTick>) {
+function latestLapTick(lapTicks: Array<core.LiveTelemetryTick>) {
     return lapTicks[lapTicks.length - 1];
 }
 
-function filterInvisible(lapTicks: Array<LiveTelemetryTick>) {
+function filterInvisible(lapTicks: Array<core.LiveTelemetryTick>) {
     const currentTime =
         lapTicks.length > 0
             ? latestLapTick(lapTicks).lapData.player.current_lap_time
@@ -45,20 +48,51 @@ function updateFPS(timeSeconds: number, fps: FPSState) {
     };
 }
 
-export const appActions = {
-    liveData: {
-        liveDataReceived: (newLapTicks: Array<LiveTelemetryTick>) => ({
-            lapTicks,
+export const actions = {
+    startListening: () => (state: AppState) => {
+        if (state.isListening) {
+            return state;
+        }
+
+        core.startListening();
+
+        return {
+            isListening: true,
+        };
+    },
+    replayPackets: core.replayPackets,
+    getLaps: () => {
+        return {
+            storedLaps: core.getLaps(),
+        };
+    },
+    setReferenceLap: (id: String) => {
+        return {
+            referenceLap: core.getStoredTelemetry(id),
+        };
+    },
+    unsetReferenceLap: () => {
+        return {
+            referenceLap: undefined,
+        };
+    },
+    deleteTelemetry: (id: String) => {
+        core.deleteTelemetry(id);
+        return actions.getLaps();
+    },
+    liveTelemetry: {
+        liveTelemetryReceived: (newTicks: Array<core.LiveTelemetryTick>) => ({
+            ticks,
             currentLap,
             wallClockStartTime,
             wallClockTime,
-        }: LiveData) => {
-            let allLapTicks = lapTicks.concat(newLapTicks);
+        }: LiveTelemetry) => {
+            let allLapTicks = ticks.concat(newTicks);
             const latestLap = latestLapTick(allLapTicks).lapData.player
                 .current_lap_number;
             const lapChanged = latestLap !== currentLap;
             if (lapChanged) {
-                allLapTicks = newLapTicks.filter(
+                allLapTicks = newTicks.filter(
                     lapTick =>
                         lapTick.lapData.player.current_lap_number === latestLap
                 );
@@ -77,7 +111,7 @@ export const appActions = {
             wallClockStartTime,
             anyDataReceived,
             fps,
-        }: LiveData) => {
+        }: LiveTelemetry) => {
             const timeSeconds = timestamp / 1000;
             return anyDataReceived
                 ? {
@@ -117,6 +151,19 @@ export const appActions = {
         }),
     },
     getState: () => (state: AppState) => state,
+    location: location.actions,
+    onAppBufferFlushed: (buffer: AppDataBuffer) => (state: AppState) => {
+        // TODO: merge with live telemetry
+        return {
+            lapFinished: buffer.lapFinished || state.lapFinished,
+            sectorFinished: buffer.sectorFinished || state.sectorFinished,
+            sessionIndenfier: buffer.sessionIndenfier || state.sessionIndenfier,
+            sessionData: buffer.sessionData || state.sessionData,
+            carSetup: buffer.carSetup || state.carSetup,
+            carStatus: buffer.carStatus || state.carStatus,
+            participantsInfo: buffer.participantsInfo || state.participantsInfo,
+        };
+    },
 };
 
-export type AppActions = typeof appActions;
+export type AppActions = typeof actions;
