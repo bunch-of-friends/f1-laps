@@ -28,7 +28,9 @@ export const AppContainer = (state: AppState, actions: AppActions) => {
                         >
                             Replay packets
                         </button>
-                        <button onclick={() => actions.clearLogs()}>Clear logs</button>
+                        <button onclick={() => actions.clearLogs()}>
+                            Clear logs
+                        </button>
                     </div>
                 </div>
                 <LogsView />
