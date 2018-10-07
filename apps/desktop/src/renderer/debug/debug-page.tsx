@@ -3,7 +3,6 @@ import { ObjectView } from './object-view';
 
 import './debug.css';
 import { AppState } from '../app/app-state';
-import { carSetup } from 'f1-laps-js-bridge';
 
 export const DebugPage = () => (state: AppState) => {
     const tick =

@@ -57,17 +57,19 @@ pub(crate) fn start_listening(context: &'static AppContext, port: i32, should_st
                 let serialiser_mutex = serialiser.clone();
                 thread::spawn(move || {
                     let mut serialiser_local = serialiser_mutex.lock().unwrap();
-                    if let Some(tick) = serialiser_local.converto_to_tick(&buffer, amt) {
+                    if let Some(tick) = serialiser_local.converto_to_tick(context, &buffer, amt) {
                         tx.send(tick).ok();
+                    }
 
-                        if should_store_packets {
-                            let mut packets_local = packets_mutex_receive.lock().unwrap();
-                            packets_local.push(Packet::new(buffer));
-                        }
+                    if should_store_packets {
+                        let mut packets_local = packets_mutex_receive.lock().unwrap();
+                        packets_local.push(Packet::new(buffer));
                     }
                 });
             }
-            Err(_) => print!("error receiving packet"),
+            Err(e) => {
+                context.log(LogEvent::Error, &format!("error receiving packet: {}", e));
+            }
         }
     }
 }

@@ -4,7 +4,7 @@
     "description": "F1 laps desktop app",
     "main": "index.js",
     "scripts": {
-        "refresh": "rm -rf node_modules package-lock.json && npm i",
+        "refresh": "rm -rf node_modules/f1-laps-js-bridge package-lock.json && npm i",
         "start": "npm run clean && npm run build && electron ./dist/main/main.js",
         "clean": "rm -rf dist/",
         "build": "NODE_ENV=production electron-webpack",

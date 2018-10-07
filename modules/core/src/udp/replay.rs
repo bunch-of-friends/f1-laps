@@ -4,16 +4,18 @@ use std::sync::mpsc::{self, TryRecvError};
 use std::thread;
 use std::time::Duration;
 
+use context::{AppContext, LogEvent};
 use pipeline::input::Tick;
 use serialisation::{self, ReceivePacket};
-use storage::Storage;
 use udp::Packet;
 
-pub(crate) fn replay_packets(storage: &'static Storage, should_simulate_time: bool, tx: mpsc::Sender<Tick>) {
+pub(crate) fn replay_packets(context: &'static AppContext, should_simulate_time: bool, tx: mpsc::Sender<Tick>) {
+    context.log(LogEvent::UserInfo, "replaying stored packets");
+
     let (packet_tx, packet_rx): (mpsc::Sender<Vec<Packet>>, mpsc::Receiver<Vec<Packet>>) = mpsc::channel();
 
     thread::spawn(move || {
-        storage.get_all_packets(&packet_tx);
+        context.storage.get_all_packets(&packet_tx);
     });
 
     let mut last_packet_time = Utc::now();
@@ -22,8 +24,9 @@ pub(crate) fn replay_packets(storage: &'static Storage, should_simulate_time: bo
     thread::spawn(move || loop {
         match packet_rx.try_recv() {
             Ok(packets) => {
+                context.log(LogEvent::Debug, &format!("packets receeived, count: {}", packets.len()));
                 for packet in &packets {
-                    if let Some(tick) = serialiser.converto_to_tick(&packet.bytes, packet.len()) {
+                    if let Some(tick) = serialiser.converto_to_tick(context, &packet.bytes, packet.len()) {
                         tx.send(tick).ok();
 
                         if should_simulate_time {
@@ -33,6 +36,7 @@ pub(crate) fn replay_packets(storage: &'static Storage, should_simulate_time: bo
                 }
             }
             Err(TryRecvError::Disconnected) => {
+                context.log(LogEvent::UserInfo, "replaying packets finished");
                 break;
             }
             Err(TryRecvError::Empty) => {}

@@ -1,10 +1,11 @@
 pub mod f1_2018;
 
+use context::AppContext;
 use pipeline::input::Tick;
 
 pub trait ReceivePacket: Send + Sync + Clone {
     fn new() -> Self;
-    fn converto_to_tick(&mut self, datagram: &[u8], size: usize) -> Option<Tick>;
+    fn converto_to_tick(&mut self, context: &'static AppContext, datagram: &[u8], size: usize) -> Option<Tick>;
 }
 
 pub fn get_serialiser() -> impl ReceivePacket {
