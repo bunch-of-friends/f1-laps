@@ -10,12 +10,14 @@ extern crate schedule_recv;
 extern crate sled;
 extern crate uuid;
 
+mod context;
 mod pipeline;
 pub mod prelude;
 mod serialisation;
 mod storage;
 mod udp;
 
+use context::{AppContext, LogEvent};
 use pipeline::input::Tick;
 use pipeline::output::Output;
 use pipeline::Pipeline;
@@ -26,20 +28,22 @@ use storage::Storage;
 
 pub use pipeline::output::*;
 
-pub struct Context {
-    pub(crate) storage: Storage,
-}
-
-pub fn initialise(storage_folder_path: &str) -> Box<Context> {
-    let context = Context {
+pub fn initialise<F>(storage_folder_path: &str, logger: F) -> Box<AppContext>
+where
+    F: Fn(LogEvent, &str) + Send + Sync + 'static,
+{
+    let context = AppContext {
         storage: Storage::new(&storage_folder_path),
+        logger: Box::new(logger),
     };
+
+    context.log(LogEvent::UserInfo, "Initialised");
 
     Box::new(context)
 }
 
 pub fn start_listening<F>(
-    context: &'static Context,
+    context: &'static AppContext,
     port: i32,
     should_store_packets: bool,
     f: F,
@@ -50,7 +54,7 @@ where
     let (tx, rx): (mpsc::Sender<Tick>, mpsc::Receiver<Tick>) = mpsc::channel();
 
     let t = thread::spawn(move || {
-        udp::start_listening(&context.storage, port, should_store_packets, &tx);
+        udp::start_listening(&context, port, should_store_packets, &tx);
     });
 
     let mut pipeline = Pipeline::new(true);
@@ -69,7 +73,7 @@ where
 }
 
 pub fn replay_packets<F>(
-    context: &'static Context,
+    context: &'static AppContext,
     should_simulate_time: bool,
     should_store_laps: bool,
     f: F,
@@ -101,15 +105,15 @@ where
     (t, r)
 }
 
-pub fn get_laps_headers(context: &'static Context) -> Vec<LapHeader> {
+pub fn get_laps_headers(context: &'static AppContext) -> Vec<LapHeader> {
     context.storage.lap_headers.get_all()
 }
 
-pub fn get_lap_telemetry(context: &'static Context, lap_id: &str) -> Option<LapTelemetry> {
+pub fn get_lap_telemetry(context: &'static AppContext, lap_id: &str) -> Option<LapTelemetry> {
     context.storage.lap_telemetry.get(lap_id)
 }
 
-pub fn delete_lap(context: &'static Context, lap_id: &str) {
+pub fn delete_lap(context: &'static AppContext, lap_id: &str) {
     context.storage.lap_headers.delete(lap_id);
     context.storage.lap_telemetry.delete(lap_id);
 }

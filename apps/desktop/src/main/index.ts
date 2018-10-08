@@ -8,6 +8,8 @@ function startApp() {
     const window = new BrowserWindow({
         width: 1280,
         height: 720,
+        minWidth: 800,
+        minHeight: 600,
         webPreferences: {
             preload: path.resolve(__dirname, 'preload.js'),
         },

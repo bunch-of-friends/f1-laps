@@ -6,24 +6,34 @@ import { TelemetryPage } from '../telemetry/telemetry-page';
 import { DebugPage } from '../debug/debug-page';
 import { AppActions } from './app-actions';
 import { LapsPage } from '../laps/laps-page';
+import { LogsView } from './logs-view';
 
 import './app-container.css';
 
 export const AppContainer = (state: AppState, actions: AppActions) => {
     return (
         <div id="app-container">
-            <nav>
-                <Link to="/">Telemetry</Link> | <Link to="/laps">Laps</Link> |{' '}
-                <Link to="/debug">Debug</Link>
-            </nav>
-            <div id="app-buttons">
-                {getListeningButton(state, actions)}
-                <button
-                    disabled={state.isListening}
-                    onclick={() => actions.replayPackets()}
-                >
-                    Replay packets
-                </button>
+            <div id="header">
+                <div id="actions">
+                    <nav>
+                        <Link to="/">Telemetry</Link> |{' '}
+                        <Link to="/laps">Laps</Link> |{' '}
+                        <Link to="/debug">Debug</Link>
+                    </nav>
+                    <div id="app-buttons">
+                        {getListeningButton(state, actions)}
+                        <button
+                            disabled={state.isListening}
+                            onclick={() => actions.replayPackets()}
+                        >
+                            Replay packets
+                        </button>
+                        <button onclick={() => actions.clearLogs()}>
+                            Clear logs
+                        </button>
+                    </div>
+                </div>
+                <LogsView />
             </div>
             <div class="page">
                 <Route path="/" render={TelemetryPage} />

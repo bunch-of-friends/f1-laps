@@ -15,3 +15,27 @@
     padding: 10px;
     border: 1px solid #ccc;
 }
+
+#header {
+    height: 50px;
+}
+
+#header::after {
+    clear: both;
+    content: '';
+    display: block;
+}
+
+#actions {
+    float: left;
+}
+
+#logs {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    float: right;
+    border: 1px solid #ccc;
+    height: 100%;
+    min-width: 400px;
+    overflow: scroll;
+}

@@ -6,6 +6,7 @@ import { AppDataBuffer } from './app-data-buffer';
 
 const TIME_RANGE = 100;
 const FPS_UPDATE_INTERVAL = 0.5;
+const LOG_MAX_COUNT = 50;
 
 function latestLapTick(lapTicks: Array<core.LiveTelemetryTick>) {
     return lapTicks[lapTicks.length - 1];
@@ -61,12 +62,17 @@ export const actions = {
         };
     },
     replayPackets: core.replayPackets,
+    clearLogs: () => {
+        return {
+            logs: [],
+        };
+    },
     getLaps: () => {
         return {
             storedLaps: core.getLaps(),
         };
     },
-    setReferenceLap: (id: String) => {
+    setReferenceLap: (id: string) => {
         return {
             referenceLap: core.getStoredTelemetry(id),
         };
@@ -76,7 +82,7 @@ export const actions = {
             referenceLap: undefined,
         };
     },
-    deleteTelemetry: (id: String) => {
+    deleteTelemetry: (id: string) => {
         core.deleteTelemetry(id);
         return actions.getLaps();
     },
@@ -152,9 +158,10 @@ export const actions = {
     },
     getState: () => (state: AppState) => state,
     location: location.actions,
+    // vv TODO: merge with live telemetry vv
     onAppBufferFlushed: (buffer: AppDataBuffer) => (state: AppState) => {
-        // TODO: merge with live telemetry
         return {
+            logs: processLogs(buffer.logs, state.logs),
             lapFinished: buffer.lapFinished || state.lapFinished,
             sectorFinished: buffer.sectorFinished || state.sectorFinished,
             sessionIndenfier: buffer.sessionIndenfier || state.sessionIndenfier,
@@ -165,5 +172,17 @@ export const actions = {
         };
     },
 };
+
+function processLogs(
+    newLogs: Array<core.LogItem>,
+    currentLogs: Array<core.LogItem>
+): Array<core.LogItem> {
+    let result = currentLogs.concat(newLogs);
+    if (result.length > LOG_MAX_COUNT) {
+        return result.splice(0, result.length - LOG_MAX_COUNT + 1);
+    } else {
+        return result;
+    }
+}
 
 export type AppActions = typeof actions;

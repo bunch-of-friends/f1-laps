@@ -15,15 +15,12 @@
     "author": "",
     "license": "MIT",
     "dependencies": {
-        "@types/chart.js": "^2.7.30",
-        "@types/lodash": "^4.14.116",
         "chart.js": "^2.7.2",
-        "f1-laps-js-bridge": "file:../../modules/js-bridge",
         "hyperapp": "^1.2.8",
+        "f1-laps-js-bridge": "file:../../modules/js-bridge",
         "hyperapp-hash-router": "^0.1.0",
         "lodash": "^4.17.10",
-        "moment": "^2.22.2",
-        "typescript": "^3.0.1"
+        "moment": "^2.22.2"
     },
     "devDependencies": {
         "electron": "^2.0.0",
@@ -35,6 +32,9 @@
         "tslint-config-bunch-of-friends": "^1.0.2",
         "tslint-config-prettier": "^1.15.0",
         "tslint-eslint-rules": "^5.4.0",
-        "webpack": "^4.16.5"
+        "webpack": "^4.16.5",
+        "typescript": "^3.1.1",
+        "@types/chart.js": "^2.7.30",
+        "@types/lodash": "^4.14.116"
     }
 }

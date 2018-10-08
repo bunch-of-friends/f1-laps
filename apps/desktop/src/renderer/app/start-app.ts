@@ -16,6 +16,10 @@ export function startApp(container: Element | null) {
 
     core.initialise({ updateInterval: 30, storagePath: '../../_data-storage' });
 
+    core.logs.register(logs => {
+        appDataBuffer.logs = appDataBuffer.logs.concat(logs);
+    });
+
     core.liveTelemetry.register(data => {
         appDataBuffer.liveTelemetry.push(data);
     });
@@ -68,7 +72,7 @@ const updateState = (buffer: AppDataBuffer, a: AppActions) => (
     a.liveTelemetry.frameUpdate(timestamp);
 
     const shouldUpdateData =
-        timestamp - buffer.lastCollectionTime > DATA_UPDATE_INTERVAL;
+        timestamp - buffer.lastFlushTime > DATA_UPDATE_INTERVAL;
 
     if (!shouldUpdateData) {
         requestAnimationFrame(updateState(buffer, a));
@@ -79,8 +83,8 @@ const updateState = (buffer: AppDataBuffer, a: AppActions) => (
         a.liveTelemetry.liveTelemetryReceived(buffer.liveTelemetry);
     }
 
-    actions.onAppBufferFlushed(appDataBuffer);
-    buffer.flush();
+    a.onAppBufferFlushed(appDataBuffer);
+    buffer.flush(timestamp);
 
     requestAnimationFrame(updateState(buffer, a));
 };

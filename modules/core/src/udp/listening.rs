@@ -1,3 +1,4 @@
+use context::*;
 use pipeline::input::Tick;
 use schedule_recv;
 use serialisation::{self, ReceivePacket};
@@ -5,11 +6,12 @@ use std::net::UdpSocket;
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::Duration;
-use storage::Storage;
 use udp::Packet;
 
-pub(crate) fn start_listening(storage: &'static Storage, port: i32, should_store_packets: bool, tx: &mpsc::Sender<Tick>) {
+pub(crate) fn start_listening(context: &'static AppContext, port: i32, should_store_packets: bool, tx: &mpsc::Sender<Tick>) {
     let socket = bind_to_address(&format!("0.0.0.0:{}", port));
+    context.log(LogEvent::UserInfo, &format!("listening on port {}", port));
+    context.log(LogEvent::Debug, &format!("should_store_packets set to {}", should_store_packets));
     let buffer_size = serialisation::get_buffer_size();
 
     let packets: Arc<Mutex<Vec<Packet>>> = Arc::new(Mutex::new(Vec::new()));
@@ -21,13 +23,21 @@ pub(crate) fn start_listening(storage: &'static Storage, port: i32, should_store
             store_packets_tick.recv().unwrap();
             let mut packets_local = packets_mutext_store.lock().unwrap();
 
-            if packets_local.len() > 0 {
+            let len = packets_local.len();
+            if len > 0 {
+                context.log(
+                    LogEvent::Debug,
+                    &format!("checking for packets to store... storing packets, count {}", len),
+                );
+
                 let packets_to_store = packets_local.clone();
                 packets_local.clear();
 
                 thread::spawn(move || {
-                    storage.store_packets(&packets_to_store);
+                    context.storage.store_packets(&packets_to_store);
                 });
+            } else {
+                context.log(LogEvent::Debug, "checking for packets to store... nothing to store");
             }
         });
     }
