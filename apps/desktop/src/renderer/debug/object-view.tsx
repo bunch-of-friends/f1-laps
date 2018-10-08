@@ -8,7 +8,7 @@ export const ObjectView = ({
     data?: Object;
 }) => (
     <div>
-        <h4>{title}</h4>
+        <span class="debug-title">{title}</span>
         {renderData(data)}
     </div>
 );
@@ -35,9 +35,15 @@ function renderData(data?: { [key: string]: any }) {
 
 function renderProp(data: any) {
     if (Array.isArray(data)) {
-        return data.map(x => {
-            return <p class="debug-nested-prop">{renderProp(x)}</p>;
-        });
+        return (
+            <p class="debug-nested-prop">
+                [
+                {data.map(x => {
+                    return <span class="debug-nested-prop">{x},</span>;
+                })}
+                ]
+            </p>
+        );
     } else if (typeof data === 'object') {
         return <p class="debug-nested-prop">{renderData(data)}</p>;
     } else {

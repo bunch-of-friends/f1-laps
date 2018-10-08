@@ -86,7 +86,7 @@ where
     let mut pipeline = Pipeline::new(should_store_laps);
 
     let t = thread::spawn(move || {
-        udp::replay_packets(&context.storage, should_simulate_time, tx);
+        udp::replay_packets(&context, should_simulate_time, tx);
     });
 
     let r = thread::spawn(move || loop {

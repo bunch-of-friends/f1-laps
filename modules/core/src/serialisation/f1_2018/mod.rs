@@ -1,5 +1,6 @@
 #![allow(non_snake_case)]
 
+use context::{AppContext, LogEvent};
 use pipeline::input::*;
 use serialisation::ReceivePacket;
 
@@ -109,9 +110,13 @@ impl ReceivePacket for Serialiser {
         Serialiser { current_frame: None }
     }
 
-    fn converto_to_tick(&mut self, datagram: &[u8], _size: usize) -> Option<Tick> {
-        let header = serialise_header(datagram)?;
+    fn converto_to_tick(&mut self, context: &'static AppContext, datagram: &[u8], _size: usize) -> Option<Tick> {
+        let ser_result = serialise_header(datagram);
+        if ser_result.is_none() {
+            context.log(LogEvent::Error, "failed to serialise packet");
+        }
 
+        let header = ser_result.unwrap();
         let mut result: Option<Tick> = None;
 
         if !self.is_current_frame(&header) {
