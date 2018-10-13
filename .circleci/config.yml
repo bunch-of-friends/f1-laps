@@ -35,7 +35,6 @@ jobs:
             rustup run nightly rustc --version --verbose
             rustup run nightly cargo --version --verbose
             cd modules/core && rustup run nightly cargo build
-      this has to be done via NPM
       - run:
           name: JS-BRIDGE Nightly Build
           command: |
@@ -54,7 +53,6 @@ jobs:
             rustup run stable rustc --version --verbose
             rustup run stable cargo --version --verbose
             cd modules/core && rustup run stable cargo build
-      this has to be done via NPM
       - run:
           name: JS-BRIDGE Stable Build
           command: |
