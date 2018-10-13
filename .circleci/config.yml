@@ -46,7 +46,7 @@ jobs:
       - run: 
           name: JS-BRIDGE npm install
           command: |
-            cd modules/js-bridge && npm run install
+            cd modules/js-bridge && npm install
       - run:
           name: JS-BRIDGE JS formatting
           command: |
