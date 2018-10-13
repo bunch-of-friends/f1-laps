@@ -3,13 +3,14 @@ version: 2
 jobs:
   build:
     docker:
-    # need custom docker image with both Rust and NPM
-      - image: abronan/rust-circleci:latest
+      - image: davidbohunek/rust-js:latest
 
     steps:
       - checkout
       - restore_cache:
           key: project-cache
+
+      # Rust jobs
       - run:
           name: CORE formatting
           command: |
@@ -26,39 +27,13 @@ jobs:
             rustfmt --version
             cd apps/rust-demo && cargo fmt --all -- --check
       - run:
-          name: CORE Nightly Build
-          command: |
-            rustup run nightly rustc --version --verbose
-            rustup run nightly cargo --version --verbose
-            cd modules/core && rustup run nightly cargo build
-      # this has to be done via NPM
-      # - run:
-      #     name: JS-BRIDGE Nightly Build
-      #     command: |
-      #       rustup run nightly rustc --version --verbose
-      #       rustup run nightly cargo --version --verbose
-      #       cd modules/js-bridge/native && rustup run nightly cargo build
-      - run:
-          name: RUST-DEMO Nightly Build
-          command: |
-            rustup run nightly rustc --version --verbose
-            rustup run nightly cargo --version --verbose
-            cd apps/rust-demo && rustup run nightly cargo build
-      - run:
-          name: CORE Stable Build
+          name: CORE Build
           command: |
             rustup run stable rustc --version --verbose
             rustup run stable cargo --version --verbose
             cd modules/core && rustup run stable cargo build
-      # this has to be done via NPM
-      # - run:
-      #     name: JS-BRIDGE Stable Build
-      #     command: |
-      #       rustup run stable rustc --version --verbose
-      #       rustup run stable cargo --version --verbose
-      #       cd modules/js-bridge/native && rustup run stable cargo build
       - run:
-          name: RUST-DEMO Stable Build
+          name: RUST-DEMO Build
           command: |
             rustup run stable rustc --version --verbose
             rustup run stable cargo --version --verbose
@@ -66,6 +41,35 @@ jobs:
       - run:
           name: CORE Tests
           command: cd modules/core && rustup run stable cargo test
+
+      #JS jobs
+      - run: 
+          name: JS-BRIDGE npm install
+          command: |
+            cd modules/js-bridge && npm install
+      - run:
+          name: JS-BRIDGE JS formatting
+          command: |
+            cd modules/js-bridge && npm run lint
+      - run:
+          name: JS-BRIDGE Build
+          command: |
+            rustup run stable rustc --version --verbose
+            rustup run stable cargo --version --verbose
+            cd modules/js-bridge && npm run build
+      - run: 
+          name: DESKTOP npm install
+          command: |
+            cd apps/desktop && npm install
+      - run:
+          name: DESKTOP formatting
+          command: |
+            cd apps/desktop && npm run lint
+      - run:
+          name: DESKTOP Build
+          command: |
+            cd apps/desktop && npm run build
+
       - save_cache:
           key: project-cache
           paths:
@@ -73,4 +77,3 @@ jobs:
             - "./modules/core/target"
             - "./modules/js-bridge/native/target"
             - "./apps/rust-demo/target"
-            
