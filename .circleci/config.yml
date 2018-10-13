@@ -11,18 +11,19 @@ jobs:
       - restore_cache:
           key: project-cache
       - run:
-          name: nodejs check
-          command: node -v
-      - run:
           name: CORE formatting
           command: |
             rustfmt --version
             cd modules/core && cargo fmt --all -- --check
       - run:
-          name: JS-BRIDGE formatting
+          name: JS-BRIDGE Rust formatting
           command: |
             rustfmt --version
             cd modules/js-bridge/native && cargo fmt --all -- --check
+      - run:
+          name: JS-BRIDGE JS formatting
+          command: |
+            cd modules/js-bridge && npm run lint
       - run:
           name: RUST-DEMO formatting
           command: |
@@ -34,13 +35,13 @@ jobs:
             rustup run nightly rustc --version --verbose
             rustup run nightly cargo --version --verbose
             cd modules/core && rustup run nightly cargo build
-      # this has to be done via NPM
-      # - run:
-      #     name: JS-BRIDGE Nightly Build
-      #     command: |
-      #       rustup run nightly rustc --version --verbose
-      #       rustup run nightly cargo --version --verbose
-      #       cd modules/js-bridge/native && rustup run nightly cargo build
+      this has to be done via NPM
+      - run:
+          name: JS-BRIDGE Nightly Build
+          command: |
+            rustup run nightly rustc --version --verbose
+            rustup run nightly cargo --version --verbose
+            cd modules/js-bridge && npm run build
       - run:
           name: RUST-DEMO Nightly Build
           command: |
@@ -53,13 +54,13 @@ jobs:
             rustup run stable rustc --version --verbose
             rustup run stable cargo --version --verbose
             cd modules/core && rustup run stable cargo build
-      # this has to be done via NPM
-      # - run:
-      #     name: JS-BRIDGE Stable Build
-      #     command: |
-      #       rustup run stable rustc --version --verbose
-      #       rustup run stable cargo --version --verbose
-      #       cd modules/js-bridge/native && rustup run stable cargo build
+      this has to be done via NPM
+      - run:
+          name: JS-BRIDGE Stable Build
+          command: |
+            rustup run stable rustc --version --verbose
+            rustup run stable cargo --version --verbose
+            cd modules/js-bridge && npm run build
       - run:
           name: RUST-DEMO Stable Build
           command: |
