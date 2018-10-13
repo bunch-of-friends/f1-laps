@@ -4,12 +4,15 @@ jobs:
   build:
     docker:
     # need custom docker image with both Rust and NPM
-      - image: abronan/rust-circleci:latest
+      - image: davidbohunek/rust-js:latest
 
     steps:
       - checkout
       - restore_cache:
           key: project-cache
+      - run:
+          name: nodejs check
+          command: node -v
       - run:
           name: CORE formatting
           command: |
