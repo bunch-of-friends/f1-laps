@@ -57,6 +57,18 @@ jobs:
             rustup run stable rustc --version --verbose
             rustup run stable cargo --version --verbose
             cd modules/js-bridge && npm run build
+      - run: 
+          name: DESKTOP npm install
+          command: |
+            cd apps/desktop && npm install
+      - run:
+          name: DESKTOP formatting
+          command: |
+            cd apps/desktop && npm run lint
+      - run:
+          name: DESKTOP Build
+          command: |
+            cd apps/desktop && npm run build
 
       - save_cache:
           key: project-cache
