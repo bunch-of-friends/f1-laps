@@ -96,8 +96,8 @@ pub struct CarStatus {
     pub flags: i8,
     pub ers_stored: f32,
     pub ers_mode: u8,
-    pub ers_harvested_mghu: f32,
-    pub ers_harvested_mghh: f32,
+    pub ers_harvested_mgu_k: f32,
+    pub ers_harvested_mgu_h: f32,
     pub ers_deployed: f32,
 }
 

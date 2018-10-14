@@ -51,8 +51,8 @@ impl PacketCarStatusData {
             flags: x.m_vehicleFiaFlags,
             ers_stored: x.m_ersStoreEnergy,
             ers_mode: x.m_ersDeployMode,
-            ers_harvested_mghu: x.m_ersHarvestedThisLapMGUK,
-            ers_harvested_mghh: x.m_ersHarvestedThisLapMGUH,
+            ers_harvested_mgu_k: x.m_ersHarvestedThisLapMGUK,
+            ers_harvested_mgu_h: x.m_ersHarvestedThisLapMGUH,
             ers_deployed: x.m_ersDeployedThisLap,
         })
     }
