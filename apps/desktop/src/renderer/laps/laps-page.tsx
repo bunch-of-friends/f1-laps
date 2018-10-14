@@ -2,7 +2,11 @@ import { h } from 'hyperapp';
 
 import { AppState } from '../app/app-state';
 import { AppActions } from '../app/app-actions';
-import { nanosecondsToString, secondsToString, idToString } from '../helpers/formatting';
+import {
+    nanosecondsToString,
+    secondsToString,
+    idToString,
+} from '../helpers/formatting';
 
 import './laps.css';
 import { LapHeader } from 'f1-laps-js-bridge';
