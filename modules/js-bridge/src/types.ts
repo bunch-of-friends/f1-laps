@@ -45,9 +45,9 @@ export interface MultiCarData<T> {
 }
 
 export interface SessionIdentifier {
-    track_id: Track;
-    session_type: SessionType;
-    era: Era;
+    track_id: number;
+    session_type: number;
+    era: number;
     session_uid: number;
     session_time: number;
 }
@@ -66,10 +66,10 @@ export interface Sector {
 }
 
 export interface SessionData {
-    weather: Weather;
-    era: Era;
-    session_type: SessionType;
-    track_id: Track;
+    weather: number;
+    era: number;
+    session_type: number;
+    track_id: number;
     track_temperature: number;
     air_temperature: number;
     race_laps: number;
@@ -79,7 +79,7 @@ export interface SessionData {
     is_game_paused: boolean;
     is_spectating: boolean;
     is_online_game: boolean;
-    safety_car_status: SafetyCarStatus;
+    safety_car_status: number;
 }
 
 export interface LapData {
@@ -94,23 +94,23 @@ export interface LapData {
     pit_status: number;
     is_lap_valid: boolean;
     penalties: number;
-    driver_status: DriverStatus;
-    result_status: ResultStatus;
+    driver_status: number;
+    result_status: number;
 }
 
 export interface CarStatus {
-    traction_control: TrackionControl;
-    antilock_brakes: AntilockBrakes;
-    fuel_mix: FuelMix;
+    traction_control: number;
+    antilock_brakes: number;
+    fuel_mix: number;
     front_brake_bias: number;
-    pit_limiter_status: PitLimiterStatus;
+    pit_limiter_status: number;
     fuel_in_tank: number;
     fuel_capacity: number;
     max_rpm: number;
     max_gears: number;
     is_drs_allowed: boolean;
     tyres_wear: [number, number, number, number];
-    tyre_compound: TyreCompound;
+    tyre_compound: number;
     tyres_damage: [number, number, number, number];
     front_left_wing_damage: number;
     front_right_wing_damage: number;
@@ -118,9 +118,9 @@ export interface CarStatus {
     engine_damage: number;
     gearbox_damage: number;
     exhaust_damage: number;
-    flags: Flag;
+    flags: number;
     ers_stored: number;
-    ers_mode: ErsMode;
+    ers_mode: number;
     ers_harvested_mghu: number;
     ers_harvested_mghh: number;
     ers_deployed: number;
@@ -184,184 +184,15 @@ export interface ParticipantInfo {
     name: string;
 }
 
-export enum Weather {
-    Clear = 0,
-    LightClourd = 1,
-    Overcast = 2,
-    LightRain = 3,
-    HeavyRain = 4,
-    Storm = 5,
-}
-
-export enum SessionType {
-    Unknown = 0,
-    P1 = 1,
-    P2 = 2,
-    P3 = 3,
-    ShortP = 4,
-    Q1 = 5,
-    Q2 = 6,
-    Q3 = 7,
-    ShortQ = 8,
-    OneShotQ = 9,
-    Race = 10,
-    Race2 = 11,
-    TT = 12,
-}
-
-export enum TrackionControl {
-    Low = 0,
-    Medium = 1,
-    High = 2,
-}
-
-export enum AntilockBrakes {
-    Off = 0,
-    On = 1,
-}
-
-export enum FuelMix {
-    Lean = 0,
-    Standard = 1,
-    Rich = 2,
-    Max = 3,
-}
-
-export enum PitLimiterStatus {
-    Off = 0,
-    On = 1,
-}
-
-export enum TyreCompound {
-    HyperSoft = 0,
-    UltraSoft = 1,
-    SuperSoft = 2,
-    Soft = 3,
-    Medium = 4,
-    Hard = 5,
-    SuperHard = 6,
-    Inter = 7,
-    Wet = 8,
-}
-
-export enum Flag {
-    Unknown = -1,
-    None = 0,
-    Green = 1,
-    Blue = 2,
-    Yellow = 3,
-    Red = 4,
-}
-
-export enum ErsMode {
-    None = 0,
-    Low = 1,
-    Medium = 2,
-    High = 3,
-    Overtake = 4,
-    Hotlap = 5,
-}
-
-export enum Era {
-    Modern = 0,
-    Classic = 1,
-}
-
-export enum SafetyCarStatus {
-    NoSC = 0,
-    Full = 1,
-    VSC = 2,
-}
-
-export enum DriverStatus {
-    InGarage = 0,
-    FlyingLap = 1,
-    InLap = 2,
-    OutLap = 3,
-    OnTrack = 4,
-}
-
-export enum ResultStatus {
-    Invalid = 0,
-    Inactive = 1,
-    Active = 2,
-    Finished = 3,
-    Disqualified = 4,
-    NotClasified = 5,
-    Retired = 6,
-}
-
-export enum Track {
-    Unknown = -1,
-    Melbourne = 0,
-    PaulRircard = 1,
-    Shanghai = 2,
-    Sakhir = 3,
-    Catalunya = 4,
-    Monaco = 5,
-    Montreal = 6,
-    Silverstone = 7,
-    Hockenheim = 8,
-    Hungaroring = 9,
-    Spa = 10,
-    Monza = 11,
-    Singapore = 12,
-    Suzuka = 13,
-    AbuDhabi = 14,
-    Texas = 15,
-    Brazil = 16,
-    Austria = 17,
-    Sochi = 18,
-    Mexico = 19,
-    Baku = 20,
-    SakhirShort = 21,
-    SilverstoneShort = 22,
-    TexasShort = 23,
-    SuzukaShort = 24,
-}
-
-export enum Team {
-    Mercedes = 0,
-    Ferrari = 1,
-    RedBull = 2,
-    Williams = 3,
-    ForceIndia = 4,
-    Renault = 5,
-    ToroRosso = 6,
-    Haas = 7,
-    McLaren = 8,
-    Sauber = 9,
-    McLaren1988 = 10,
-    McLaren1991 = 11,
-    Williams1992 = 12,
-    Ferrari1995 = 13,
-    Williams1996 = 14,
-    McLaren1998 = 15,
-    Ferrari2002 = 16,
-    Ferrari2004 = 17,
-    Renault2006 = 18,
-    Ferrari2007 = 19,
-    McLaren2008 = 20,
-    RedBull2010 = 21,
-    Ferrari1976 = 22,
-    McLaren1976 = 34,
-    Lotus1972 = 35,
-    Ferrari1979 = 36,
-    McLaren1982 = 37,
-    Williams2003 = 38,
-    Brawn2009 = 39,
-    Lotus1978 = 40,
-}
-
 export interface LapHeader {
     id: string;
     recorded_date: number;
-    track_id: Track;
-    team_id: Team;
-    era: Era;
-    tyre_compound: TyreCompound;
-    weather: Weather;
-    session_type: SessionType;
+    track_id: number;
+    team_id: number;
+    era: number;
+    tyre_compound: number;
+    weather: number;
+    session_type: number;
     lap_number: number;
     lap_time: number;
     sector_times: [number, number, number];

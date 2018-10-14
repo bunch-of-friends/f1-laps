@@ -16,8 +16,8 @@
     "license": "MIT",
     "dependencies": {
         "chart.js": "^2.7.2",
-        "hyperapp": "^1.2.8",
         "f1-laps-js-bridge": "file:../../modules/js-bridge",
+        "hyperapp": "^1.2.8",
         "hyperapp-hash-router": "^0.1.0",
         "lodash": "^4.17.10",
         "moment": "^2.22.2"
