@@ -28,7 +28,7 @@ pub struct SessionData {
     pub air_temperature: i8,
     pub race_laps: u8,
     pub track_length: u16,
-    pub session_time: f32   ,
+    pub session_time: f32,
     pub session_time_left: u16,
     pub session_duration: u16,
     pub is_game_paused: bool,
