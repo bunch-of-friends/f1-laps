@@ -43,7 +43,10 @@ export const DebugPage = () => (state: AppState) => {
                 <ObjectView title="Session Data" data={state.sessionData} />
             </div>
             <div>
-                <ObjectView title="Participants" data={state.participantsInfo && state.participantsInfo} />
+                <ObjectView
+                    title="Participants"
+                    data={state.participantsInfo && state.participantsInfo}
+                />
             </div>
         </div>
     );
