@@ -76,4 +76,6 @@ jobs:
             - "~/.cargo"
             - "./modules/core/target"
             - "./modules/js-bridge/native/target"
+            - "./modules/js-bridge/node_modules"
             - "./apps/rust-demo/target"
+            - "./apps/desktop/node_modules"
