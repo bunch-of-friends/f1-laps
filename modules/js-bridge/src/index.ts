@@ -18,6 +18,7 @@ import {
     LogItem,
 } from './types';
 
+export * from './strings';
 export * from './types';
 export * from '@bunch-of-friends/observable';
 

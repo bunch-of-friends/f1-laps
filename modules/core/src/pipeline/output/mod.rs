@@ -67,7 +67,6 @@ pub struct SessionIdentifier {
     pub session_type: u8,
     pub era: u8,
     pub session_uid: u64,
-    pub session_time: f32,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

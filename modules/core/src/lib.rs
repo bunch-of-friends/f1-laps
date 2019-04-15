@@ -21,6 +21,7 @@ use context::{AppContext, LogEvent};
 use pipeline::input::Tick;
 use pipeline::output::Output;
 use pipeline::Pipeline;
+use std::cmp::Ordering;
 use std::sync::mpsc::{self, TryRecvError};
 use std::thread;
 use storage::models::{LapHeader, LapTelemetry};
@@ -106,7 +107,15 @@ where
 }
 
 pub fn get_laps_headers(context: &'static AppContext) -> Vec<LapHeader> {
-    context.storage.lap_headers.get_all()
+    let mut laps = context.storage.lap_headers.get_all();
+    laps.sort_by(|a, b| {
+        if a.recorded_date > b.recorded_date {
+            Ordering::Greater
+        } else {
+            Ordering::Less
+        }
+    });
+    laps
 }
 
 pub fn get_lap_telemetry(context: &'static AppContext, lap_id: &str) -> Option<LapTelemetry> {

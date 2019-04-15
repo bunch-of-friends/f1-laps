@@ -8,7 +8,6 @@ impl SessionIdentifier {
             session_type: s.session_type,
             era: s.era,
             session_uid: header.session_uid,
-            session_time: header.session_time,
         }
     }
 }

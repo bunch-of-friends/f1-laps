@@ -1,4 +1,5 @@
 import { h } from 'hyperapp';
+import { formatValue } from '../helpers/formatting';
 
 export const ObjectView = ({
     title,
@@ -9,19 +10,19 @@ export const ObjectView = ({
 }) => (
     <div>
         <span class="debug-title">{title}</span>
-        {renderData(data)}
+        {renderObject(data)}
     </div>
 );
 
-function renderData(data?: { [key: string]: any }) {
-    if (data) {
+function renderObject(obj?: { [key: string]: any }) {
+    if (obj) {
         return (
             <p>
-                {Object.keys(data).map(key => {
+                {Object.keys(obj).map(key => {
                     return (
                         <span>
                             <span>{key}: </span>
-                            <span>{renderProp(data[key])}</span>
+                            <span>{renderProp(key, obj[key])}</span>
                         </span>
                     );
                 })}
@@ -33,23 +34,35 @@ function renderData(data?: { [key: string]: any }) {
     }
 }
 
-function renderProp(data: any) {
-    if (Array.isArray(data)) {
+function renderProp(key: string, value: any) {
+    if (Array.isArray(value)) {
         return (
             <p class="debug-nested-prop">
                 [
-                {data.map(x => {
-                    return <span class="debug-nested-prop">{x},</span>;
+                {value.map(item => {
+                    if (typeof item === 'object') {
+                        return (
+                            <span class="debug-nested-prop">
+                                {renderObject(item)},
+                            </span>
+                        );
+                    } else {
+                        return (
+                            <span class="debug-nested-prop">
+                                {formatValue('', item)},
+                            </span>
+                        );
+                    }
                 })}
                 ]
             </p>
         );
-    } else if (typeof data === 'object') {
-        return <p class="debug-nested-prop">{renderData(data)}</p>;
+    } else if (typeof value === 'object') {
+        return <p class="debug-nested-prop">{renderObject(value)}</p>;
     } else {
         return (
             <span>
-                {data}
+                {formatValue(key, value)}
                 <br />
             </span>
         );
